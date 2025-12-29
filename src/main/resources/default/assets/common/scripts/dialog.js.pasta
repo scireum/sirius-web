@@ -1,9 +1,9 @@
 (function (dialog) {
     const template = '<div id="sci-dialog-background" class="sci-d-none sci-position-fixed sci-align-items-center sci-justify-content-center sci-p-2 sci-text sci-font sci-enable-font">' +
-        '   <div id="sci-dialog" class="sci-d-flex sci-font sci-bg-white sci-p-2 sci-shadow sci-card sci-flex-column sci-overflow-hidden">' +
+        '   <div id="sci-dialog" class="sci-d-flex sci-font sci-bg-white sci-p-2 sci-shadow sci-card sci-flex-column sci-overflow-hidden" role="dialog">' +
         '      <div id="sci-dialog-header" class="sci-pt-1 sci-pb-2 sci-d-flex sci-justify-content-space-between sci-align-items-center sci-border-grey sci-flex-shrink-0 sci-overflow-hidden">' +
         '          <div id="sci-dialog-title" class="sci-text-size-h2 sci-text-ellipsis sci-text-grey-dark"></div>' +
-        '          <div class="sci-cursor-pointer sci-d-flex sci-dialog-button-close sci-dialog-button-close-js">@escapeJS(inlineSVG("/assets/images/icons/navigation/close-thin.svg"))</div>' +
+        '          <div class="sci-cursor-pointer sci-d-flex sci-dialog-button-close sci-dialog-button-close-js" role="button" tabindex="0">@escapeJS(inlineSVG("/assets/images/icons/navigation/close-thin.svg"))</div>' +
         '      </div>' +
         '      <div id="sci-dialog-content" class="sci-text sci-flex-grow-1 sci-d-flex sci-flex-column"></div>' +
         '      <div id="sci-dialog-footer" class="sci-pt-2 sci-d-flex sci-border-grey sci-flex-shrink-0 sci-d-none sci-overflow-hidden"></div>' +
@@ -47,7 +47,8 @@
         _dialogBackground = _dialogContainer.firstChild;
         _dialog = _dialogBackground.querySelector('#sci-dialog');
 
-        _dialog.querySelector('.sci-dialog-button-close-js').addEventListener('click', function () {
+        const _closeButton = _dialog.querySelector('.sci-dialog-button-close-js');
+        sirius.addClickOrEnterListener(_closeButton, function () {
             sirius.dispatchEvent('sci-dialog-dismissed');
             sirius.dialog.destroy();
         });
@@ -79,7 +80,12 @@
      */
     dialog.fill = function (title, content) {
         _dialog.querySelector('#sci-dialog-title').textContent = title;
-        _dialog.querySelector('#sci-dialog-content').innerHTML = content;
+        if (typeof content === 'string') {
+            _dialog.querySelector('#sci-dialog-content').innerHTML = content;
+        } else {
+            _dialog.querySelector('#sci-dialog-content').textContent = '';
+            _dialog.querySelector('#sci-dialog-content').appendChild(content);
+        }
         sirius.dialog.clearFooter();
     };
 
@@ -152,7 +158,9 @@
     dialog.addFooterButton = function (label, callback, buttonClass) {
         const _button = document.createElement('a');
         _button.classList.add(buttonClass, 'sci-btn-small', 'sci-ml-2');
-        _button.addEventListener('click', callback);
+        sirius.addClickOrEnterListener(_button, callback);
+        _button.role = 'button';
+        _button.tabIndex = 0;
         _button.textContent = label;
 
         const _footer = _dialog.querySelector('#sci-dialog-footer');
@@ -213,10 +221,9 @@
         const content =
             '<div id="sci-dialog-wizard" class="sci-position-relative sci-mt-2 sci-mb-4">' +
             '   <div id="sci-dialog-wizard-line"></div>' +
-            '   <div id="sci-dialog-wizard-steps" class="sci-position-relative sci-d-flex sci-flex-wrap sci-justify-content-space-between">' +
+            '   <div id="sci-dialog-wizard-steps" class="sci-position-relative sci-d-flex sci-flex-wrap sci-justify-content-space-between"></div>' +
             '</div>' +
-            '<div id="sci-dialog-wizard-tabs">' +
-            '</div>';
+            '<div id="sci-dialog-wizard-tabs"></div>';
 
         sirius.dialog.fill(title, content);
 
@@ -297,7 +304,7 @@
             });
 
             const _tab = document.createElement('div');
-            _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-mt-4', 'sci-p-2');
+            _tab.classList.add('sci-dialog-wizard-tab', 'sci-flex-wrap', 'sci-p-2');
             _tab.id = 'sci-dialog-wizard-tab-' + stepId;
             _tab.dataset.step = stepId;
             _tab.dataset.validated = withForm;
@@ -423,7 +430,7 @@
             // Go through all tabs and check if they should be reachable by the user.
             const _tabs = wizard._tabs.querySelectorAll('.sci-dialog-wizard-tab');
             let lastReachableIndex = 0;
-            // Check the following steps whether they are valid or dont have a form.
+            // Check the following steps whether they are valid or don't have a form.
             for (let i = lastReachableIndex; i < _tabs.length; i++) {
                 const _tab = _tabs[i];
 
@@ -444,6 +451,8 @@
                 const _step = _steps[i];
                 _step.classList.toggle('sci-dialog-wizard-step-reachable', i <= lastReachableIndex);
             }
+            // Disable the step visualizer, when it does not show multiple steps.
+            wizard._wizard.classList.toggle('sci-d-none', _tabs.length < 2);
         }
 
         return Wizard;

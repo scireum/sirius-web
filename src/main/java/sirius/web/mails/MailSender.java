@@ -23,7 +23,9 @@ import sirius.kernel.nls.NLS;
 import sirius.web.http.MimeHelper;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
+import sirius.web.security.ScopeInfo;
 import sirius.web.security.UserContext;
+import sirius.web.security.UserInfo;
 import sirius.web.templates.Generator;
 import sirius.web.templates.Templates;
 
@@ -522,11 +524,17 @@ public class MailSender {
                            subject);
         } else {
             SendMailTask task = new SendMailTask(this, smtpConfiguration);
+            ScopeInfo currentScope = UserContext.getCurrentScope();
+            UserInfo currentUser = UserContext.getCurrentUser();
             tasks.executor("email")
                  .minInterval(internalMessageId,
                               Duration.ofSeconds((MAX_SEND_ATTEMPTS - remainingAttempts.get())
                                                  * RESEND_WAIT_INTERVAL_SECONDS))
-                 .fork(task);
+                 .fork(() -> {
+                     UserContext.get().setCurrentScope(currentScope);
+                     UserContext.get().setCurrentUser(currentUser);
+                     task.run();
+                 });
         }
     }
 
@@ -638,5 +646,49 @@ public class MailSender {
      */
     public String getLanguage() {
         return language;
+    }
+
+    public String getSenderEmail() {
+        return senderEmail;
+    }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public String getReceiverEmail() {
+        return receiverEmail;
+    }
+
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public String getReplyToEmail() {
+        return replyToEmail;
+    }
+
+    public String getReplyToName() {
+        return replyToName;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String getHtml() {
+        return html;
+    }
+
+    public List<DataSource> getAttachments() {
+        return Collections.unmodifiableList(attachments);
+    }
+
+    public SMTPConfiguration getSmtpConfiguration() {
+        return smtpConfiguration;
     }
 }

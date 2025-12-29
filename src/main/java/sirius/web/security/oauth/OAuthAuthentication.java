@@ -9,12 +9,17 @@
 package sirius.web.security.oauth;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import sirius.kernel.commons.Context;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.URLBuilder;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
+import sirius.web.http.WebContext;
 import sirius.web.services.JSONCall;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides utility methods to perform OAuth authentication flows.
@@ -23,83 +28,129 @@ import java.net.URI;
 public class OAuthAuthentication {
 
     /**
-     * Creates the URL to start the OAuth authentication flow. Will return a URL to which the user must be redirected
-     * to start granting access to a resource.
+     * Creates a URL that requests authorization by user consent for the specified OAuth scopes using the authorization
+     * code flow.
      * <p>
-     * This is to be used with confidential clients as no PKCE is used.
+     * The URL can be used to redirect the user to the OAuth provider's authorization endpoint, where they can grant
+     * access to the requested scopes.
+     * <p>
+     * The URL asks for offline access to ensure that the refresh token is long-lived.
      *
-     * @param oauthAuthUrl the url of the endpoint at the authorization server
-     * @param clientId     the client id, which is registered at the authorization server
-     * @param state        the state to be used to prevent CSRF attacks
-     * @param redirectUrl  the url to redirect to after the authentication flow has been completed
-     * @param scope        the scope to request
-     * @return the url to start the OAuth authentication flow.
+     * @param endpoint    the URL of the OAuth authorization endpoint
+     * @param clientId    the client ID registered with the OAuth provider
+     * @param redirectUrl the URL to which the user will be redirected after authorization
+     * @param scope       the scope of access requested by the application
+     * @param state       a unique state parameter to prevent CSRF attacks, may also contain additional data such as an
+     *                    entity ID or other context information that will be needed after redirection back
+     * @return the complete authorization URL to redirect the user to
      */
-    public String createOAuthAuthenticationFlowUrl(String oauthAuthUrl,
-                                                   String clientId,
-                                                   String state,
-                                                   String redirectUrl,
-                                                   String scope) {
-        return new URLBuilder(oauthAuthUrl).addParameter(OAuth.RESPONSE_TYPE, OAuth.CODE)
-                                           .addParameter(OAuth.CLIENT_ID, clientId)
-                                           .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
-                                           .addParameter(OAuth.REDIRECT_URI, redirectUrl)
-                                           .addParameter(OAuth.STATE, state)
-                                           .addParameter(OAuth.SCOPE, scope)
-                                           .build();
+    public String createAuthorizeConsentUrl(String endpoint,
+                                            String clientId,
+                                            String redirectUrl,
+                                            String scope,
+                                            String state) {
+        return new URLBuilder(endpoint).addParameter(OAuth.RESPONSE_TYPE, OAuth.CODE)
+                                       .addParameter(OAuth.CLIENT_ID, clientId)
+                                       .addParameter(OAuth.REDIRECT_URI, redirectUrl)
+                                       .addParameter(OAuth.SCOPE, scope)
+                                       .addParameter(OAuth.STATE, state)
+                                       .addParameter(OAuth.PROMPT, OAuth.PROMPT_CONSENT)
+                                       .addParameter(OAuth.ACCESS_TYPE, OAuth.ACCESS_TYPE_OFFLINE)
+                                       .build();
     }
 
     /**
-     * After the authentication flow has been completed by returning an authentication code to the redirect URL, this
-     * method can be used to obtain an access token in exchange for the authentication code.
-     * <p>
-     * This is to be used in the backend, where the client secret can be kept secret.
+     * Requests access and refresh tokens from the OAuth authorization server using the provided authorization code.
      *
-     * @param authenticationCode the authentication code returned by the authorization server
-     * @param oauthLoginUrl      the url of the login endpoint at the authorization server
-     * @param clientId           the client id, which is registered at the authorization server
-     * @param sharedSecret       the client secret, which is registered at the authorization server
-     * @return the tokens in case of success
-     * @throws IOException in case of a connection error
+     * @param endpoint          the URL of the OAuth token endpoint
+     * @param clientId          the client ID registered with the OAuth provider
+     * @param clientSecret      the client secret registered with the OAuth provider
+     * @param authorizationCode the authorization code received from the OAuth provider after user consent
+     * @param redirectUri       the redirect URI used during the authorization request, if applicable
+     * @return the received tokens containing access and refresh tokens, as well as their types and expiration dates
+     * @throws IOException if an error occurs while making the HTTP request to the OAuth server
      */
-    public ReceivedTokens performLoginByAuthCode(String authenticationCode,
-                                                 String oauthLoginUrl,
-                                                 String clientId,
-                                                 String sharedSecret) throws IOException {
-        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
-                                                       .addParameter(OAuth.CLIENT_ID, clientId)
-                                                       .addParameter(OAuth.CODE, authenticationCode)
-                                                       .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
-                                                       .build();
+    public ReceivedTokens requestAccessTokenViaAuthorizationCode(String endpoint,
+                                                                 String clientId,
+                                                                 String clientSecret,
+                                                                 String authorizationCode,
+                                                                 String redirectUri) throws IOException {
+        JSONCall call = JSONCall.to(URI.create(endpoint));
 
-        ObjectNode response = JSONCall.to(URI.create(loginUrl)).getInput();
+        call.getOutcall()
+            .postData(Context.create()
+                             .set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_AUTH_CODE)
+                             .set(OAuth.CODE, authorizationCode)
+                             .set(OAuth.REDIRECT_URI, redirectUri)
+                             .set(OAuth.CLIENT_ID, clientId)
+                             .set(OAuth.CLIENT_SECRET, clientSecret), StandardCharsets.UTF_8);
+
+        ObjectNode response = call.getInput();
+        assertNoErrorResponse(response);
+
         return ReceivedTokens.fromJson(response);
     }
 
     /**
-     * After the authentication flow has been completed by returning an authentication code to the redirect URL, this
-     * method can be used to obtain an access token in exchange for the authentication code.
+     * Requests a new access token using the refresh token provided by the OAuth authorization server.
      * <p>
-     * This is to be used in the backend, where the client secret can be kept secret.
+     * The returned tokens may include a new refresh token, depending on the OAuth provider's implementation.
      *
-     * @param refreshToken  the authentication code returned by the authorization server
-     * @param oauthLoginUrl the url of the login endpoint at the authorization server
-     * @param clientId      the client id, which is registered at the authorization server
-     * @param sharedSecret  the client secret, which is registered at the authorization server
-     * @return the tokens in case of success
-     * @throws IOException in case of a connection error
+     * @param endpoint     the URL of the OAuth token endpoint
+     * @param clientId     the client ID registered with the OAuth provider
+     * @param clientSecret the client secret registered with the OAuth provider
+     * @param refreshToken the refresh token received from the OAuth provider, used to obtain a new access token
+     * @return the received tokens containing the new access token, its type, and expiration date
+     * @throws IOException if an error occurs while making the HTTP request to the OAuth server
      */
-    public ReceivedTokens performRefreshToken(String refreshToken,
-                                              String oauthLoginUrl,
-                                              String clientId,
-                                              String sharedSecret) throws IOException {
-        String loginUrl = new URLBuilder(oauthLoginUrl).addParameter(OAuth.CLIENT_SECRET, sharedSecret)
-                                                       .addParameter(OAuth.CLIENT_ID, clientId)
-                                                       .addParameter(OAuth.REFRESH_TOKEN, refreshToken)
-                                                       .addParameter(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN)
-                                                       .build();
+    public ReceivedTokens requestAccessTokenViaRefreshToken(String endpoint,
+                                                            String clientId,
+                                                            String clientSecret,
+                                                            String refreshToken) throws IOException {
+        JSONCall call = JSONCall.to(URI.create(endpoint));
 
-        ObjectNode response = JSONCall.to(URI.create(loginUrl)).getInput();
+        call.getOutcall()
+            .postData(Context.create()
+                             .set(OAuth.GRANT_TYPE, OAuth.GRANT_TYPE_REFRESH_TOKEN)
+                             .set(OAuth.REFRESH_TOKEN, refreshToken)
+                             .set(OAuth.CLIENT_ID, clientId)
+                             .set(OAuth.CLIENT_SECRET, clientSecret), StandardCharsets.UTF_8);
+
+        ObjectNode response = call.getInput();
+        assertNoErrorResponse(response);
+
         return ReceivedTokens.fromJson(response);
+    }
+
+    /**
+     * Asserts that the given response does not contain an error and throws an exception if it does.
+     *
+     * @param response the JSON response when requesting an OAuth token
+     */
+    public void assertNoErrorResponse(ObjectNode response) {
+        String error = response.path(OAuth.ERROR).asText(null);
+        String errorDescription = response.path(OAuth.ERROR_DESCRIPTION).asText("Unknown error");
+        assertNoError(error, errorDescription);
+    }
+
+    /**
+     * Asserts that the given response does not contain an error and throws an exception if it does.
+     *
+     * @param webContext the web context of the redirect response of the authorization request
+     */
+    public void assertNoErrorResponse(WebContext webContext) {
+        String error = webContext.get(OAuth.ERROR).asString();
+        String errorDescription = webContext.get(OAuth.ERROR_DESCRIPTION).asString("Unknown error");
+        assertNoError(error, errorDescription);
+    }
+
+    private static void assertNoError(String error, String errorDescription) {
+        if (Strings.isFilled(error)) {
+            throw Exceptions.createHandled()
+                            .withNLSKey("OAuthAuthentication.error.errorResponse")
+                            .set("error", error)
+                            .set("errorDescription", errorDescription)
+                            .handle();
+        }
     }
 }

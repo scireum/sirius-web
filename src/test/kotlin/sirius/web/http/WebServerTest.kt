@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
@@ -30,6 +32,8 @@ import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.logging.Level
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Simulates a bunch of "real" (outside) requests through netty and sirius.
@@ -42,10 +46,12 @@ class WebServerTest {
     companion object {
         fun callAndRead(
             uri: String,
-            outHeaders: Map<String, String?>?,
-            expectedHeaders: Map<String, String?>?
+            outHeaders: Map<String, String?>? = null,
+            expectedHeaders: Map<String, String?>? = null,
+            requestMethod: String = "GET"
         ): String {
             val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+            connection.setRequestMethod(requestMethod)
 
             outHeaders?.forEach { (key, value) -> connection.addRequestProperty(key, value) }
             connection.connect()
@@ -670,5 +676,94 @@ class WebServerTest {
 
         assertEquals(TestResponse.ResponseType.DIRECT, response2.type)
         assertEquals(HttpResponseStatus.OK, response2.status)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """
+            uri                             | method | result
+            /test/restricted-method         | GET    | GET OK
+            /test/restricted-method         | POST   | POST OK
+            /test/restricted-methods        | GET    | GET/POST OK
+            /test/restricted-methods        | POST   | GET/POST OK
+            /test/another-restricted-method | GET    | GET OK"""
+    )
+    fun `Requests to plain text routes with restricted method work`(uri: String, method: String, result: String) {
+        val data = callAndRead(uri, null, null, method)
+        assertEquals(result, data)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """
+            uri                             | method | allow
+            /test/restricted-method         | PUT    | GET, POST
+            /test/restricted-method         | DELETE | GET, POST
+            /test/restricted-methods        | PUT    | GET, POST
+            /test/restricted-methods        | DELETE | GET, POST
+            /test/another-restricted-method | POST   | GET"""
+    )
+    fun `Requests to plain text routes with wrong method fail with 405`(uri: String, method: String, allow: String) {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod(method)
+
+        assertEquals(405, connection.responseCode)
+        assertEquals(allow, connection.getHeaderField("Allow"))
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """
+            uri                                 | method | result
+            /test/restricted-method-api         | GET    | GET OK
+            /test/restricted-method-api         | POST   | POST OK
+            /test/restricted-methods-api        | GET    | GET/POST OK
+            /test/restricted-methods-api        | POST   | GET/POST OK
+            /test/another-restricted-method-api | GET    | GET OK"""
+    )
+    fun `Requests to JSON routes with restricted method work`(uri: String, method: String, result: String) {
+        val data = callAndRead(uri, null, null, method)
+        assertEquals(result, Json.parseObject(data).get("status").asText())
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """
+            uri                                 | method | allow
+            /test/restricted-method-api         | PUT    | GET, POST
+            /test/restricted-method-api         | DELETE | GET, POST
+            /test/restricted-methods-api        | PUT    | GET, POST
+            /test/restricted-methods-api        | DELETE | GET, POST
+            /test/another-restricted-method-api | POST   | GET"""
+    )
+    fun `Requests to JSON routes with wrong method fail with 405`(uri: String, method: String, allow: String) {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod(method)
+
+        assertEquals(405, connection.responseCode)
+        assertEquals(allow, connection.getHeaderField("Allow"))
+
+        val result = Json.parseObject(String(Streams.toByteArray(connection.errorStream), StandardCharsets.UTF_8))
+        assertTrue(result.get("error").asBoolean())
+        assertFalse(result.get("success").asBoolean())
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """
+            uri
+            /test/without-method
+            /test/without-method-api"""
+    )
+    fun `Requests to all routes without methods defined fail with 404`(uri: String) {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("GET")
+
+        assertEquals(404, connection.responseCode)
     }
 }

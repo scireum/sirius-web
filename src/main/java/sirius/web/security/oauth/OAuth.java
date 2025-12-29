@@ -101,6 +101,26 @@ public class OAuth {
     public static final String USERNAME = "username";
 
     /**
+     * Determines the access type of the OAuth flow.
+     */
+    public static final String ACCESS_TYPE = "access_type";
+
+    /**
+     * Determines that "offline" access is requested, which should ensure receiving a long-lasting refresh token.
+     */
+    public static final String ACCESS_TYPE_OFFLINE = "offline";
+
+    /**
+     * Determines the prompt used to request user consent during the OAuth flow.
+     */
+    public static final String PROMPT = "prompt";
+
+    /**
+     * Determines that the user should be prompted for consent during the OAuth flow.
+     */
+    public static final String PROMPT_CONSENT = "consent";
+
+    /**
      * The grant type password. Used for Resource Owner Password flow.
      *
      * @see #GRANT_TYPE
@@ -120,4 +140,14 @@ public class OAuth {
      * @see #GRANT_TYPE
      */
     public static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+
+    /**
+     * Contains the error code returned by the OAuth server in case of an error.
+     */
+    public static final String ERROR = "error";
+
+    /**
+     * Contains the error description returned by the OAuth server in case of an error.
+     */
+    public static final String ERROR_DESCRIPTION = "error_description";
 }

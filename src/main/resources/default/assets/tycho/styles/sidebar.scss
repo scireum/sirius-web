@@ -17,6 +17,14 @@
   .nav-link {
     margin: 0 -0.75rem;
     color: $primary-color !important;
+
+    &.muted {
+      color: $grayLight !important;
+      &:hover {
+        color: $white !important;
+        background-color: $grayLight !important;
+      }
+    }
   }
 
   .nav-link .nav-link-icon {

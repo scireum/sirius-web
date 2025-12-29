@@ -8,7 +8,6 @@
 
 package sirius.web.mails;
 
-import jakarta.activation.DataSource;
 import sirius.kernel.di.Replace;
 import sirius.kernel.di.std.Register;
 
@@ -41,38 +40,6 @@ public class MailsMock extends Mails {
 
         public SMTPConfiguration getEffectiveConfig() {
             return effectiveConfig;
-        }
-
-        public String getSenderEmail() {
-            return senderEmail;
-        }
-
-        public String getSenderName() {
-            return senderName;
-        }
-
-        public String getReceiverEmail() {
-            return receiverEmail;
-        }
-
-        public String getReceiverName() {
-            return receiverName;
-        }
-
-        public String getSubject() {
-            return subject;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public String getHtml() {
-            return html;
-        }
-
-        public List<DataSource> getAttachments() {
-            return attachments;
         }
 
         public String getBounceToken() {

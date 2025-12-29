@@ -9,9 +9,6 @@
 package sirius.web.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.POJONode;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;

@@ -24,9 +24,52 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (g && (g = 0, op[0] && (_ = 0)), _) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
     if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
     return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+};
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 var SelectModes;
 (function (SelectModes) {
@@ -36,6 +79,7 @@ var SelectModes;
 })(SelectModes || (SelectModes = {}));
 var TokenAutocomplete = /** @class */ (function () {
     function TokenAutocomplete(options) {
+        var _this = this;
         this.KEY_BACKSPACE = 'Backspace';
         this.KEY_ENTER = 'Enter';
         this.KEY_TAB = 'Tab';
@@ -53,12 +97,18 @@ var TokenAutocomplete = /** @class */ (function () {
             initialTokens: null,
             initialSuggestions: null,
             tokenRenderer: TokenAutocomplete.MultiSelect.defaultRenderer,
-            suggestionsUri: '',
             selectMode: SelectModes.MULTI,
+            resolveUri: '',
+            resolveUriBuilder: function (value) {
+                // We have to do this manually instead of using URL, as we can't be sure that a polyfill for IE11 is present
+                var querySeparator = _this.options.resolveUri.indexOf('?') >= 0 ? '&' : '?';
+                return _this.options.resolveUri + querySeparator + 'value=' + encodeURIComponent(value);
+            },
+            suggestionsUri: '',
             suggestionsUriBuilder: function (query) {
                 // We have to do this manually instead of using URL, as we can't be sure that a polyfill for IE11 is present
-                var querySeparator = this.suggestionsUri.indexOf('?') >= 0 ? '&' : '?';
-                return this.suggestionsUri + querySeparator + 'query=' + query;
+                var querySeparator = _this.options.suggestionsUri.indexOf('?') >= 0 ? '&' : '?';
+                return _this.options.suggestionsUri + querySeparator + 'query=' + encodeURIComponent(query);
             },
             suggestionRenderer: TokenAutocomplete.Autocomplete.defaultRenderer,
             minCharactersForSuggestion: 1,
@@ -71,11 +121,16 @@ var TokenAutocomplete = /** @class */ (function () {
             requestDelay: 200
         };
         this.options = __assign(__assign({}, this.defaults), options);
-        var passedContainer = document.querySelector(this.options.selector);
-        if (!passedContainer) {
-            throw new Error('passed selector does not point to a DOM element.');
+        if (this.options.selector instanceof HTMLElement) {
+            this.container = this.options.selector;
         }
-        this.container = passedContainer;
+        else {
+            var passedContainer = document.querySelector(this.options.selector);
+            if (!passedContainer) {
+                throw new Error('passed selector does not point to a DOM element.');
+            }
+            this.container = passedContainer;
+        }
         this.container.classList.add('token-autocomplete-container');
         this.tokenContainer = document.createElement('div');
         this.tokenContainer.classList.add('token-autocomplete-tokens');
@@ -86,6 +141,7 @@ var TokenAutocomplete = /** @class */ (function () {
         this.hiddenSelect = document.createElement('select');
         this.hiddenSelect.id = this.container.id + '-select';
         this.hiddenSelect.name = this.options.name;
+        this.hiddenSelect.ariaHidden = 'true';
         this.hiddenSelect.setAttribute('multiple', 'true');
         this.hiddenSelect.setAttribute('autocomplete', 'off');
         this.hiddenSelect.style.display = 'none';
@@ -142,21 +198,94 @@ var TokenAutocomplete = /** @class */ (function () {
         this.debug(false);
         if (Array.isArray(this.options.initialTokens)) {
             this.val(this.options.initialTokens);
+            this.enrichInitialTokens().then(function (shouldUpdate) {
+                if (shouldUpdate) {
+                    _this.val(_this.options.initialTokens);
+                }
+            });
         }
         this.container.tokenAutocomplete = this;
         if (this.options.selectMode == SelectModes.SINGLE && !this.options.optional && this.val().length == 0) {
             this.autocomplete.loadSuggestions();
         }
     }
+    TokenAutocomplete.prototype.enrichInitialTokens = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _loop_1, this_1, _c, _d, _e, e_1_1;
+            var _f, e_1, _g, _h;
+            return __generator(this, function (_j) {
+                switch (_j.label) {
+                    case 0:
+                        if (!(this.options.resolveUri.length > 0 && this.options.initialTokens)) return [3 /*break*/, 14];
+                        _j.label = 1;
+                    case 1:
+                        _j.trys.push([1, 7, 8, 13]);
+                        _loop_1 = function () {
+                            var token, resolveUri;
+                            return __generator(this, function (_k) {
+                                switch (_k.label) {
+                                    case 0:
+                                        _h = _e.value;
+                                        _c = false;
+                                        token = _h;
+                                        resolveUri = this_1.options.resolveUriBuilder(token.value);
+                                        return [4 /*yield*/, fetch(resolveUri).then(function (response) { return response.json(); }).then(function (data) {
+                                                var _c, _d, _e;
+                                                token.text = (_c = data.text) !== null && _c !== void 0 ? _c : token.text;
+                                                token.value = (_d = data.value) !== null && _d !== void 0 ? _d : token.value;
+                                                token.type = (_e = data.type) !== null && _e !== void 0 ? _e : token.type;
+                                            })];
+                                    case 1:
+                                        _k.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
+                        _c = true, _d = __asyncValues(this.options.initialTokens);
+                        _j.label = 2;
+                    case 2: return [4 /*yield*/, _d.next()];
+                    case 3:
+                        if (!(_e = _j.sent(), _f = _e.done, !_f)) return [3 /*break*/, 6];
+                        return [5 /*yield**/, _loop_1()];
+                    case 4:
+                        _j.sent();
+                        _j.label = 5;
+                    case 5:
+                        _c = true;
+                        return [3 /*break*/, 2];
+                    case 6: return [3 /*break*/, 13];
+                    case 7:
+                        e_1_1 = _j.sent();
+                        e_1 = { error: e_1_1 };
+                        return [3 /*break*/, 13];
+                    case 8:
+                        _j.trys.push([8, , 11, 12]);
+                        if (!(!_c && !_f && (_g = _d.return))) return [3 /*break*/, 10];
+                        return [4 /*yield*/, _g.call(_d)];
+                    case 9:
+                        _j.sent();
+                        _j.label = 10;
+                    case 10: return [3 /*break*/, 12];
+                    case 11:
+                        if (e_1) throw e_1.error;
+                        return [7 /*endfinally*/];
+                    case 12: return [7 /*endfinally*/];
+                    case 13: return [2 /*return*/, true];
+                    case 14: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
     /**
      * Searches the element given as a container for option elements and creates active tokens (when the option is marked selected)
      * and suggestions (all options found) from these. During this all found options are removed from the DOM.
      */
     TokenAutocomplete.prototype.parseTokensAndSuggestions = function () {
+        var _this = this;
         var initialTokens = [];
         var initialSuggestions = [];
         var options = this.container.querySelectorAll('option');
-        var me = this;
         options.forEach(function (option) {
             if (option.text != null) {
                 if (option.hasAttribute('selected')) {
@@ -172,7 +301,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     disabled: option.disabled || false
                 });
             }
-            me.container.removeChild(option);
+            _this.container.removeChild(option);
         });
         if (initialSuggestions.length > 0) {
             this.options.initialSuggestions = initialSuggestions;
@@ -222,12 +351,12 @@ var TokenAutocomplete = /** @class */ (function () {
      * @param {boolean} silent - whether appropriate events should be triggered when changing tokens or not
      */
     TokenAutocomplete.prototype.addToken = function (value, silent) {
+        var _this = this;
         if (silent === void 0) { silent = false; }
         if (Array.isArray(value)) {
-            var me_1 = this;
             value.forEach(function (token) {
                 if (typeof token === 'object') {
-                    me_1.select.addToken(token.value, token.text, token.type, silent);
+                    _this.select.addToken(token.value, token.text, token.type, silent);
                 }
             });
         }
@@ -323,6 +452,12 @@ var TokenAutocomplete = /** @class */ (function () {
         var _c;
         return (_c = text === null || text === void 0 ? void 0 : text.replace(/\x22/g, '\\\x22')) !== null && _c !== void 0 ? _c : '';
     };
+    TokenAutocomplete.shouldIgnoreSuggestion = function (suggestion) {
+        if (suggestion instanceof HTMLElement) {
+            return suggestion.dataset.disabled === 'true';
+        }
+        return true;
+    };
     var _a, _b;
     TokenAutocomplete.MultiSelect = (_a = /** @class */ (function () {
             function class_1(parent) {
@@ -337,18 +472,21 @@ var TokenAutocomplete = /** @class */ (function () {
                     this.container.appendChild(clearButton);
                 }
             }
-            class_1.prototype.clearCurrentInput = function () {
+            class_1.prototype.clearCurrentInput = function (ignored) {
+                if (ignored === void 0) { ignored = false; }
+                var previousInput = this.parent.getCurrentInput();
                 this.parent.textInput.textContent = '';
+                this.parent.log('cleared input', previousInput);
             };
             class_1.prototype.initEventListeners = function () {
+                var _this = this;
                 var _c;
-                var me = this;
                 var parent = this.parent;
                 if (parent.options.readonly) {
                     return;
                 }
                 var isComposing = false;
-                parent.textInput.addEventListener('compositionstart', function (event) {
+                parent.textInput.addEventListener('compositionstart', function () {
                     isComposing = true;
                 });
                 parent.textInput.addEventListener('compositionend', function (event) {
@@ -357,7 +495,7 @@ var TokenAutocomplete = /** @class */ (function () {
                     var inputString = event.data;
                     if (inputString.charAt(inputString.length - 1) === "\n") {
                         event.preventDefault();
-                        me.handleInput(parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted'));
+                        _this.handleInput(parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted'));
                     }
                 });
                 parent.textInput.addEventListener('keydown', function (event) {
@@ -369,25 +507,46 @@ var TokenAutocomplete = /** @class */ (function () {
                         if (parent.options.enableTabulator && highlightedSuggestion == null && event.key == parent.KEY_TAB && parent.autocomplete.areSuggestionsDisplayed()) {
                             highlightedSuggestion = parent.autocomplete.suggestions.firstChild;
                         }
-                        me.handleInput(highlightedSuggestion);
+                        _this.handleInput(highlightedSuggestion);
                     }
                     else if (parent.getCurrentInput() === '' && event.key == parent.KEY_BACKSPACE) {
                         event.preventDefault();
-                        me.removeLastToken();
+                        _this.removeLastToken();
                     }
                     if ((event.key == parent.KEY_DOWN || event.key == parent.KEY_UP) && parent.autocomplete.suggestions.childNodes.length > 0) {
                         event.preventDefault();
                     }
                 });
-                parent.textInput.addEventListener('keyup', function (event) {
-                    me.updateHasValue();
-                });
+                parent.textInput.addEventListener('keyup', function () { return _this.updateHasValue(); });
+                if (!(this instanceof TokenAutocomplete.SearchMultiSelect)) {
+                    // We don't want to trigger a search when the user focuses out of the input field in a search field.
+                    // This should only try to apply the current input text as value in normal multi-selects.
+                    parent.textInput.addEventListener('focusout', function (event) {
+                        // Using setTimeout here seems hacky on first sight but ensures proper order of events / handling.
+                        // We first want to handle a click on a suggestion (when one is made) before hiding the suggestions on focusout of the input.
+                        // Not doing so could mean the suggestion is hidden before the click is handled und thus resulting in not being selected.
+                        // This depends on the order in which a browser handles different events and when it sets the active pseudo-selector on clicked events (Firefox for example)
+                        setTimeout(function () {
+                            if (parent.autocomplete.areSuggestionsActive()) {
+                                return;
+                            }
+                            var input = _this.parent.getCurrentInput();
+                            if (input != '' && !_this.handleInputAsValue(input)) {
+                                _this.container.dispatchEvent(new CustomEvent('input-ignored', {
+                                    detail: {
+                                        input: input
+                                    }
+                                }));
+                            }
+                        }, 0);
+                    });
+                }
                 if (this.options.showClearButton) {
                     (_c = parent.container.querySelector('.token-autocomplete-delete-button')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
-                        me.clear(true);
-                        me.clearCurrentInput();
-                        me.updateHasValue();
-                        me.container.dispatchEvent(new CustomEvent('input-cleared'));
+                        _this.clear(true);
+                        _this.clearCurrentInput();
+                        _this.updateHasValue();
+                        _this.container.dispatchEvent(new CustomEvent('input-cleared'));
                     });
                 }
             };
@@ -425,18 +584,21 @@ var TokenAutocomplete = /** @class */ (function () {
              * Adds the current user input as a net token and resets the input area so new text can be entered.
              *
              * @param {string} input - the actual input the user entered
+             * @returns {boolean} - whether the input was handled as a value (true) or discarded (false)
              */
             class_1.prototype.handleInputAsValue = function (input) {
                 if (input != '' && this.parent.options.allowCustomEntries) {
                     this.clearCurrentInput();
                     this.addToken(input, input, null);
-                    return;
+                    return true;
                 }
                 if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.value != '_no_match_') {
                     this.parent.autocomplete.suggestions.firstChild.click();
+                    return true;
                 }
                 else {
                     this.clearCurrentInput();
+                    return false;
                 }
             };
             /**
@@ -448,6 +610,7 @@ var TokenAutocomplete = /** @class */ (function () {
              * @param {boolean} silent - whether an appropriate event should be triggered
              */
             class_1.prototype.addToken = function (tokenValue, tokenText, tokenType, silent) {
+                var _this = this;
                 var _c;
                 if (silent === void 0) { silent = false; }
                 if (tokenValue === null || tokenText === null || tokenValue === '_no_match_') {
@@ -462,9 +625,8 @@ var TokenAutocomplete = /** @class */ (function () {
                     type: tokenType
                 };
                 var element = this.renderer(addedToken);
-                var me = this;
                 (_c = element.querySelector('.token-autocomplete-delete-button')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
-                    me.removeToken(element);
+                    _this.removeToken(element);
                 });
                 this.tokenContainer.insertBefore(element, this.parent.textInput);
                 this.updateHasValue();
@@ -482,12 +644,10 @@ var TokenAutocomplete = /** @class */ (function () {
              * Completely clears the currently present tokens from the field.
              */
             class_1.prototype.clear = function (silent) {
+                var _this = this;
                 if (silent === void 0) { silent = false; }
                 var tokens = this.tokenContainer.querySelectorAll('.token-autocomplete-token');
-                var me = this;
-                tokens.forEach(function (token) {
-                    me.removeToken(token, silent);
-                });
+                tokens.forEach(function (token) { return _this.removeToken(token, silent); });
             };
             /**
              * Removes the last token in the list of currently present token. This is the last added token next to the input field.
@@ -581,6 +741,11 @@ var TokenAutocomplete = /** @class */ (function () {
                 clearButton.classList.add('token-autocomplete-delete-button');
                 this.container.appendChild(clearButton);
             }
+            this.toggleButton = document.createElement('button');
+            this.toggleButton.classList.add('token-autocomplete-toggle-button');
+            this.toggleButton.type = 'button';
+            this.toggleButton.tabIndex = 0;
+            this.container.appendChild(this.toggleButton);
         }
         /**
          * Clears the current user input so new text can be entered.
@@ -594,39 +759,38 @@ var TokenAutocomplete = /** @class */ (function () {
             if (this.options.readonly) {
                 return;
             }
-            var me = this;
-            var tokenText = me.parent.textInput.textContent;
-            var hiddenOption = me.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
+            var tokenText = this.parent.textInput.textContent;
+            var hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
             this.container.classList.remove('token-autocomplete-has-value');
             var previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
             var previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
             var previousType = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.type;
             if (keepPreviousValue) {
-                me.previousValue = previousValue;
-                me.previousText = previousText;
-                me.previousType = previousType;
-                if (hiddenOption == null && me.options.allowCustomEntries) {
-                    me.previousValue = tokenText;
-                    me.previousText = tokenText;
+                this.previousValue = previousValue;
+                this.previousText = previousText;
+                this.previousType = previousType;
+                if (hiddenOption == null && this.options.allowCustomEntries) {
+                    this.previousValue = tokenText;
+                    this.previousText = tokenText;
                 }
-                if (me.previousText && me.previousText !== '') {
-                    me.parent.textInput.dataset.placeholder = me.previousText;
+                if (this.previousText && this.previousText !== '') {
+                    this.parent.textInput.dataset.placeholder = this.previousText;
                 }
             }
             else {
                 // We should reset these fields, so they are not used to restore the previously selected value
                 // when the focusout event is handled after the click event on the suggestion.
-                delete me.previousValue;
-                delete me.previousText;
-                delete me.previousType;
-                if (me.parent.options.placeholderText != null) {
-                    me.parent.textInput.dataset.placeholder = me.parent.options.placeholderText;
+                delete this.previousValue;
+                delete this.previousText;
+                delete this.previousType;
+                if (this.parent.options.placeholderText != null) {
+                    this.parent.textInput.dataset.placeholder = this.parent.options.placeholderText;
                 }
             }
             (_c = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _c === void 0 ? void 0 : _c.removeChild(hiddenOption);
-            me.parent.addHiddenEmptyOption();
-            me.parent.textInput.textContent = '';
-            me.parent.textInput.contentEditable = 'true';
+            this.parent.addHiddenEmptyOption();
+            this.parent.textInput.textContent = '';
+            this.parent.textInput.contentEditable = 'true';
             if (!silent) {
                 this.container.dispatchEvent(new CustomEvent('tokens-changed', {
                     detail: {
@@ -644,6 +808,7 @@ var TokenAutocomplete = /** @class */ (function () {
          * Adds the current user input as a net token and resets the input area so new text can be entered.
          *
          * @param {string} input - the actual input the user entered
+         * @returns {boolean} - whether the input was handled as a value (true) or discarded (false)
          */
         class_2.prototype.handleInputAsValue = function (input) {
             if (input != '' && this.parent.options.allowCustomEntries) {
@@ -651,13 +816,14 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.addToken(input, input, null, false);
                 this.parent.autocomplete.clearSuggestions();
                 this.parent.autocomplete.hideSuggestions();
-                return;
+                return true;
             }
             if (this.parent.autocomplete.suggestions.childNodes.length === 1 && this.parent.autocomplete.suggestions.childNodes[0].dataset.value != '_no_match_') {
                 this.parent.autocomplete.suggestions.firstChild.click();
-                return;
+                return true;
             }
             this.clear(true, false);
+            return false;
         };
         class_2.prototype.clearCurrentInput = function () {
             this.clear(true);
@@ -701,8 +867,8 @@ var TokenAutocomplete = /** @class */ (function () {
             }
         };
         class_2.prototype.initEventListeners = function () {
+            var _this = this;
             var _c;
-            var me = this;
             var parent = this.parent;
             if (parent.options.readonly) {
                 return;
@@ -712,7 +878,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 var inputString = event.data;
                 if (inputString.charAt(inputString.length - 1) === "\n") {
                     event.preventDefault();
-                    me.handleInput(parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted'));
+                    _this.handleInput(parent.autocomplete.suggestions.querySelector('.token-autocomplete-suggestion-highlighted'));
                 }
             });
             parent.textInput.addEventListener('keydown', function (event) {
@@ -722,21 +888,13 @@ var TokenAutocomplete = /** @class */ (function () {
                     if (parent.options.enableTabulator && highlightedSuggestion == null && event.key == parent.KEY_TAB && parent.autocomplete.areSuggestionsDisplayed()) {
                         highlightedSuggestion = parent.autocomplete.suggestions.firstChild;
                     }
-                    me.handleInput(highlightedSuggestion);
+                    _this.handleInput(highlightedSuggestion);
                 }
                 if ((event.key == parent.KEY_DOWN || event.key == parent.KEY_UP) && parent.autocomplete.suggestions.childNodes.length > 0) {
                     event.preventDefault();
                 }
             });
-            if (parent.options.allowCustomEntries) {
-                parent.textInput.addEventListener('keyup', function (event) {
-                    if (event.key != parent.KEY_ENTER && event.key != parent.KEY_TAB && event.key != parent.KEY_DOWN && event.key != parent.KEY_UP) {
-                        event.preventDefault();
-                        parent.addHiddenOption(parent.getCurrentInput(), parent.getCurrentInput(), null, true);
-                    }
-                });
-            }
-            function focusInput() {
+            var focusInput = function () {
                 if (!parent.autocomplete.areSuggestionsDisplayed() && parent.options.showSuggestionsOnFocus) {
                     parent.autocomplete.showSuggestions();
                     parent.autocomplete.loadSuggestions();
@@ -749,11 +907,13 @@ var TokenAutocomplete = /** @class */ (function () {
                 range.collapse(false);
                 selection === null || selection === void 0 ? void 0 : selection.addRange(range);
                 parent.textInput.focus();
-            }
-            parent.textInput.addEventListener('click', function () {
-                focusInput();
-            });
-            parent.textInput.addEventListener('focusout', function () {
+            };
+            parent.textInput.addEventListener('click', function () { return focusInput(); });
+            parent.textInput.addEventListener('focusout', function (event) {
+                if (event.relatedTarget === _this.toggleButton && parent.autocomplete.areSuggestionsDisplayed()) {
+                    // If the focus is moved to the toggle button, we mark it so the click handler does not set focus again.
+                    _this.toggleButton.dataset.inputWasFocused = 'true';
+                }
                 // Using setTimeout here seems hacky on first sight but ensures proper order of events / handling.
                 // We first want to handle a click on a suggestion (when one is made) before hiding the suggestions on focusout of the input.
                 // Not doing so could mean the suggestion is hidden before the click is handled und thus resulting in not being selected.
@@ -762,21 +922,38 @@ var TokenAutocomplete = /** @class */ (function () {
                     if (parent.autocomplete.areSuggestionsActive()) {
                         return;
                     }
-                    var input = me.parent.getCurrentInput();
-                    if (me.parent.val().length !== 0 && me.parent.val()[0] !== '') {
+                    var input = _this.parent.getCurrentInput();
+                    if (_this.parent.val().length !== 0 && _this.parent.val()[0] !== '') {
                         return;
                     }
                     if (input != '') {
-                        me.handleInputAsValue(input);
+                        if (!_this.handleInputAsValue(input)) {
+                            _this.container.dispatchEvent(new CustomEvent('input-ignored', {
+                                detail: {
+                                    input: input
+                                }
+                            }));
+                        }
                         return;
                     }
-                    if (me.previousValue) {
-                        me.addToken(me.previousValue, me.previousText, me.previousType, true);
+                    if (_this.previousValue) {
+                        _this.addToken(_this.previousValue, _this.previousText, _this.previousType, true);
                     }
                 }, 0);
             });
             (_c = parent.container.querySelector('.token-autocomplete-delete-button')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
-                me.clear(false, false);
+                _this.clear(false, false);
+            });
+            this.toggleButton.addEventListener('click', function () {
+                if (_this.toggleButton.dataset.inputWasFocused === 'true') {
+                    // The focus was moved to the toggle button, so we do not want to focus the input again.
+                    delete _this.toggleButton.dataset.inputWasFocused;
+                    _this.toggleButton.blur();
+                }
+                else {
+                    // If the input is not focused, we want to focus it and show the suggestions.
+                    focusInput();
+                }
             });
         };
         class_2.prototype.handleInput = function (highlightedSuggestion) {
@@ -801,6 +978,7 @@ var TokenAutocomplete = /** @class */ (function () {
          * area and instead send an event so the user search request can be handled / executed.
          *
          * @param {string} input - the actual input the user entered
+         * @returns {boolean} - whether the input was handled as a value (true) or discarded (false)
          */
         class_3.prototype.handleInputAsValue = function (input) {
             this.container.dispatchEvent(new CustomEvent('query-changed', {
@@ -808,11 +986,17 @@ var TokenAutocomplete = /** @class */ (function () {
                     query: input
                 }
             }));
+            return true;
         };
         return class_3;
     }(TokenAutocomplete.MultiSelect));
     TokenAutocomplete.Autocomplete = (_b = /** @class */ (function () {
             function class_4(parent) {
+                var _this = this;
+                this.scrollParent = null;
+                this.hideHandler = function () {
+                    _this.hideSuggestions();
+                };
                 this.parent = parent;
                 this.container = parent.container;
                 this.options = parent.options;
@@ -823,138 +1007,157 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.container.appendChild(this.suggestions);
             }
             class_4.prototype.initEventListeners = function () {
-                var me = this;
-                if (me.parent.options.readonly) {
+                var _this = this;
+                if (this.parent.options.readonly) {
                     return;
                 }
-                me.parent.textInput.addEventListener('keyup', function (event) {
-                    if (event.key == me.parent.KEY_ESC) {
-                        me.hideSuggestions();
-                        me.parent.textInput.blur();
+                this.parent.textInput.addEventListener('keyup', function (event) {
+                    if (event.key == _this.parent.KEY_ESC) {
+                        _this.hideSuggestions();
+                        _this.parent.textInput.blur();
                         return;
                     }
-                    if (event.key == me.parent.KEY_UP && me.suggestions.childNodes.length > 0) {
+                    if (event.key == _this.parent.KEY_UP && _this.suggestions.childNodes.length > 0) {
                         event.preventDefault();
-                        var highlightedSuggestion = me.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
+                        var highlightedSuggestion = _this.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
                         if (highlightedSuggestion == null) {
                             // highlight last entry and scroll to bottom
-                            me.highlightSuggestionAtPosition(me.suggestions.childNodes.length - 1);
-                            me.suggestions.scrollTop = me.suggestions.scrollHeight;
+                            var bottomSuggestion = _this.suggestions.lastChild;
+                            while (bottomSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(bottomSuggestion)) {
+                                bottomSuggestion = bottomSuggestion.previousSibling;
+                            }
+                            if (bottomSuggestion != null) {
+                                _this.highlightSuggestion(bottomSuggestion);
+                                _this.suggestions.scrollTop = _this.suggestions.scrollHeight;
+                            }
                             return;
                         }
                         var aboveSuggestion = highlightedSuggestion.previousSibling;
+                        while (aboveSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(aboveSuggestion)) {
+                            aboveSuggestion = aboveSuggestion.previousSibling;
+                        }
                         if (aboveSuggestion != null) {
                             // if the suggestions is above the scroll position, scroll to the suggestion
                             var suggestionTop = aboveSuggestion.offsetTop;
-                            if (me.suggestions.scrollTop > suggestionTop) {
-                                me.suggestions.scrollTop = suggestionTop;
+                            if (_this.suggestions.scrollTop > suggestionTop) {
+                                _this.suggestions.scrollTop = suggestionTop;
                             }
-                            me.highlightSuggestion(aboveSuggestion);
+                            _this.highlightSuggestion(aboveSuggestion);
                         }
                         else {
                             highlightedSuggestion.classList.remove('token-autocomplete-suggestion-highlighted');
                         }
                         return;
                     }
-                    if (event.key == me.parent.KEY_DOWN && me.suggestions.childNodes.length > 0) {
+                    if (event.key == _this.parent.KEY_DOWN && _this.suggestions.childNodes.length > 0) {
                         event.preventDefault();
-                        var highlightedSuggestion = me.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
+                        var highlightedSuggestion = _this.suggestions.querySelector('.token-autocomplete-suggestion-highlighted');
                         if (highlightedSuggestion == null) {
                             // highlight first entry and scroll to top
-                            me.highlightSuggestionAtPosition(0);
-                            me.suggestions.scrollTop = 0;
+                            var topSuggestion = _this.suggestions.firstChild;
+                            while (topSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(topSuggestion)) {
+                                topSuggestion = topSuggestion.nextSibling;
+                            }
+                            if (topSuggestion != null) {
+                                _this.highlightSuggestion(topSuggestion);
+                                _this.suggestions.scrollTop = 0;
+                            }
                             return;
                         }
                         var belowSuggestion = highlightedSuggestion === null || highlightedSuggestion === void 0 ? void 0 : highlightedSuggestion.nextSibling;
+                        while (belowSuggestion != null && TokenAutocomplete.shouldIgnoreSuggestion(belowSuggestion)) {
+                            belowSuggestion = belowSuggestion.nextSibling;
+                        }
                         if (belowSuggestion != null) {
                             // if the suggestions is not completely visible, scroll until the suggestion is at the bottom
                             var suggestionBottom = belowSuggestion.offsetTop + belowSuggestion.offsetHeight;
-                            if (me.suggestions.scrollTop + me.suggestions.clientHeight < suggestionBottom) {
-                                me.suggestions.scrollTop = suggestionBottom - me.suggestions.clientHeight;
+                            if (_this.suggestions.scrollTop + _this.suggestions.clientHeight < suggestionBottom) {
+                                _this.suggestions.scrollTop = suggestionBottom - _this.suggestions.clientHeight;
                             }
-                            me.highlightSuggestion(belowSuggestion);
+                            _this.highlightSuggestion(belowSuggestion);
                         }
                         else {
                             highlightedSuggestion.classList.remove('token-autocomplete-suggestion-highlighted');
                         }
                         return;
                     }
-                    if (event.key == me.parent.KEY_LEFT || event.key == me.parent.KEY_RIGHT || event.key == me.parent.KEY_ENTER || event.key == me.parent.KEY_TAB) {
+                    if (event.key == _this.parent.KEY_LEFT || event.key == _this.parent.KEY_RIGHT || event.key == _this.parent.KEY_ENTER || event.key == _this.parent.KEY_TAB) {
                         // We don't want to re-trigger the autocompletion when the user navigates the cursor inside the input.
                         return;
                     }
-                    me.loadSuggestions();
+                    _this.loadSuggestions();
                 });
-                me.parent.textInput.addEventListener('focusout', function () {
+                this.parent.textInput.addEventListener('focusout', function () {
                     // Using setTimeout here seems hacky on first sight but ensures proper order of events / handling.
                     // We first want to handle a click on a suggestion (when one is made) before hiding the suggestions on focusout of the input.
                     // Not doing so could mean the suggestion is hidden before the click is handled und thus resulting in not being selected.
                     // This depends on the order in which a browser handles different events and when it sets the active pseudo-selector on clicked events (Firefox for example)
                     setTimeout(function () {
-                        if (me.areSuggestionsActive()) {
+                        if (_this.areSuggestionsActive()) {
                             return;
                         }
-                        me.hideSuggestions();
+                        _this.hideSuggestions();
                     }, 0);
                 });
-                me.parent.textInput.addEventListener('focusin', function () {
-                    if (me.options.showSuggestionsOnFocus) {
-                        me.loadSuggestions();
-                        me.showSuggestions();
+                this.parent.textInput.addEventListener('focusin', function () {
+                    if (_this.options.showSuggestionsOnFocus) {
+                        _this.loadSuggestions();
+                        _this.showSuggestions();
                     }
                 });
             };
             class_4.prototype.loadSuggestions = function () {
-                var me = this;
-                var value = me.parent.getCurrentInput();
-                if (me.parent.options.selectMode == SelectModes.SINGLE) {
-                    if (!me.parent.textInput.isContentEditable) {
-                        me.parent.select.clear(true);
+                var _this = this;
+                var value = this.parent.getCurrentInput();
+                if (this.parent.options.selectMode == SelectModes.SINGLE) {
+                    if (!this.parent.textInput.isContentEditable) {
+                        this.parent.select.clear(true);
                         value = "";
                     }
                 }
-                else if (value.length < me.parent.options.minCharactersForSuggestion) {
-                    me.clearSuggestions();
-                    me.hideSuggestions();
+                else if (value.length < this.parent.options.minCharactersForSuggestion) {
+                    this.clearSuggestions();
+                    this.hideSuggestions();
                     return;
                 }
-                if (me.parent.options.suggestionsUri.length > 0) {
-                    me.requestSuggestions(value);
+                if (this.parent.options.suggestionsUri.length > 0) {
+                    this.requestSuggestions(value);
                     return;
                 }
-                if (Array.isArray(me.parent.options.initialSuggestions)) {
-                    me.clearSuggestions();
-                    me.parent.options.initialSuggestions.forEach(function (suggestion) {
+                if (Array.isArray(this.parent.options.initialSuggestions)) {
+                    this.clearSuggestions();
+                    this.parent.options.initialSuggestions.forEach(function (suggestion) {
                         if (typeof suggestion !== 'object') {
                             // The suggestion is of wrong type and therefore ignored.
                             return;
                         }
                         var text = suggestion.fieldLabel;
-                        if (value.length == 0 && me.options.selectMode == SelectModes.SINGLE && !me.options.optional && !me.areSuggestionsDisplayed()) {
-                            me.addSuggestion(suggestion, false);
+                        if (value.length == 0 && _this.options.selectMode == SelectModes.SINGLE && !_this.options.optional && !_this.areSuggestionsDisplayed()) {
+                            _this.addSuggestion(suggestion, false);
                         }
                         else if (value.localeCompare(text.slice(0, value.length), undefined, { sensitivity: 'base' }) === 0) {
                             // The suggestion starts with the query text the user entered and will be displayed.
-                            me.addSuggestion(suggestion);
+                            _this.addSuggestion(suggestion);
                         }
                     });
-                    if (me.suggestions.childNodes.length == 0) {
-                        if (me.parent.options.allowCustomEntries && me.parent.options.noMatchesCustomEntriesDescription) {
-                            me.addSuggestion({
+                    if (value.length >= this.parent.options.minCharactersForSuggestion) {
+                        var hasExactMatch = this.suggestions.querySelector("li[data-value='".concat(value, "']:not([data-type='_no_match_']),li[data-text='").concat(value, "']:not([data-type='_no_match_'])"));
+                        if (!hasExactMatch && this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
+                            this.addSuggestion({
                                 id: null,
                                 value: value,
                                 fieldLabel: value,
                                 type: '_no_match_',
-                                completionDescription: me.parent.options.noMatchesCustomEntriesDescription,
+                                completionDescription: this.parent.options.noMatchesCustomEntriesDescription,
                                 completionLabel: null,
-                                disabled: true
+                                disabled: false
                             });
                         }
-                        else if (me.parent.options.noMatchesText) {
-                            me.addSuggestion({
+                        else if (this.suggestions.childNodes.length == 0 && this.parent.options.noMatchesText) {
+                            this.addSuggestion({
                                 id: null,
                                 value: '_no_match_',
-                                fieldLabel: me.parent.options.noMatchesText,
+                                fieldLabel: this.parent.options.noMatchesText,
                                 type: '_no_match_',
                                 completionDescription: null,
                                 completionLabel: null,
@@ -968,6 +1171,7 @@ var TokenAutocomplete = /** @class */ (function () {
              * Hides the suggestions dropdown from the user.
              */
             class_4.prototype.hideSuggestions = function () {
+                var _c;
                 // as the suggestions will be re-shown if a pending request is executed, we abort them if we want to hide
                 this.abortPendingRequest();
                 this.container.classList.remove('token-autocomplete-suggestions-displayed');
@@ -976,23 +1180,53 @@ var TokenAutocomplete = /** @class */ (function () {
                 _highlightedSuggestions.forEach(function (_suggestion) {
                     _suggestion.classList.remove('token-autocomplete-suggestion-highlighted');
                 });
+                window.removeEventListener('resize', this.hideHandler);
+                (_c = this.scrollParent) === null || _c === void 0 ? void 0 : _c.removeEventListener('scroll', this.hideHandler);
             };
             /**
              * Shows the suggestions dropdown to the user.
              */
             class_4.prototype.showSuggestions = function () {
+                var _c;
                 this.container.classList.add('token-autocomplete-suggestions-displayed');
                 this.suggestions.style.display = 'block';
-                var inputBottomPosition = this.parent.textInput.getBoundingClientRect().bottom;
+                this.updateSuggestionsPosition();
+                window.addEventListener('resize', this.hideHandler);
+                this.scrollParent = this.findScrollParent(this.container);
+                (_c = this.scrollParent) === null || _c === void 0 ? void 0 : _c.addEventListener('scroll', this.hideHandler);
+            };
+            class_4.prototype.updateSuggestionsPosition = function () {
+                if (!this.areSuggestionsDisplayed()) {
+                    return;
+                }
+                var containerBox = this.container.getBoundingClientRect();
                 var suggestionsHeight = this.suggestions.offsetHeight;
                 var viewportHeight = window.innerHeight;
-                var spaceBelow = viewportHeight - inputBottomPosition;
+                var spaceBelow = viewportHeight - containerBox.bottom;
+                this.suggestions.style.left = "".concat(containerBox.left, "px");
+                this.suggestions.style.width = "".concat(containerBox.width, "px");
                 if (spaceBelow < suggestionsHeight) {
-                    this.suggestions.classList.add('token-autocomplete-suggestions-above');
+                    this.suggestions.style.bottom = "".concat(viewportHeight - containerBox.top, "px");
+                    this.suggestions.style.top = 'initial';
                 }
                 else {
-                    this.suggestions.classList.remove('token-autocomplete-suggestions-above');
+                    this.suggestions.style.top = "".concat(containerBox.bottom, "px");
+                    this.suggestions.style.bottom = 'initial';
                 }
+            };
+            class_4.prototype.findScrollParent = function (_scrollingElement) {
+                if (_scrollingElement == null) {
+                    return window;
+                }
+                if (_scrollingElement === document.documentElement || _scrollingElement === document.body) {
+                    return window;
+                }
+                var overflowY = window.getComputedStyle(_scrollingElement).overflowY;
+                var isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+                if (isScrollable && _scrollingElement.scrollHeight >= _scrollingElement.clientHeight) {
+                    return _scrollingElement;
+                }
+                return this.findScrollParent(_scrollingElement.parentNode);
             };
             class_4.prototype.areSuggestionsDisplayed = function () {
                 return this.suggestions.style.display === 'block';
@@ -1037,19 +1271,19 @@ var TokenAutocomplete = /** @class */ (function () {
              * @param query the query to search suggestions for
              */
             class_4.prototype.requestSuggestions = function (query) {
-                var me = this;
-                clearTimeout(me.timeout);
-                if (!me.timeout) {
-                    me.debouncedRequestSuggestions.call(me, query);
-                    me.timeout = window.setTimeout(function () {
-                        delete me.timeout;
-                    }, me.parent.options.requestDelay);
+                var _this = this;
+                clearTimeout(this.timeout);
+                if (!this.timeout) {
+                    this.debouncedRequestSuggestions.call(this, query);
+                    this.timeout = window.setTimeout(function () {
+                        delete _this.timeout;
+                    }, this.parent.options.requestDelay);
                 }
                 else {
-                    me.timeout = window.setTimeout(function () {
-                        delete me.timeout;
-                        me.debouncedRequestSuggestions.call(me, query);
-                    }, me.parent.options.requestDelay);
+                    this.timeout = window.setTimeout(function () {
+                        delete _this.timeout;
+                        _this.debouncedRequestSuggestions.call(_this, query);
+                    }, this.parent.options.requestDelay);
                 }
             };
             class_4.prototype.dispatchSuggestionSelectedEvent = function (_suggestion) {
@@ -1062,49 +1296,51 @@ var TokenAutocomplete = /** @class */ (function () {
                 }));
             };
             class_4.prototype.debouncedRequestSuggestions = function (query) {
-                var me = this;
-                if (me.request != null && me.request.readyState) {
-                    me.request.abort();
+                var _this = this;
+                if (this.request != null && this.request.readyState) {
+                    this.request.abort();
                 }
-                me.request = new XMLHttpRequest();
-                me.request.onload = function () {
-                    me.request = null;
-                    me.clearSuggestions();
-                    var answer = this.response;
+                var request = new XMLHttpRequest();
+                this.request = request;
+                this.request.onload = function () {
+                    _this.request = null;
+                    _this.clearSuggestions();
+                    var answer = request.response;
+                    if (answer == null) {
+                        return;
+                    }
                     // IE 11 doesn't properly respect content type header, need to parse json string by hand.
                     if (typeof answer === 'string') {
                         answer = JSON.parse(answer);
                     }
                     if (Array.isArray(answer.completions)) {
-                        if (me.parent.val().length == 0 && answer.completions.length > 0 && me.options.selectMode == SelectModes.SINGLE && !me.options.optional && !me.areSuggestionsDisplayed()) {
-                            answer.completions.forEach(function (suggestion) {
-                                me.addSuggestion(suggestion, false);
-                            });
+                        if (_this.parent.val().length == 0 && answer.completions.length > 0 && _this.options.selectMode == SelectModes.SINGLE && !_this.options.optional && !_this.areSuggestionsDisplayed()) {
+                            answer.completions.forEach(function (suggestion) { return _this.addSuggestion(suggestion, false); });
                             var firstSuggestion = answer.completions[0];
-                            var value = firstSuggestion.id || firstSuggestion.value;
-                            me.parent.select.addToken(value, firstSuggestion.fieldLabel, firstSuggestion.type, true);
+                            var value_1 = firstSuggestion.id || firstSuggestion.value;
+                            _this.parent.select.addToken(value_1, firstSuggestion.fieldLabel, firstSuggestion.type, true);
                             return;
                         }
-                        answer.completions.forEach(function (suggestion) {
-                            me.addSuggestion(suggestion);
-                        });
-                        if (me.suggestions.childNodes.length == 0) {
-                            if (me.parent.options.allowCustomEntries && me.parent.options.noMatchesCustomEntriesDescription) {
-                                me.addSuggestion({
+                        answer.completions.forEach(function (suggestion) { return _this.addSuggestion(suggestion); });
+                        var value = _this.parent.getCurrentInput();
+                        if (value.length >= _this.parent.options.minCharactersForSuggestion) {
+                            var hasExactMatch = _this.suggestions.querySelector("li[data-value='".concat(value, "']:not([data-type='_no_match_']),li[data-text='").concat(value, "']:not([data-type='_no_match_'])"));
+                            if (!hasExactMatch && _this.parent.options.allowCustomEntries && _this.parent.options.noMatchesCustomEntriesDescription) {
+                                _this.addSuggestion({
                                     id: null,
                                     value: query,
                                     fieldLabel: query,
                                     type: '_no_match_',
-                                    completionDescription: me.parent.options.noMatchesCustomEntriesDescription,
+                                    completionDescription: _this.parent.options.noMatchesCustomEntriesDescription,
                                     completionLabel: null,
-                                    disabled: true
+                                    disabled: false
                                 });
                             }
-                            else if (me.parent.options.noMatchesText) {
-                                me.addSuggestion({
+                            else if (_this.suggestions.childNodes.length == 0 && _this.parent.options.noMatchesText) {
+                                _this.addSuggestion({
                                     id: null,
                                     value: '_no_match_',
-                                    fieldLabel: me.parent.options.noMatchesText,
+                                    fieldLabel: _this.parent.options.noMatchesText,
                                     type: '_no_match_',
                                     completionDescription: null,
                                     completionLabel: null,
@@ -1114,11 +1350,11 @@ var TokenAutocomplete = /** @class */ (function () {
                         }
                     }
                 };
-                var suggestionsUri = me.options.suggestionsUriBuilder(query);
-                me.request.open('GET', suggestionsUri, true);
-                me.request.responseType = 'json';
-                me.request.setRequestHeader('Content-type', 'application/json');
-                me.request.send();
+                var suggestionsUri = this.options.suggestionsUriBuilder(query);
+                this.request.open('GET', suggestionsUri, true);
+                this.request.responseType = 'json';
+                this.request.setRequestHeader('Content-type', 'application/json');
+                this.request.send();
             };
             /**
              * Adds a suggestion with the given text matching the users input to the dropdown.
@@ -1127,6 +1363,7 @@ var TokenAutocomplete = /** @class */ (function () {
              * @param showSuggestions - if the suggestions box should be shown, default true
              */
             class_4.prototype.addSuggestion = function (suggestion, showSuggestions) {
+                var _this = this;
                 if (showSuggestions === void 0) { showSuggestions = true; }
                 var element = this.renderer(suggestion);
                 var value = suggestion.id || suggestion.value;
@@ -1137,37 +1374,39 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (suggestion.type != null) {
                     element.dataset.type = suggestion.type;
                 }
-                var me = this;
+                if (suggestion.disabled) {
+                    element.dataset.disabled = 'true';
+                }
                 element.addEventListener('click', function (_event) {
                     if (value == '_no_match_' || suggestion.disabled) {
                         return;
                     }
-                    if (me.parent.options.selectMode == SelectModes.SINGLE) {
+                    if (_this.parent.options.selectMode == SelectModes.SINGLE) {
                         if (element.classList.contains('token-autocomplete-suggestion-active')) {
-                            me.parent.select.clear(false);
+                            _this.parent.select.clear(false);
                         }
                         else {
                             if (element.dataset.becomesToken !== 'false') {
-                                me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
+                                _this.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
                             }
-                            me.dispatchSuggestionSelectedEvent(element);
+                            _this.dispatchSuggestionSelectedEvent(element);
                         }
                     }
                     else {
-                        me.parent.select.clearCurrentInput();
+                        _this.parent.select.clearCurrentInput();
                         if (element.classList.contains('token-autocomplete-suggestion-active')) {
-                            var multiSelect = me.parent.select;
+                            var multiSelect = _this.parent.select;
                             multiSelect.removeTokenWithText(suggestion.fieldLabel);
                         }
                         else {
                             if (element.dataset.becomesToken !== 'false') {
-                                me.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
+                                _this.parent.select.addToken(value, suggestion.fieldLabel, suggestion.type, false);
                             }
-                            me.dispatchSuggestionSelectedEvent(element);
+                            _this.dispatchSuggestionSelectedEvent(element);
                         }
                     }
-                    me.clearSuggestions();
-                    me.hideSuggestions();
+                    _this.clearSuggestions();
+                    _this.hideSuggestions();
                 });
                 if (suggestion.disabled) {
                     element.classList.add('token-autocomplete-suggestion-disabled');
@@ -1179,7 +1418,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (showSuggestions) {
                     this.showSuggestions();
                 }
-                me.parent.log('added suggestion', suggestion);
+                this.parent.log('added suggestion', suggestion);
             };
             return class_4;
         }()),

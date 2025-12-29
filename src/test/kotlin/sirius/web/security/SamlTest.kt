@@ -13,6 +13,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.health.HandledException
+import sirius.web.security.saml.SamlUserHint
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -25,6 +26,11 @@ class SamlTest {
             response.byteInputStream().use {
                 return saml.parseSAMLResponse(it, checkTime)
             }
+        }
+
+        fun assertHint(expectedFormat: String, expectedValue: String, actual: SamlUserHint) {
+            assertEquals(expectedFormat, actual.format)
+            assertEquals(expectedValue, actual.value)
         }
     }
 
@@ -96,4 +102,28 @@ UtS2kvA28X4ToQg3REfK8K+MroixIpwVfdyHRCP4CsLrz4w+EJw4VlWAzJ45HFHg
         )
     }
 
+    @Test
+    fun `SamlUserHints initialise correctly`() {
+        assertHint(SamlUserHint.FORMAT_UNSPECIFIED, "lalala", SamlUserHint.withUnspecifiedFormat("lalala"))
+        assertHint(SamlUserHint.FORMAT_EMAIL, "lalala@blubb", SamlUserHint.withEmailAddress("lalala@blubb"))
+        assertHint(
+            SamlUserHint.FORMAT_UNSPECIFIED,
+            "lalala",
+            SamlUserHint.withUserExtractedFromEmailAddress("lalala@blubb")
+        )
+        assertHint(
+            SamlUserHint.FORMAT_UNSPECIFIED,
+            "lalala",
+            SamlUserHint.withUserExtractedFromEmailAddress("lalala@blubb", "blubb", "bla")
+        )
+        assertHint(
+            SamlUserHint.FORMAT_UNSPECIFIED,
+            "lalala",
+            SamlUserHint.withUserExtractedFromEmailAddress("lalala@blubb", listOf("blubb", "bla"))
+        )
+        assertHint(
+            SamlUserHint.FORMAT_EMAIL,
+            "lalala@blobb",
+            SamlUserHint.withUserExtractedFromEmailAddress("lalala@blobb", listOf("blubb", "bla")))
+    }
 }

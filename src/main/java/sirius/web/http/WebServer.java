@@ -15,8 +15,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.WriteBufferWaterMark;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpRequest;
@@ -47,7 +48,7 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
-import sirius.kernel.xml.Outcall;
+import sirius.kernel.commons.Outcall;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;
@@ -172,11 +173,6 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      * or lb itself.
      */
     public static final String HEADER_X_FORWARDED_FOR = "X-Forwarded-For";
-
-    /**
-     * Indicates that netty itself will compute the optimal number of threads in the event loop
-     */
-    private static final int AUTOSELECT_EVENT_LOOP_SIZE = 0;
 
     private EventLoopGroup eventLoop;
 
@@ -488,7 +484,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private void configureNetty() {
         setupUploads();
         try (Operation op = new Operation(() -> "WebServer.createEventLoop", Duration.ofSeconds(15))) {
-            eventLoop = createEventLoop(AUTOSELECT_EVENT_LOOP_SIZE, "netty-");
+            eventLoop = createEventLoop("netty-");
         }
     }
 
@@ -514,8 +510,8 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
     }
 
-    private EventLoopGroup createEventLoop(int numThreads, String name) {
-        return new NioEventLoopGroup(numThreads, new PrefixThreadFactory(name));
+    private EventLoopGroup createEventLoop(String name) {
+        return new MultiThreadIoEventLoopGroup(new PrefixThreadFactory(name), NioIoHandler.newFactory());
     }
 
     private ServerBootstrap createServerBootstrap(ChannelInitializer<SocketChannel> initializer) {

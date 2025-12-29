@@ -99,6 +99,7 @@
         }
         _slides.forEach(function (_slide) {
             _slide.classList.add('sci-slider-view');
+            _slide.tabIndex = 0;
         });
 
         // create a wrapper node replacing (and later nesting) the original slider node
@@ -124,11 +125,12 @@
             const _previousArrow = document.createElement('div');
             _previousArrow.classList.add('sci-slider-button');
             _previousArrow.classList.add('sci-slider-previous');
+            _previousArrow.tabIndex = '0';
             const _previousIcon = document.createElement('a');
             _previousIcon.classList.add('sci-slider-previous-icon');
             _previousArrow.appendChild(_previousIcon);
             _top.appendChild(_previousArrow);
-            _previousArrow.addEventListener('click', function (event) {
+            sirius.addClickOrEnterListener(_previousArrow, function (event) {
                 stopAnimationThread();
                 activatePreviousView();
                 startAnimationThread();
@@ -141,11 +143,12 @@
             const _nextArrow = document.createElement('div');
             _nextArrow.classList.add('sci-slider-button');
             _nextArrow.classList.add('sci-slider-next');
+            _nextArrow.tabIndex = 0;
             const _nextIcon = document.createElement('a');
             _nextIcon.classList.add('sci-slider-next-icon');
             _nextArrow.appendChild(_nextIcon);
             _top.appendChild(_nextArrow);
-            _nextArrow.addEventListener('click', function (event) {
+            sirius.addClickOrEnterListener(_nextArrow, function (event) {
                 stopAnimationThread();
                 activateNextView();
                 startAnimationThread();

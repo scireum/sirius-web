@@ -11,17 +11,26 @@ package sirius.web.services;
 import io.netty.handler.codec.http.HttpMethod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
+import sirius.web.controller.Routed;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Provides a description of a service which is part of a {@link PublicApiInfo public API}.
@@ -31,28 +40,57 @@ import java.util.List;
 public class PublicServiceInfo {
 
     private final PublicService info;
+    private final Routed routed;
     private final String uri;
+    private final String formattedUri;
     private final boolean deprecated;
     private final Operation operation;
+    private final HttpMethod httpMethod;
+    private final List<Parameter> pathComponents = new ArrayList<>();
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
+    private final String anchor;
+
+    private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
     protected PublicServiceInfo(PublicService info,
-                                String uri,
+                                Routed routed,
                                 boolean deprecated,
                                 Operation operation,
                                 List<Parameter> serviceParameters,
                                 List<RequestBody> requestBodies,
                                 List<ApiResponse> responses) {
         this.info = info;
-        this.uri = Strings.isFilled(info.path()) ? info.path() : uri;
+        this.routed = routed;
+        this.uri = Strings.isFilled(info.path()) ? info.path() : routed.value();
+        this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
         this.operation = operation;
-        this.serviceParameters.addAll(serviceParameters);
+        this.httpMethod = determineHttpMethod();
+        this.anchor = determineAnchor();
+
+        // split parameters into path components and other parameters
+        serviceParameters.forEach(parameter -> {
+            if (parameter.in() == ParameterIn.PATH) {
+                this.pathComponents.add(parameter);
+            } else {
+                this.serviceParameters.add(parameter);
+            }
+        });
+
+        // sort path parameters according to their order of appearance in the path
+        List<String> pathComponentNames = extractPathParameters(this.uri);
+        this.pathComponents.sort(Comparator.comparingInt(parameter -> {
+            int index = pathComponentNames.indexOf(parameter.name());
+            return index < 0 ? Integer.MAX_VALUE : index;
+        }));
+
+        // sort other parameters by required flag first, then by name
         this.serviceParameters.sort(Comparator.comparing(Parameter::required)
                                               .reversed()
                                               .thenComparing(Parameter::name));
+
         this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
     }
@@ -107,8 +145,40 @@ public class PublicServiceInfo {
         return "grey";
     }
 
+    /**
+     * Determines the effective format used by this service in case the {@linkplain PublicService#format() format} is
+     * set to {@link Format#RAW}. The method inspects the known {@linkplain ApiResponse responses} and the respective
+     * media types to determine a suitable format.
+     *
+     * @return the effective format used by this service
+     */
+    public Format determineEffectiveFormat() {
+        if (info.format() != Format.RAW) {
+            return info.format();
+        }
+
+        Set<Format> detectedFormats = EnumSet.noneOf(Format.class);
+        responses.stream().flatMap(response -> Arrays.stream(response.content())).forEach(content -> {
+            String mediaType = content.mediaType();
+            if (Strings.isFilled(mediaType)) {
+                if (mediaType.startsWith("application/json")) {
+                    detectedFormats.add(Format.JSON);
+                } else if (mediaType.startsWith("application/xml") || mediaType.startsWith("text/xml")) {
+                    detectedFormats.add(Format.XML);
+                }
+            }
+        });
+
+        // if we detected exactly one format, return it, otherwise fallback to RAW
+        return detectedFormats.size() == 1 ? detectedFormats.iterator().next() : Format.RAW;
+    }
+
     protected int getPriority() {
         return info.priority();
+    }
+
+    public List<Parameter> getPathComponents() {
+        return Collections.unmodifiableList(pathComponents);
     }
 
     public List<Parameter> getParameters() {
@@ -144,12 +214,70 @@ public class PublicServiceInfo {
     }
 
     public HttpMethod getHttpMethod() {
-        return operation != null && Strings.isFilled(operation.method()) ?
-               HttpMethod.valueOf(operation.method()) :
-               HttpMethod.GET;
+        return httpMethod;
     }
 
     public String getUri() {
         return uri;
+    }
+
+    public String getFormattedUri() {
+        return formattedUri;
+    }
+
+    public String getAnchor() {
+        return anchor;
+    }
+
+    private static String formatUri(String uri) {
+        return URI_PARAMETER_PATTERN.matcher(uri)
+                                    .replaceAll("<span style=\"color: var(--bs-code-color);\">{$1}</span>");
+    }
+
+    /**
+     * Extracts the path parameters from the given URI, maintaining the order of appearance.
+     *
+     * @param uri the URI to extract path parameters from
+     * @return a list of path parameters in the order they appear in the URI
+     */
+    private static List<String> extractPathParameters(String uri) {
+        List<String> parameters = new ArrayList<>();
+        Matcher matcher = URI_PARAMETER_PATTERN.matcher(uri);
+        while (matcher.find()) {
+            parameters.add(matcher.group(1));
+        }
+        return parameters;
+    }
+
+    private HttpMethod determineHttpMethod() {
+        LinkedHashSet<HttpMethod> supportedHttpMethods = new LinkedHashSet<>(Arrays.stream(routed.methods())
+                                                                                   .map(sirius.web.controller.HttpMethod::toHttpMethod)
+                                                                                   .toList());
+
+        Optional<HttpMethod> documentedHttpMethod = Optional.ofNullable(operation)
+                                                            .map(Operation::method)
+                                                            .filter(Strings::isFilled)
+                                                            .map(HttpMethod::valueOf);
+
+        // there is a documented http method and it is supported by the route
+        if (documentedHttpMethod.isPresent() && supportedHttpMethods.contains(documentedHttpMethod.get())) {
+            return documentedHttpMethod.get();
+        }
+
+        // pick the first supported http method if there is no documented, valid one
+        if (!supportedHttpMethods.isEmpty()) {
+            return supportedHttpMethods.getFirst();
+        }
+
+        // reaching this point means that no http method is supported by the route; we are screwed, so fallback to GET
+        // to at least maintain legacy behavior
+        return HttpMethod.GET;
+    }
+
+    private String determineAnchor() {
+        if (sirius.web.controller.HttpMethod.isCompleteList(routed.methods())) {
+            return this.uri;
+        }
+        return getHttpMethod().name() + "_" + this.uri;
     }
 }

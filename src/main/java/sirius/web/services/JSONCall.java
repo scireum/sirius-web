@@ -8,19 +8,22 @@
 
 package sirius.web.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Json;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
 import sirius.kernel.nls.Formatter;
-import sirius.kernel.xml.Outcall;
 import sirius.web.http.MimeHelper;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.function.BooleanSupplier;
@@ -33,6 +36,7 @@ public class JSONCall {
     private Outcall outcall;
     private Log debugLogger = Log.get("json");
     private BooleanSupplier isDebugLogActive = () -> true;
+    private boolean allowEmptyResponseBody;
 
     /*
      * Use .to(URL) to generate an instance.
@@ -45,9 +49,8 @@ public class JSONCall {
      *
      * @param url the target URL to call
      * @return an <tt>JSONCall</tt> which can be used to send and receive JSON
-     * @throws java.io.IOException in case of an IO error
      */
-    public static JSONCall to(URI url) throws IOException {
+    public static JSONCall to(URI url) {
         return to(url, MimeHelper.APPLICATION_JSON + "; charset=" + StandardCharsets.UTF_8.name());
     }
 
@@ -57,9 +60,8 @@ public class JSONCall {
      * @param url         the target URL to call
      * @param contentType the Content-Type to use
      * @return a new instance to perform the JSON call
-     * @throws IOException in case of an IO error
      */
-    public static JSONCall to(URI url, String contentType) throws IOException {
+    public static JSONCall to(URI url, String contentType) {
         JSONCall result = new JSONCall();
         result.outcall = new Outcall(url);
         result.outcall.setRequestProperty(HttpHeaderNames.CONTENT_TYPE.toString(), contentType);
@@ -84,12 +86,27 @@ public class JSONCall {
      * <p>
      * The outcall is only logged when the logger is set to FINE. The default logger is "json".
      *
-     * @param logger the logger to log to
+     * @param logger           the logger to log to
+     * @param isDebugLogActive a supplier which returns true if the log should be written
      * @return returns the JSON call itself for fluent method calls
      */
-    public JSONCall withFineLogger(Log logger, @Nonnull BooleanSupplier isDebugLogActive) {
+    public JSONCall withFineLogger(Log logger, BooleanSupplier isDebugLogActive) {
         this.debugLogger = logger;
         this.isDebugLogActive = isDebugLogActive;
+        return this;
+    }
+
+    /**
+     * Sets whether an empty response body is allowed.
+     * <p>
+     * If set to <tt>true</tt>, invoking {@link #getInput()} or {@link #getInputArray()} will return an empty JSON
+     * object or array respectively if the response body is empty.
+     *
+     * @param allowEmptyResponseBody whether an empty response body is allowed
+     * @return the JSON call itself for fluent method calls
+     */
+    public JSONCall withAllowEmptyResponseBody(boolean allowEmptyResponseBody) {
+        this.allowEmptyResponseBody = allowEmptyResponseBody;
         return this;
     }
 
@@ -110,7 +127,7 @@ public class JSONCall {
      * <p>
      * This will mark the underlying {@link Outcall} as a POST request.
      *
-     * @return the input which can be used to generate a JSON document which is sent to the URL
+     * @return the input, which can be used to generate a JSON document which is sent to the URL
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
@@ -122,54 +139,93 @@ public class JSONCall {
             debugLogger.FINE(Formatter.create("""
                                                       ---------- call ----------
                                                       ${httpMethod} ${url} [
-                                                                                   
+                                                      
                                                       ${callBody}]
                                                       ---------- response ----------
-                                                      HTTP-Response-Code: ${responseCode}
-                                                                                   
-                                                      ${response}
+                                                      HTTP-Response-Code: ${responseCode} [
+                                                      
+                                                      ${response}]
                                                       ---------- end ----------
                                                       """)
                                       .set("httpMethod", outcall.getRequest().method())
                                       .set("url", outcall.getRequest().uri())
-                                      .set("callBody",
-                                           outcall.getRequest().bodyPublisher().isPresent() ? getOutput() : null)
+                                      .set("callBody", resolveRequestBodyPretty())
                                       .set("responseCode", getOutcall().getResponseCode())
-                                      .set("response", response)
+                                      .set("response", resolveResponseBodyPretty(response))
                                       .smartFormat());
         }
     }
 
-    /**
-     * Provides access to the JSON answer of the call.
-     *
-     * @return the JSON result of the call
-     * @throws IOException in case of an IO error while receiving the result
-     */
-    public ObjectNode getInput() throws IOException {
-        String body =
-                Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
-        logRequest(body);
-
-        String contentType = outcall.getHeaderField("content-type");
-        if (!outcall.isErroneous() || (contentType != null && contentType.toLowerCase()
-                                                                         .contains(MimeHelper.APPLICATION_JSON))) {
-            return Json.parseObject(body);
+    private String resolveRequestBodyPretty() throws IOException {
+        if (outcall.getRequest().bodyPublisher().isEmpty()) {
+            return null;
         }
-        throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
-                                            outcall.getResponse().statusCode()));
+
+        try (OutputStream outputStream = outcall.postFromOutput()) {
+            String request = outputStream.toString();
+            return Strings.isFilled(request) ? Json.writePretty(Json.MAPPER.readTree(request)) : null;
+        }
+    }
+
+    private String resolveResponseBodyPretty(String response) {
+        if (Strings.isEmpty(response)) {
+            return null;
+        }
+
+        try {
+            return Json.writePretty(Json.MAPPER.readTree(response));
+        } catch (JsonProcessingException exception) {
+            Exceptions.ignore(exception);
+            return response;
+        }
     }
 
     /**
-     * Returns the response of the call as plain text.
+     * Executes the call and returns the input expecting a JSON object as a result.
      *
-     * @return the response of the call as String
-     * @throws IOException in case of an IO error while receiving the result
-     * @deprecated use {@link #getInput()}}
+     * @return the result of the call as a JSON object
+     * @throws IOException in case of an IO error during the call
      */
-    @Deprecated
-    public String getPlainInput() throws IOException {
-        return outcall.getData();
+    public ObjectNode getInput() throws IOException {
+        String response = executeCall();
+        return allowEmptyResponseBody && Strings.isEmpty(response) ? Json.createObject() : Json.parseObject(response);
+    }
+
+    /**
+     * Executes the call and returns the input expecting a JSON array as a result.
+     *
+     * @return the result of the call as a JSON array
+     * @throws IOException in case of an IO error during the call
+     */
+    public ArrayNode getInputArray() throws IOException {
+        String response = executeCall();
+        return allowEmptyResponseBody && Strings.isEmpty(response) ? Json.createArray() : Json.parseArray(response);
+    }
+
+    /**
+     * Executes the call and returns the input as a plain text string.
+     * <p>
+     * An {@link IOException} is thrown in case of an issue with the connection or if the response isn't JSON. Note
+     * that non-OK responses (e.g. HTTP status 404) are accepted as long as the content type is JSON to support APIs
+     * that return proper error messages in JSON format.
+     *
+     * @return the result of the call as a plain text string
+     * @throws IOException in case of an IO error during the call
+     */
+    private String executeCall() throws IOException {
+        String body =
+                Streams.readToString(new InputStreamReader(outcall.getResponse().body(), outcall.getContentEncoding()));
+
+        logRequest(body);
+
+        String contentType = outcall.getHeaderField("content-type");
+        if (outcall.isErroneous() && (contentType == null || !contentType.toLowerCase()
+                                                                         .contains(MimeHelper.APPLICATION_JSON))) {
+            throw new IOException(Strings.apply("A non-OK response (%s) was received as a result of an HTTP call",
+                                                outcall.getResponse().statusCode()));
+        }
+
+        return body;
     }
 
     /**

@@ -56,6 +56,11 @@ public interface Controller {
     ExceptionHint HTTP_STATUS = new ExceptionHint("httpStatus");
 
     /**
+     * Used to specify the desired value for the {@code Allow} HTTP header when handling the exception.
+     */
+    ExceptionHint HTTP_HEADER_ALLOW = new ExceptionHint("httpHeaderAllow");
+
+    /**
      * Specifies an explicit error code to output when handling the exception.
      */
     ExceptionHint ERROR_CODE = new ExceptionHint("errorCode");
@@ -68,6 +73,18 @@ public interface Controller {
      * @see BasicController#raiseMissingPermissionError(String)
      */
     ExceptionHint MISSING_PERMISSION = new ExceptionHint("missingPermission");
+
+    /**
+     * Handles the given error and returns a {@link HandledException} which can be output to the user.
+     * <p>
+     * Depending on the type of request, {@link #onError} or {@link #onApiError} will be invoked with the returned
+     * {@link HandledException}.
+     *
+     * @param webContext the context containing the request
+     * @param cause      the error which occurred
+     * @return a {@link HandledException} which can be output to the user
+     */
+    HandledException handleError(WebContext webContext, Throwable cause);
 
     /**
      * In case processing a request via a method fails (throws an exception), this method will be called.

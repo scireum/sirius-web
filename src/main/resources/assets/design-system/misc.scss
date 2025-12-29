@@ -45,11 +45,11 @@
 }
 
 .sci-overflow-y-auto {
-    overflow-y: auto;
+  overflow-y: auto;
 }
 
 .sci-overflow-x-auto {
-    overflow-x: auto;
+  overflow-x: auto;
 }
 
 .sci-cursor-pointer {
@@ -148,9 +148,17 @@
   box-shadow: 0 1px 1px 0 rgba(66, 66, 66, 0.08), 0 1px 3px 1px rgba(66, 66, 66, 0.16);
 }
 
+.sci-shadow-elevated {
+  box-shadow: 0 1px 1px 0 rgba(66, 66, 66, 0.08), 0 3px 5px 5px rgba(66, 66, 66, 0.16);
+}
+
 @media (hover: hover) {
   .sci-shadow.sci-cursor-pointer:hover {
     box-shadow: 0 1px 3px 1px rgba(66, 66, 66, 0.2), 0 2px 8px 4px rgba(66, 66, 66, 0.1);
+    transition: box-shadow .25s linear;
+  }
+  .sci-shadow-elevated.sci-cursor-pointer:hover {
+    box-shadow: 0 1px 3px 1px rgba(66, 66, 66, 0.2), 0 4px 12px 6px rgba(66, 66, 66, 0.1);
     transition: box-shadow .25s linear;
   }
 }
@@ -385,6 +393,11 @@
 
 .sci-preloader-small {
   --preloader-size: calc(2 * var(--sci-base-unit)); /* Smaller size */
+  /* No need to redefine --preloader-border-width; it adjusts automatically */
+}
+
+.sci-preloader-smaller {
+  --preloader-size: calc(1.5 * var(--sci-base-unit)); /* Smaller size */
   /* No need to redefine --preloader-border-width; it adjusts automatically */
 }
 

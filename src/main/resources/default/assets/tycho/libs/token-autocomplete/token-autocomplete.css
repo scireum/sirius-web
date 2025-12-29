@@ -6,6 +6,10 @@
     background-color: #FFFFFF;
 }
 
+.token-autocomplete-container:focus-within {
+    border-color: #668DC6;
+}
+
 .token-autocomplete-container.token-autocomplete-readonly {
     border-color: #747474;
     background-color: #E9ECEF;
@@ -73,24 +77,25 @@
     cursor: text;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-input:after {
+.token-autocomplete-container.token-autocomplete-singleselect .token-autocomplete-toggle-button {
+    cursor: pointer;
     position: absolute;
-    content: "";
-    top: 14px;
-    right: 6px;
-    width: 0;
-    height: 0;
+    top: 12px;
+    right: 2px;
     border: 6px solid;
     border-color: #000 transparent transparent transparent;
+    background: none;
+    margin: 6px;
+    padding: 0;
 }
 
-.token-autocomplete-container.token-autocomplete-readonly.token-autocomplete-singleselect .token-autocomplete-input:after {
+.token-autocomplete-container.token-autocomplete-readonly.token-autocomplete-singleselect .token-autocomplete-toggle-button {
     border-color: #cccccc transparent transparent transparent;
 }
 
-.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-suggestions-displayed .token-autocomplete-input:after {
+.token-autocomplete-container.token-autocomplete-singleselect.token-autocomplete-suggestions-displayed .token-autocomplete-toggle-button {
     border-color: transparent transparent #000 transparent;
-    top: 7px;
+    top: 5px;
 }
 
 .token-autocomplete-container .token-autocomplete-token:hover {
@@ -128,22 +133,18 @@
 
 .token-autocomplete-container .token-autocomplete-suggestions {
     display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed;
     z-index: 1000;
     list-style-type: none;
     padding: 0;
     margin: 0;
-    border: 1px solid #E6E6E6;
     max-height: 220px;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
-.token-autocomplete-container .token-autocomplete-suggestions.token-autocomplete-suggestions-above {
-    top: auto;
-    bottom: 100%;
+.token-autocomplete-container .token-autocomplete-suggestions:has(li) {
+    border: 1px solid #E6E6E6;
 }
 
 .token-autocomplete-container .token-autocomplete-suggestions li {

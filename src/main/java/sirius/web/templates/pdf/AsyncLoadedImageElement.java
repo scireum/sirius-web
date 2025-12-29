@@ -148,9 +148,13 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
             Wait.millis(500);
             startResolvingResource(uri, handler, callback, semaphore, attempt + 1);
         } else if (exception != null) {
-            Exceptions.handle(exception);
+            if (handler.logErrors()) {
+                Exceptions.handle(exception);
+            }
         } else {
-            Exceptions.handle().withSystemErrorMessage("Could not resolve image: %s", uri).handle();
+            if (handler.logErrors()) {
+                Exceptions.handle().withSystemErrorMessage("Could not resolve image: %s", uri).handle();
+            }
         }
     }
 
@@ -183,9 +187,7 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
 
             Map<String, CSSPrimitiveValue> cssMap =
                     context.getCss().getCascadedPropertiesMap(box.getContainingBlock().getElement());
-            centerPosition = computePosition(contentBounds,
-                                             cssMap.get(VERTICAL_ALIGN),
-                                             cssMap.get(TEXT_ALIGN));
+            centerPosition = computePosition(contentBounds, cssMap.get(VERTICAL_ALIGN), cssMap.get(TEXT_ALIGN));
             outputDevice.drawImage(image, centerPosition.getFirst(), centerPosition.getSecond());
         }
     }

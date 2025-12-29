@@ -87,7 +87,7 @@ public class PublicServices {
                                                            .toList());
 
         PublicServiceInfo serviceInfo = new PublicServiceInfo(publicService,
-                                                              routed.value(),
+                                                              routed,
                                                               route.isAnnotationPresent(Deprecated.class),
                                                               route.getAnnotation(Operation.class),
                                                               parameters,

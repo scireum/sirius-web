@@ -151,14 +151,14 @@
       }
     }
   }
+}
 
-  #sci-dialog-wizard-tabs {
-    .sci-dialog-wizard-tab {
-      display: none;
+#sci-dialog-content #sci-dialog-wizard-tabs {
+  .sci-dialog-wizard-tab {
+    display: none;
 
-      &.sci-dialog-wizard-tab-active {
-        display: flex;
-      }
+    &.sci-dialog-wizard-tab-active {
+      display: flex;
     }
   }
 }

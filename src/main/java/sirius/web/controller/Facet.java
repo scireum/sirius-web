@@ -168,6 +168,16 @@ public class Facet {
     }
 
     /**
+     * Returns all selected values.
+     *
+     * @return a list of all selected filter values of this facet
+     */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public List<String> getValues() {
+        return Collections.unmodifiableList(values);
+    }
+
+    /**
      * Adds a facet item
      *
      * @param key   the filter value of the item

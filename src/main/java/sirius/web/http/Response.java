@@ -39,6 +39,7 @@ import sirius.kernel.async.ExecutionPoint;
 import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Urls;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
@@ -46,7 +47,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Microtiming;
 import sirius.kernel.nls.NLS;
-import sirius.kernel.xml.Outcall;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.CompileException;
@@ -950,7 +951,7 @@ public class Response {
      */
     protected void setContentDisposition(String name, boolean download) {
         String cleanName = name.replaceAll("[^A-Za-z0-9\\-_.]", "_");
-        String utf8Name = Strings.urlEncode(name.replace(" ", "_"));
+        String utf8Name = Urls.encode(name.replace(" ", "_"));
         addHeaderIfNotExists("Content-Disposition",
                              (download ? "attachment;" : "inline;")
                              + "filename=\""
@@ -1564,8 +1565,8 @@ public class Response {
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json(HttpResponseStatus status) {
-        String callback = webContext.get("callback").getString();
-        String encoding = webContext.get("encoding").first().asString(StandardCharsets.UTF_8.name());
+        String callback = webContext.safeGet("callback").getString();
+        String encoding = webContext.safeGet("encoding").first().asString(StandardCharsets.UTF_8.name());
         String mimeType = Strings.isFilled(callback) ? "application/javascript" : MimeHelper.APPLICATION_JSON;
         return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), callback, encoding);
     }

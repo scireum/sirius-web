@@ -24,6 +24,7 @@ import sirius.kernel.xml.Attribute;
 import sirius.kernel.xml.StructuredNode;
 import sirius.kernel.xml.XMLStructuredOutput;
 import sirius.web.http.WebContext;
+import sirius.web.security.saml.SamlUserHint;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -55,6 +56,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.zip.Deflater;
+import java.util.zip.DeflaterOutputStream;
 
 /**
  * Provides a helper to generate SAML 2 requests and to process responses.
@@ -92,12 +96,96 @@ public class SAMLHelper {
      *                    single issuer configuration, different indices can be passed in. The default value would
      *                    be "0"
      * @return a base64 encoded SAML2 request which can be posted to an identity provider
+     * @deprecated use {@link #generateAuthenticationRequestForPostBinding(String, String)} instead
      */
+    @Deprecated
     public String generateAuthenticationRequest(String issuer, String issuerIndex) {
-        return Base64.getEncoder().encodeToString(createAuthenticationRequestXML(issuer, issuerIndex));
+        return generateAuthenticationRequestForPostBinding(issuer, issuerIndex);
     }
 
-    private byte[] createAuthenticationRequestXML(String issuer, String issuerIndex) {
+    /**
+     * Generates a base64 encoded XML request which can be sent via a POST request to a SAML 2 identity provider / SAML responder.
+     * This is used for the HTTP POST Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.5).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @return a base64 encoded SAML2 request which can be sent via a POST request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForPostBinding(String issuer, String issuerIndex) {
+        return generateAuthenticationRequestForPostBinding(issuer, issuerIndex, Optional.empty());
+    }
+
+    /**
+     * Generates a base64 encoded XML request which can be sent via a POST request to a SAML 2 identity provider / SAML responder.
+     * This is used for the HTTP POST Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.5).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @param userHint    an optional user hint to pre-fill the NameID in the request. Be aware that some identity providers might reject requests with pre-filled NameIDs.
+     * @return a base64 encoded SAML2 request which can be sent via a POST request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForPostBinding(String issuer,
+                                                              String issuerIndex,
+                                                              Optional<SamlUserHint> userHint) {
+        return Base64.getEncoder().encodeToString(createAuthenticationRequestXML(issuer, issuerIndex, userHint));
+    }
+
+    /**
+     * Generates a deflated and base64 encoded XML request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     * This is used for the HTTP Redirect Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.4).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @return a deflated and base64 encoded SAML2 request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForRedirectBinding(String issuer, String issuerIndex) {
+        return generateAuthenticationRequestForRedirectBinding(issuer, issuerIndex, Optional.empty());
+    }
+
+    /**
+     * Generates a deflated and base64 encoded XML request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     * This is used for the HTTP Redirect Binding: <a href="https://docs.oasis-open.org/security/saml/v2.0/saml-bindings-2.0-os.pdf">SAML Bindings</a> (section 3.4).
+     *
+     * @param issuer      the name of the issuer. This tells the identity provider "who" is asking to perform an authentication.
+     * @param issuerIndex the index of the issuer. As the identity provider might manage several endpoints for a
+     *                    single issuer configuration, different indices can be passed in. The default value would
+     *                    be "0"
+     * @param userHint    an optional user hint to pre-fill the NameID in the request. Be aware that some identity providers might reject requests with pre-filled NameIDs.
+     * @return a deflated and base64 encoded SAML2 request which can be sent via a GET request to a SAML 2 identity provider / SAML responder
+     */
+    public String generateAuthenticationRequestForRedirectBinding(String issuer,
+                                                                  String issuerIndex,
+                                                                  Optional<SamlUserHint> userHint) {
+        byte[] request = createAuthenticationRequestXML(issuer, issuerIndex, userHint);
+
+        // TODO MIO-6449: Deflater is AutoClosable in Java >= 25
+        Deflater deflater = new Deflater(Deflater.DEFAULT_COMPRESSION,
+                                         true /* raw deflate, zlib header and checksum are not supported by SAML */);
+
+        byte[] compressedRequest;
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream, deflater)) {
+            deflaterOutputStream.write(request);
+            deflaterOutputStream.finish();
+            compressedRequest = byteArrayOutputStream.toByteArray();
+        } catch (IOException exception) {
+            throw Exceptions.handle(exception);
+        } finally {
+            deflater.end();
+        }
+
+        return Base64.getEncoder().encodeToString(compressedRequest);
+    }
+
+    private byte[] createAuthenticationRequestXML(String issuer,
+                                                  String issuerIndex,
+                                                  Optional<SamlUserHint> optionalUserHint) {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         XMLStructuredOutput output = new XMLStructuredOutput(buffer);
         output.beginOutput("samlp:AuthnRequest",
@@ -114,6 +202,13 @@ public class SAMLHelper {
                            Attribute.set("AllowCreate", false),
                            Attribute.set("Format", "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"));
         output.endObject();
+
+        optionalUserHint.ifPresent(userHint -> {
+            output.beginObject("saml:Subject");
+            output.property("saml:NameID", userHint.value(), Attribute.set("Format", userHint.format()));
+            output.endObject();
+        });
+
         output.endOutput();
 
         if (LOG.isFINE()) {
@@ -338,8 +433,14 @@ public class SAMLHelper {
 
             for (XMLStructure xmlStructure : keyInfo.getContent()) {
                 if (xmlStructure instanceof X509Data x509Data && !x509Data.getContent().isEmpty()) {
-                    X509Certificate x509Certificate = (X509Certificate) x509Data.getContent().getFirst();
-                    return new X509CertificateResult(x509Certificate);
+                    Optional<X509Certificate> optionalCertificate = x509Data.getContent()
+                                                                            .stream()
+                                                                            .filter(X509Certificate.class::isInstance)
+                                                                            .map(X509Certificate.class::cast)
+                                                                            .findFirst();
+                    if (optionalCertificate.isPresent()) {
+                        return new X509CertificateResult(optionalCertificate.get());
+                    }
                 }
             }
 

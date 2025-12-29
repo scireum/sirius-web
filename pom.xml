@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.scireum</groupId>
         <artifactId>sirius-parent</artifactId>
-        <version>14.0.1</version>
+        <version>14.2.0</version>
     </parent>
     <artifactId>sirius-web</artifactId>
     <version>DEVELOPMENT-SNAPSHOT</version>
@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>ga-13.0.0</sirius.kernel>
+        <sirius.kernel>dev-49.3.0</sirius.kernel>
     </properties>
 
     <repositories>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-mail</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.4</version>
         </dependency>
         <!-- Changelog: https://github.com/eclipse-ee4j/angus-activation/releases -->
         <dependency>
@@ -91,10 +91,11 @@
             <artifactId>angus-activation</artifactId>
             <version>2.0.2</version>
         </dependency>
+        <!-- Changelog: https://github.com/simple-java-mail/java-utils-mail-dkim?tab=readme-ov-file#change-history -->
         <dependency>
-            <groupId>net.markenwerk</groupId>
+            <groupId>org.simplejavamail</groupId>
             <artifactId>utils-mail-dkim</artifactId>
-            <version>2.0.1</version>
+            <version>3.2.2</version>
         </dependency>
 
         <!-- Used to generate PDFs -->
@@ -102,7 +103,7 @@
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
             <artifactId>flying-saucer-pdf</artifactId>
-            <version>9.11.3</version>
+            <version>9.13.3</version>
         </dependency>
 
         <!-- Used to clean HTML before generating PDF -->
@@ -110,7 +111,7 @@
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>1.18.3</version>
+            <version>1.21.2</version>
         </dependency>
 
         <!-- Used to render SVG into PDF -->
@@ -118,7 +119,7 @@
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-all</artifactId>
-            <version>1.18</version>
+            <version>1.19</version>
         </dependency>
 
         <!-- POI is used to generate excel exports -->
@@ -126,19 +127,19 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.4.0</version>
+            <version>5.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.4.0</version>
+            <version>5.4.1</version>
         </dependency>
 
         <!-- Changelog: https://github.com/pjfanning/excel-streaming-reader/releases -->
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>5.0.3</version>
+            <version>5.1.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.h2database</groupId>
@@ -152,7 +153,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.2.26</version>
+            <version>2.2.39</version>
         </dependency>
 
         <!-- Changelog: https://github.com/auth0/java-jwt/releases -->
@@ -170,7 +171,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.1.118.Final</version>
+                <version>4.2.7.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

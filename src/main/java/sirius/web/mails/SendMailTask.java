@@ -20,23 +20,26 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import net.markenwerk.utils.mail.dkim.Canonicalization;
-import net.markenwerk.utils.mail.dkim.DkimMessage;
-import net.markenwerk.utils.mail.dkim.DkimSigner;
-import net.markenwerk.utils.mail.dkim.SigningAlgorithm;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.simplejavamail.utils.mail.dkim.Canonicalization;
+import org.simplejavamail.utils.mail.dkim.DkimMessage;
+import org.simplejavamail.utils.mail.dkim.DkimSigner;
+import org.simplejavamail.utils.mail.dkim.SigningAlgorithm;
 import sirius.kernel.async.Operation;
 import sirius.kernel.async.Tasks;
-import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Parts;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.nls.Formatter;
 import sirius.web.security.UserContext;
+import sirius.web.security.oauth.OAuthTokenProviderUtils;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -75,6 +78,8 @@ class SendMailTask implements Runnable {
     private static final String MAIL_FROM = "mail.from";
 
     private static final String AUTH = "auth";
+    private static final String AUTH_MECHANISMS = "auth.mechanisms";
+    private static final String AUTH_MECHANISM_XOAUTH2 = "XOAUTH2";
     private static final String HOST = "host";
     private static final String STARTTLS_ENABLE = "starttls.enable";
     private static final String CHECKSERVERIDENTITY = "ssl.checkserveridentity";
@@ -101,6 +106,9 @@ class SendMailTask implements Runnable {
 
     @Part
     private static Mails mails;
+
+    @Part
+    private static OAuthTokenProviderUtils oauthTokenProviderUtils;
 
     @ConfigValue("mail.smtp.dkim.keyFile")
     private static String dkimKeyFile;
@@ -172,8 +180,8 @@ class SendMailTask implements Runnable {
                                 mail.text,
                                 mail.html,
                                 mail.type);
-            } catch (Exception e) {
-                Exceptions.handle(Mails.LOG, e);
+            } catch (Exception exception) {
+                Exceptions.handle(Mails.LOG, exception);
             }
         }
     }
@@ -196,11 +204,21 @@ class SendMailTask implements Runnable {
         Watch mailSendTime = Watch.start();
         try {
             Mails.LOG.FINE("Sending eMail: " + mail.subject + " to: " + mail.receiverEmail);
-            Session session = getMailSession(config);
-            try (Transport transport = getSMTPTransport(session, config)) {
-                sendMailViaTransport(session, transport);
+
+            if (config.getMicrosoftGraphApiConfiguration().enabled()) {
+                MicrosoftGraphApiMail.createFromMail(mail,
+                                                     createMicrosoftGraphApiEndpoint(),
+                                                     config.getMicrosoftGraphApiConfiguration().saveToSentItems())
+                                     .send();
+            } else {
+                Session session = getMailSession(config);
+                try (Transport transport = getSMTPTransport(session, config)) {
+                    sendMailViaTransport(session, transport);
+                }
             }
-        } catch (Exception e) {
+
+            success = true;
+        } catch (Exception exception) {
             if (mail.remainingAttempts.decrementAndGet() > 0) {
                 Mails.LOG.WARN(
                         "RESCHEDULING sending mail from: '%s' to '%s' with subject: '%s' (Remaining attempts: %s)",
@@ -219,13 +237,13 @@ class SendMailTask implements Runnable {
             Exceptions.handle()
                       .withSystemErrorMessage(
                               "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                              e.getMessage(),
+                              exception.getMessage(),
                               config.getMailHost(),
                               config.getMailPort(),
                               config.getMailUser(),
                               Strings.isFilled(config.getMailPassword()))
                       .to(Mails.LOG)
-                      .error(e)
+                      .error(exception)
                       .handle();
         }
 
@@ -235,29 +253,42 @@ class SendMailTask implements Runnable {
         mails.collectMailSendMetric(mailSendTime.elapsedMillis());
     }
 
+    /**
+     * Creates the endpoint to use for sending mails via the Microsoft Graph API.
+     * <p>
+     * The sender email (that is used as part of the endpoint) is the first filled one,
+     * either {@link MailSender#getSenderEmail()}, {@link SMTPConfiguration#getMailSender()} or
+     * {@link SMTPConfiguration#getDefaultSender()}.
+     *
+     * @return the endpoint to use for sending mails via the Microsoft Graph API
+     */
+    private URI createMicrosoftGraphApiEndpoint() {
+        String effectiveSenderMail = Strings.firstFilled(mail.senderEmail, technicalSender);
+        return URI.create(Formatter.create(config.getMicrosoftGraphApiConfiguration().endpoint())
+                                   .set("user", effectiveSenderMail)
+                                   .format());
+    }
+
     private void sendMailViaTransport(Session session, Transport transport) {
         try {
             MimeMessage msg = signMessage(createMessage(session));
 
             transport.sendMessage(msg, msg.getAllRecipients());
             messageId = msg.getMessageID();
-            success = true;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .withSystemErrorMessage("Cannot send mail to %s from %s with subject '%s': %s (%s)",
                                                     mail.receiverEmail,
                                                     mail.senderEmail,
                                                     mail.subject)
                             .to(Mails.LOG)
-                            .error(e)
+                            .error(exception)
                             .handle();
         }
     }
 
-    @SuppressWarnings("squid:S1191")
-    @Explain("We need the SUN API for DKIM signing.")
-    private com.sun.mail.smtp.SMTPMessage createMessage(Session session) throws Exception {
-        com.sun.mail.smtp.SMTPMessage msg = new com.sun.mail.smtp.SMTPMessage(session);
+    private SMTPMessage createMessage(Session session) throws Exception {
+        SMTPMessage msg = new SMTPMessage(session);
         msg.setSubject(mail.subject);
         msg.setRecipients(Message.RecipientType.TO,
                           new InternetAddress[]{new InternetAddress(mail.receiverEmail, mail.receiverName)});
@@ -326,15 +357,18 @@ class SendMailTask implements Runnable {
             dkimSigner.setLengthParam(true);
             dkimSigner.setCopyHeaderFields(false);
             return new DkimMessage(message, dkimSigner);
-        } catch (Exception e) {
-            Exceptions.handle().to(Mails.LOG).error(e).withNLSKey("Skipping DKIM signing due to: %s (%s)").handle();
+        } catch (Exception exception) {
+            Exceptions.handle()
+                      .to(Mails.LOG)
+                      .error(exception)
+                      .withNLSKey("Skipping DKIM signing due to: %s (%s)")
+                      .handle();
         }
 
         return message;
     }
 
-    private void setupReplyTo(com.sun.mail.smtp.SMTPMessage msg)
-            throws UnsupportedEncodingException, MessagingException {
+    private void setupReplyTo(SMTPMessage msg) throws UnsupportedEncodingException, MessagingException {
         if (Strings.isFilled(mail.replyToEmail)) {
             if (Strings.isFilled(mail.replyToName)) {
                 msg.setReplyTo(new InternetAddress[]{new InternetAddress(mail.replyToEmail, mail.replyToName)});
@@ -344,8 +378,7 @@ class SendMailTask implements Runnable {
         }
     }
 
-    private void setupSender(com.sun.mail.smtp.SMTPMessage msg)
-            throws MessagingException, UnsupportedEncodingException {
+    private void setupSender(SMTPMessage msg) throws MessagingException, UnsupportedEncodingException {
         if (Strings.isFilled(mail.senderEmail)) {
             if (config.isUseSenderAndEnvelopeFrom()) {
                 msg.setSender(new InternetAddress(technicalSender, technicalSenderName));
@@ -389,15 +422,36 @@ class SendMailTask implements Runnable {
         if (Strings.isFilled(config.getTrustedServers())) {
             props.setProperty(protocolPropPrefix + SSL_TRUST, config.getTrustedServers());
         }
-        Authenticator auth = new MailAuthenticator(config);
-        if (Strings.isEmpty(config.getMailPassword())) {
-            props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
-            return Session.getInstance(props);
-        } else {
+
+        return setupAuthSession(config, props, protocolPropPrefix);
+    }
+
+    /**
+     * Sets the properties depending on the configuration and returns a corresponding session.
+     * <p>
+     * OAuth2 is prioritized over a simple username/password authentication which is prioritized over no authentication.
+     *
+     * @param config             the SMTP configuration to use
+     * @param props              the properties to set for the session
+     * @param protocolPropPrefix the prefix to use for the protocol properties (e.g. "mail.smtp.")
+     * @return the session to use for sending mails
+     */
+    private Session setupAuthSession(SMTPConfiguration config, Properties props, String protocolPropPrefix) {
+        if (Strings.isFilled(config.getOAuthTokenName())) {
             props.setProperty(MAIL_USER, config.getMailUser());
             props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
-            return Session.getInstance(props, auth);
+            props.setProperty(protocolPropPrefix + AUTH_MECHANISMS, AUTH_MECHANISM_XOAUTH2);
+            return Session.getInstance(props, new OAuthMailAuthenticator(config));
         }
+
+        if (Strings.isFilled(config.getMailPassword())) {
+            props.setProperty(MAIL_USER, config.getMailUser());
+            props.setProperty(protocolPropPrefix + AUTH, Boolean.TRUE.toString());
+            return Session.getInstance(props, new MailAuthenticator(config));
+        }
+
+        props.setProperty(protocolPropPrefix + AUTH, Boolean.FALSE.toString());
+        return Session.getInstance(props);
     }
 
     private String determinePort(SMTPConfiguration config) {
@@ -528,6 +582,39 @@ class SendMailTask implements Runnable {
         }
     }
 
+    /**
+     * Authenticates the mail session using an OAuth2 access token.
+     */
+    private static class OAuthMailAuthenticator extends Authenticator {
+
+        private final SMTPConfiguration config;
+
+        private OAuthMailAuthenticator(SMTPConfiguration config) {
+            this.config = config;
+        }
+
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            return new PasswordAuthentication(config.getMailUser(), fetchRequiredAccessToken(config));
+        }
+
+        /**
+         * Fetches the access token for the configured OAuth token name.
+         *
+         * @param config the SMTP configuration to use
+         * @return the access token to use for authentication
+         */
+        private static String fetchRequiredAccessToken(SMTPConfiguration config) {
+            return oauthTokenProviderUtils.fetchValidTokenForCurrentScope(config.getOAuthTokenName())
+                                          .orElseThrow(() -> Exceptions.handle()
+                                                                       .to(Mails.LOG)
+                                                                       .withSystemErrorMessage(
+                                                                               "No valid OAuth token found for '%s'",
+                                                                               config.getOAuthTokenName())
+                                                                       .handle());
+        }
+    }
+
     protected Transport getSMTPTransport(Session session, SMTPConfiguration config) {
         try {
             Transport transport = session.getTransport();
@@ -536,17 +623,17 @@ class SendMailTask implements Runnable {
                               null;
             transport.connect(config.getMailHost(), config.getMailUser(), password);
             return transport;
-        } catch (Exception e) {
+        } catch (Exception exception) {
             throw Exceptions.handle()
                             .withSystemErrorMessage(
                                     "Invalid mail configuration: %s (Host: %s, Port: %s, User: %s, Password used: %s)",
-                                    e.getMessage(),
+                                    exception.getMessage(),
                                     config.getMailHost(),
                                     config.getMailPort(),
                                     config.getMailUser(),
                                     Strings.isFilled(config.getMailPassword()))
                             .to(Mails.LOG)
-                            .error(e)
+                            .error(exception)
                             .handle();
         }
     }

@@ -1,7 +1,7 @@
 /*!
- * Chart.js v4.4.1
+ * Chart.js v4.5.1
  * https://www.chartjs.org
- * (c) 2023 Chart.js Contributors
+ * (c) 2025 Chart.js Contributors
  * Released under the MIT License
  */
 import { Color } from '@kurkle/color';
@@ -23,7 +23,7 @@ import { Color } from '@kurkle/color';
  * @param value - The value to test.
  * @since 2.7.0
  */ function isNullOrUndef(value) {
-    return value === null || typeof value === 'undefined';
+    return value === null || value === undefined;
 }
 /**
  * Returns true if `value` is an array (including typed arrays), else returns false.
@@ -325,8 +325,13 @@ function almostEquals(x, y, epsilon) {
     result.sort((a, b)=>a - b).pop();
     return result;
 }
+/**
+ * Verifies that attempting to coerce n to string or number won't throw a TypeError.
+ */ function isNonPrimitive(n) {
+    return typeof n === 'symbol' || typeof n === 'object' && n !== null && !(Symbol.toPrimitive in n || 'toString' in n || 'valueOf' in n);
+}
 function isNumber(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
+    return !isNonPrimitive(n) && !isNaN(parseFloat(n)) && isFinite(n);
 }
 function almostWhole(x, epsilon) {
     const rounded = Math.round(x);
@@ -622,18 +627,29 @@ function fontString(pixelSize, fontStyle, fontFamily) {
     let start = 0;
     let count = pointCount;
     if (meta._sorted) {
-        const { iScale , _parsed  } = meta;
+        const { iScale , vScale , _parsed  } = meta;
+        const spanGaps = meta.dataset ? meta.dataset.options ? meta.dataset.options.spanGaps : null : null;
         const axis = iScale.axis;
         const { min , max , minDefined , maxDefined  } = iScale.getUserBounds();
         if (minDefined) {
-            start = _limitValue(Math.min(// @ts-expect-error Need to type _parsed
+            start = Math.min(// @ts-expect-error Need to type _parsed
             _lookupByKey(_parsed, axis, min).lo, // @ts-expect-error Need to fix types on _lookupByKey
-            animationsDisabled ? pointCount : _lookupByKey(points, axis, iScale.getPixelForValue(min)).lo), 0, pointCount - 1);
+            animationsDisabled ? pointCount : _lookupByKey(points, axis, iScale.getPixelForValue(min)).lo);
+            if (spanGaps) {
+                const distanceToDefinedLo = _parsed.slice(0, start + 1).reverse().findIndex((point)=>!isNullOrUndef(point[vScale.axis]));
+                start -= Math.max(0, distanceToDefinedLo);
+            }
+            start = _limitValue(start, 0, pointCount - 1);
         }
         if (maxDefined) {
-            count = _limitValue(Math.max(// @ts-expect-error Need to type _parsed
+            let end = Math.max(// @ts-expect-error Need to type _parsed
             _lookupByKey(_parsed, iScale.axis, max, true).hi + 1, // @ts-expect-error Need to fix types on _lookupByKey
-            animationsDisabled ? 0 : _lookupByKey(points, axis, iScale.getPixelForValue(max), true).hi + 1), start, pointCount) - start;
+            animationsDisabled ? 0 : _lookupByKey(points, axis, iScale.getPixelForValue(max), true).hi + 1);
+            if (spanGaps) {
+                const distanceToDefinedHi = _parsed.slice(end - 1).findIndex((point)=>!isNullOrUndef(point[vScale.axis]));
+                end += Math.max(0, distanceToDefinedHi);
+            }
+            count = _limitValue(end, start, pointCount) - start;
         } else {
             count = pointCount - start;
         }
@@ -1188,6 +1204,9 @@ function _longestText(ctx, font, arrayOfThings, cache) {
 /**
  * Clears the entire canvas.
  */ function clearCanvas(canvas, ctx) {
+    if (!ctx && !canvas) {
+        return;
+    }
     ctx = ctx || canvas.getContext('2d');
     ctx.save();
     // canvas.width and canvas.height do not consider the canvas transform,
@@ -1790,7 +1809,7 @@ function createContext(parentContext, context) {
 const readKey = (prefix, name)=>prefix ? prefix + _capitalize(name) : name;
 const needsSubResolver = (prop, value)=>isObject(value) && prop !== 'adapters' && (Object.getPrototypeOf(value) === null || value.constructor === Object);
 function _cached(target, prop, resolve) {
-    if (Object.prototype.hasOwnProperty.call(target, prop)) {
+    if (Object.prototype.hasOwnProperty.call(target, prop) || prop === 'constructor') {
         return target[prop];
     }
     const value = resolve();
@@ -2124,12 +2143,6 @@ function capBezierPoints(points, area) {
 }
 
 /**
- * Note: typedefs are auto-exported, so use a made-up `dom` namespace where
- * necessary to avoid duplicates with `export * from './helpers`; see
- * https://github.com/microsoft/TypeScript/issues/46011
- * @typedef { import('../core/core.controller.js').default } dom.Chart
- * @typedef { import('../../types').ChartEvent } ChartEvent
- */ /**
  * @private
  */ function _isDomSupported() {
     return typeof window !== 'undefined' && typeof document !== 'undefined';
@@ -2236,7 +2249,7 @@ const useOffsetPos = (x, y, target)=>(x > 0 || y > 0) && (!target || !target.sha
 function getContainerSize(canvas, width, height) {
     let maxWidth, maxHeight;
     if (width === undefined || height === undefined) {
-        const container = _getParentNode(canvas);
+        const container = canvas && _getParentNode(canvas);
         if (!container) {
             width = canvas.clientWidth;
             height = canvas.clientHeight;
@@ -2299,10 +2312,10 @@ function getMaximumSize(canvas, bbWidth, bbHeight, aspectRatio) {
  * @returns True if the canvas context size or transformation has changed.
  */ function retinaScale(chart, forceRatio, forceStyle) {
     const pixelRatio = forceRatio || 1;
-    const deviceHeight = Math.floor(chart.height * pixelRatio);
-    const deviceWidth = Math.floor(chart.width * pixelRatio);
-    chart.height = Math.floor(chart.height);
-    chart.width = Math.floor(chart.width);
+    const deviceHeight = round1(chart.height * pixelRatio);
+    const deviceWidth = round1(chart.width * pixelRatio);
+    chart.height = round1(chart.height);
+    chart.width = round1(chart.width);
     const canvas = chart.canvas;
     // If no style has been set on the canvas, the render size is used as display size,
     // making the chart visually bigger, so let's enforce it to the "correct" values.
@@ -2742,5 +2755,34 @@ function styleChanged(style, prevStyle) {
     return JSON.stringify(style, replacer) !== JSON.stringify(prevStyle, replacer);
 }
 
-export { unclipArea as $, _rlookupByKey as A, _lookupByKey as B, _isPointInArea as C, getAngleFromPoint as D, toPadding as E, each as F, getMaximumSize as G, HALF_PI as H, _getParentNode as I, readUsedSize as J, supportsEventListenerOptions as K, throttled as L, _isDomSupported as M, _factorize as N, finiteOrDefault as O, PI as P, callback as Q, _addGrace as R, _limitValue as S, TAU as T, toDegrees as U, _measureText as V, _int16Range as W, _alignPixel as X, clipArea as Y, renderText as Z, _arrayUnique as _, resolve as a, fontString as a$, toFont as a0, _toLeftRightCenter as a1, _alignStartEnd as a2, overrides as a3, merge as a4, _capitalize as a5, descriptors as a6, isFunction as a7, _attachContext as a8, _createResolver as a9, overrideTextDirection as aA, _textX as aB, restoreTextDirection as aC, drawPointLegend as aD, distanceBetweenPoints as aE, noop as aF, _setMinAndMaxByKey as aG, niceNum as aH, almostWhole as aI, almostEquals as aJ, _decimalPlaces as aK, Ticks as aL, log10 as aM, _longestText as aN, _filterBetween as aO, _lookup as aP, isPatternOrGradient as aQ, getHoverColor as aR, clone as aS, _merger as aT, _mergerIf as aU, _deprecated as aV, _splitKey as aW, toFontString as aX, splineCurve as aY, splineCurveMonotone as aZ, getStyle as a_, _descriptors as aa, mergeIf as ab, uid as ac, debounce as ad, retinaScale as ae, clearCanvas as af, setsEqual as ag, _elementsEqual as ah, _isClickEvent as ai, _isBetween as aj, _readValueToProps as ak, _updateBezierControlPoints as al, _computeSegments as am, _boundSegments as an, _steppedInterpolation as ao, _bezierInterpolation as ap, _pointInLine as aq, _steppedLineTo as ar, _bezierCurveTo as as, drawPoint as at, addRoundedRectPath as au, toTRBL as av, toTRBLCorners as aw, _boundSegment as ax, _normalizeAngle as ay, getRtlAdapter as az, isArray as b, toLineHeight as b0, PITAU as b1, INFINITY as b2, RAD_PER_DEG as b3, QUARTER_PI as b4, TWO_THIRDS_PI as b5, _angleDiff as b6, color as c, defaults as d, effects as e, resolveObjectKey as f, isNumberFinite as g, defined as h, isObject as i, createContext as j, isNullOrUndef as k, listenArrayEvents as l, toPercentage as m, toDimension as n, formatNumber as o, _angleBetween as p, _getStartAndCountOfVisiblePoints as q, requestAnimFrame as r, sign as s, toRadians as t, unlistenArrayEvents as u, valueOrDefault as v, _scaleRangesChanged as w, isNumber as x, _parseObjectDataRadialScale as y, getRelativePosition as z };
-//# sourceMappingURL=helpers.segment.js.map
+function getSizeForArea(scale, chartArea, field) {
+    return scale.options.clip ? scale[field] : chartArea[field];
+}
+function getDatasetArea(meta, chartArea) {
+    const { xScale , yScale  } = meta;
+    if (xScale && yScale) {
+        return {
+            left: getSizeForArea(xScale, chartArea, 'left'),
+            right: getSizeForArea(xScale, chartArea, 'right'),
+            top: getSizeForArea(yScale, chartArea, 'top'),
+            bottom: getSizeForArea(yScale, chartArea, 'bottom')
+        };
+    }
+    return chartArea;
+}
+function getDatasetClipArea(chart, meta) {
+    const clip = meta._clip;
+    if (clip.disabled) {
+        return false;
+    }
+    const area = getDatasetArea(meta, chart.chartArea);
+    return {
+        left: clip.left === false ? 0 : area.left - (clip.left === true ? 0 : clip.left),
+        right: clip.right === false ? chart.width : area.right + (clip.right === true ? 0 : clip.right),
+        top: clip.top === false ? 0 : area.top - (clip.top === true ? 0 : clip.top),
+        bottom: clip.bottom === false ? chart.height : area.bottom + (clip.bottom === true ? 0 : clip.bottom)
+    };
+}
+
+export { unclipArea as $, _rlookupByKey as A, _lookupByKey as B, _isPointInArea as C, getAngleFromPoint as D, toPadding as E, each as F, getMaximumSize as G, HALF_PI as H, _getParentNode as I, readUsedSize as J, supportsEventListenerOptions as K, throttled as L, _isDomSupported as M, _factorize as N, finiteOrDefault as O, PI as P, callback as Q, _addGrace as R, _limitValue as S, TAU as T, toDegrees as U, _measureText as V, _int16Range as W, _alignPixel as X, clipArea as Y, renderText as Z, _arrayUnique as _, resolve as a, getStyle as a$, toFont as a0, _toLeftRightCenter as a1, _alignStartEnd as a2, overrides as a3, merge as a4, _capitalize as a5, descriptors as a6, isFunction as a7, _attachContext as a8, _createResolver as a9, getRtlAdapter as aA, overrideTextDirection as aB, _textX as aC, restoreTextDirection as aD, drawPointLegend as aE, distanceBetweenPoints as aF, noop as aG, _setMinAndMaxByKey as aH, niceNum as aI, almostWhole as aJ, almostEquals as aK, _decimalPlaces as aL, Ticks as aM, log10 as aN, _longestText as aO, _filterBetween as aP, _lookup as aQ, isPatternOrGradient as aR, getHoverColor as aS, clone as aT, _merger as aU, _mergerIf as aV, _deprecated as aW, _splitKey as aX, toFontString as aY, splineCurve as aZ, splineCurveMonotone as a_, _descriptors as aa, mergeIf as ab, uid as ac, debounce as ad, retinaScale as ae, clearCanvas as af, setsEqual as ag, getDatasetClipArea as ah, _elementsEqual as ai, _isClickEvent as aj, _isBetween as ak, _normalizeAngle as al, _readValueToProps as am, _updateBezierControlPoints as an, _computeSegments as ao, _boundSegments as ap, _steppedInterpolation as aq, _bezierInterpolation as ar, _pointInLine as as, _steppedLineTo as at, _bezierCurveTo as au, drawPoint as av, addRoundedRectPath as aw, toTRBL as ax, toTRBLCorners as ay, _boundSegment as az, isArray as b, fontString as b0, toLineHeight as b1, PITAU as b2, INFINITY as b3, RAD_PER_DEG as b4, QUARTER_PI as b5, TWO_THIRDS_PI as b6, _angleDiff as b7, color as c, defaults as d, effects as e, resolveObjectKey as f, isNumberFinite as g, defined as h, isObject as i, createContext as j, isNullOrUndef as k, listenArrayEvents as l, toPercentage as m, toDimension as n, formatNumber as o, _angleBetween as p, _getStartAndCountOfVisiblePoints as q, requestAnimFrame as r, sign as s, toRadians as t, unlistenArrayEvents as u, valueOrDefault as v, _scaleRangesChanged as w, isNumber as x, _parseObjectDataRadialScale as y, getRelativePosition as z };
+//# sourceMappingURL=helpers.dataset.js.map

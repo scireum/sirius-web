@@ -41,6 +41,21 @@ sirius.ready(function () {
             try {
                 _confirmForm.setAttribute('action', _node.getAttribute('href'));
 
+                if (_node.dataset.sciSubmitFormId) {
+                    [..._confirmForm.children].forEach(_child => _child.name !== "CSRFToken" && _confirmForm.removeChild(_child));
+                    const _form = document.getElementById(_node.dataset.sciSubmitFormId);
+                    if (_form != null) {
+                        const _userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
+                        _userIdInputs.forEach(_input => {
+                            const _inputHidden = document.createElement('input');
+                            _inputHidden.type = 'hidden';
+                            _inputHidden.name = _input.name;
+                            _inputHidden.value = _input.value;
+                            _confirmForm.appendChild(_inputHidden);
+                        });
+                    }
+                }
+
                 _modalElement.tabIndex = -1;
                 _modalElement.addEventListener('shown.bs.modal', () => {
                     const _cancelButton = _modalElement.querySelector('.btn-cancel-js');
