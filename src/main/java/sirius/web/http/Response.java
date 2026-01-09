@@ -512,6 +512,16 @@ public class Response {
             if (WebServer.slowRequests.incrementAndGet() < 0) {
                 WebServer.slowRequests.set(0);
             }
+            logLongRunningWarning(callContext, responseTimeMillis, queuedMillis, ttfbMillis);
+        }
+    }
+
+    private void logLongRunningWarning(CallContext callContext,
+                                       long responseTimeMillis,
+                                       long queuedMillis,
+                                       long ttfbMillis) {
+        Thread.startVirtualThread(() -> {
+            CallContext.setCurrent(callContext);
             WebServer.LOG.WARN("Long running request: %s (Response Time: %s, Queue Time: %s, TTFB: %s)"
                                + "%nURL:%s"
                                + "%nParameters:"
@@ -528,7 +538,8 @@ public class Response {
                                          .map(param -> param + ": " + censor(param))
                                          .collect(Collectors.joining("\n")),
                                callContext);
-        }
+            CallContext.detach();
+        });
     }
 
     @Nonnull
