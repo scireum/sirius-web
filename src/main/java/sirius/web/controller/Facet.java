@@ -31,6 +31,7 @@ public class Facet {
     private boolean facetCollapsingEnabled = false;
     private int maxVisibleFacetItems;
     private final List<FacetItem> items = new ArrayList<>();
+    private boolean multiSelect = false;
 
     /**
      * @deprecated Facet ranges are no longer supported
@@ -79,6 +80,16 @@ public class Facet {
      */
     public Facet withTranslator(ValueComputer<String, String> translator) {
         this.translator = translator;
+        return this;
+    }
+
+    /**
+     * Enables multi selection for this facet.
+     *
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withMultiSelection() {
+        this.multiSelect = true;
         return this;
     }
 
