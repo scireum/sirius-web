@@ -189,19 +189,19 @@ public class Page<E> {
      * <p>
      * This will read <tt>start</tt>, <tt>query</tt>, <tt>pageSize</tt> and all facet values from the given request.
      *
-     * @param ctx the request to parse
+     * @param context the request to parse
      * @return the page itself for fluent method calls
      */
-    public Page<E> bindToRequest(WebContext ctx) {
-        if (ctx.get(PARAM_START).isFilled()) {
-            withStart(ctx.get(PARAM_START).asInt(1));
+    public Page<E> bindToRequest(WebContext context) {
+        if (context.get(PARAM_START).isFilled()) {
+            withStart(context.get(PARAM_START).asInt(1));
         }
-        if (ctx.get(PARAM_PAGE_SIZE).isFilled()) {
-            withPageSize(Math.min(ctx.get(PARAM_PAGE_SIZE).asInt(DEFAULT_PAGE_SIZE), MAXIMUM_PAGE_SIZE));
+        if (context.get(PARAM_PAGE_SIZE).isFilled()) {
+            withPageSize(Math.min(context.get(PARAM_PAGE_SIZE).asInt(DEFAULT_PAGE_SIZE), MAXIMUM_PAGE_SIZE));
         }
-        withQuery(ctx.get(PARAM_QUERY).asString());
+        withQuery(context.get(PARAM_QUERY).asString());
         for (Facet facet : getFacets()) {
-            facet.withValues(ctx.get(facet.getName()).asStringList());
+            facet.withValues(context.get(facet.getName()).asStringList());
         }
 
         return this;
