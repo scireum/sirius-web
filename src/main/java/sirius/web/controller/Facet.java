@@ -12,6 +12,7 @@ import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
+import sirius.web.util.LinkBuilder;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -143,9 +144,22 @@ public class Facet {
      * the value for this face. Also the start will be reset, as everything else would be counter intuitive
      */
     public String linkToPageWithToggledItem(String baseUrl, FacetItem item) {
-        return parent.addFacetsAndQuery(baseUrl, name)
-                     .appendIfFilled(name, item.isActive() ? "" : item.getKey())
-                     .toString();
+
+        LinkBuilder linkBuilder =
+                parent.addFacetsAndQuery(baseUrl, name).appendIfFilled(name, item.isActive() ? "" : item.getKey());
+
+        boolean isPresent = parent.getFacets().stream().anyMatch(facet -> facet.getName().equals(getName()));
+
+        if (isPresent && isMultiSelect()) {
+            getValues().forEach(value -> {
+                if (value.equals(item.getKey())) {
+                    return;
+                }
+                linkBuilder.appendIfFilled(getName(), value);
+            });
+        }
+
+        return linkBuilder.toString();
     }
 
     /**
