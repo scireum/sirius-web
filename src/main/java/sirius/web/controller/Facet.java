@@ -189,6 +189,16 @@ public class Facet {
     }
 
     /**
+     * Determines if multi selection is enabled for this facet.
+     *
+     * @return <tt>true</tt> if multi selection is enabled, <tt>false</tt> otherwise
+     */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public boolean isMultiSelect() {
+        return this.multiSelect;
+    }
+
+    /**
      * Adds a facet item
      *
      * @param key   the filter value of the item
