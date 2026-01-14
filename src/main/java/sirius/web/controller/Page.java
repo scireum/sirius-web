@@ -11,6 +11,7 @@ package sirius.web.controller;
 import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Limit;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.http.WebContext;
@@ -201,7 +202,7 @@ public class Page<E> {
         }
         withQuery(ctx.get(PARAM_QUERY).asString());
         for (Facet facet : getFacets()) {
-            facet.withValue(ctx.get(facet.getName()).asString());
+            facet.withValues(ctx.get(facet.getName()).asStringList());
         }
 
         return this;
