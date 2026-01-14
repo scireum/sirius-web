@@ -151,10 +151,7 @@ public class Facet {
         boolean isPresent = parent.getFacets().stream().anyMatch(facet -> facet.getName().equals(getName()));
 
         if (isPresent && isMultiSelect()) {
-            getValues().forEach(value -> {
-                if (value.equals(item.getKey())) {
-                    return;
-                }
+            getValues().stream().filter(value -> !value.equals(item.getKey())).forEach(value -> {
                 linkBuilder.appendIfFilled(getName(), value);
             });
         }
