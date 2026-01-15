@@ -163,6 +163,13 @@
             <version>4.5.0</version>
         </dependency>
 
+        <!-- Changelog: https://github.com/altcha-org/altcha-lib-java/releases -->
+        <dependency>
+            <groupId>org.altcha</groupId>
+            <artifactId>altcha</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+
     </dependencies>
 
     <dependencyManagement>
