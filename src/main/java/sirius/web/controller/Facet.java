@@ -12,6 +12,7 @@ import sirius.kernel.cache.ValueComputer;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
+import sirius.web.util.LinkBuilder;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ public class Facet {
     private boolean facetCollapsingEnabled = false;
     private int maxVisibleFacetItems;
     private final List<FacetItem> items = new ArrayList<>();
+    private boolean multiSelect = false;
 
     /**
      * @deprecated Facet ranges are no longer supported
@@ -79,6 +81,16 @@ public class Facet {
      */
     public Facet withTranslator(ValueComputer<String, String> translator) {
         this.translator = translator;
+        return this;
+    }
+
+    /**
+     * Enables multi selection for this facet.
+     *
+     * @return the facet itself for fluent method calls
+     */
+    public Facet withMultiSelection() {
+        this.multiSelect = true;
         return this;
     }
 
@@ -132,9 +144,19 @@ public class Facet {
      * the value for this face. Also the start will be reset, as everything else would be counter intuitive
      */
     public String linkToPageWithToggledItem(String baseUrl, FacetItem item) {
-        return parent.addFacetsAndQuery(baseUrl, name)
-                     .appendIfFilled(name, item.isActive() ? "" : item.getKey())
-                     .toString();
+
+        LinkBuilder linkBuilder =
+                parent.addFacetsAndQuery(baseUrl, name).appendIfFilled(name, item.isActive() ? "" : item.getKey());
+
+        boolean isPresent = parent.getFacets().stream().anyMatch(facet -> facet.getName().equals(getName()));
+
+        if (isPresent && isMultiSelect()) {
+            getValues().stream().filter(value -> !value.equals(item.getKey())).forEach(value -> {
+                linkBuilder.appendIfFilled(getName(), value);
+            });
+        }
+
+        return linkBuilder.toString();
     }
 
     /**
@@ -175,6 +197,16 @@ public class Facet {
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public List<String> getValues() {
         return Collections.unmodifiableList(values);
+    }
+
+    /**
+     * Determines if multi selection is enabled for this facet.
+     *
+     * @return <tt>true</tt> if multi selection is enabled, <tt>false</tt> otherwise
+     */
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public boolean isMultiSelect() {
+        return this.multiSelect;
     }
 
     /**
