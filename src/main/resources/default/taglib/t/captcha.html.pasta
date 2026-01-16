@@ -5,14 +5,14 @@
 <i:arg name="auto" type="String" default="off" description="Possible values are off, onfocus, onload, onsubmit"/>
 
 <i:pragma name="description"
-          value="Renders an Altcha CAPTCHA widget. Details can be found in the official documentation
-          on https://altcha.org/docs/v2/widget-integration. The language will be autodetected by Altcha if possible."/>
+          value="Renders an Altcha CAPTCHA widget. Details can be found in the CaptchaController.java.
+           The language will be autodetected by Altcha if possible."/>
 
 <script type="module" src="/assets/common/libs/altcha/altcha.i18n.umd.js"></script>
 
 <altcha-widget id="@id"
-               @if(hideLogo) {hidelogo}
-               @if(hideFooter) {hidefooter}
+               @if(hideLogo) { hidelogo }
+               @if(hideFooter) { hidefooter }
                auto="@auto"
                challengeurl="@challengeUrl">
 </altcha-widget>
