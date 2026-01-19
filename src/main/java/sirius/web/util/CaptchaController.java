@@ -8,9 +8,9 @@
 
 package sirius.web.util;
 
-import com.google.common.io.BaseEncoding;
 import org.altcha.altcha.Altcha;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.web.controller.BasicController;
@@ -19,8 +19,6 @@ import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
-
-import java.security.SecureRandom;
 
 /**
  * Provides captcha related functionality for bot/spam-protection in forms.
@@ -36,8 +34,8 @@ public class CaptchaController extends BasicController {
 
     private static final String NLS_CAPTCHA_FAILED = "CaptchaController.captchaFailed";
 
-    private static final String CAPTCHA_CHALLENGE_HMAC_KEY =
-            BaseEncoding.base32().encode(new SecureRandom().generateSeed(8));
+    @ConfigValue("http.captcha.secret")
+    private static String captchaSecret;
 
     /**
      * Provides a captcha challenge for form submissions.
@@ -51,7 +49,7 @@ public class CaptchaController extends BasicController {
     public void captchaChallenge(WebContext webContext, JSONStructuredOutput output) {
         try {
             Altcha.ChallengeOptions options = new Altcha.ChallengeOptions();
-            options.hmacKey = CAPTCHA_CHALLENGE_HMAC_KEY;
+            options.hmacKey = captchaSecret;
 
             Altcha.Challenge challenge = Altcha.createChallenge(options);
             output.property("algorithm", challenge.algorithm);
@@ -77,7 +75,7 @@ public class CaptchaController extends BasicController {
                 throw Exceptions.createHandled().withNLSKey(NLS_CAPTCHA_FAILED).handle();
             }
 
-            boolean isValid = Altcha.verifySolution(payload, CAPTCHA_CHALLENGE_HMAC_KEY, true);
+            boolean isValid = Altcha.verifySolution(payload, captchaSecret, true);
             if (!isValid) {
                 throw Exceptions.createHandled().withNLSKey(NLS_CAPTCHA_FAILED).handle();
             }
