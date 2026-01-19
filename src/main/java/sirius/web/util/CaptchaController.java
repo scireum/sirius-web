@@ -22,6 +22,7 @@ import sirius.web.services.JSONStructuredOutput;
 
 /**
  * Provides captcha related functionality for bot/spam-protection in forms.
+ * <p>
  * This may be helpful for public forms like contact or registration forms.
  * For more information, see <a href="https://github.com/altcha-org/altcha">Altcha on GitHub</a>.
  * To use the captcha, a challenge is requested via {@link #captchaChallenge(WebContext, JSONStructuredOutput)} by the
