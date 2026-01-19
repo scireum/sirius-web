@@ -27,7 +27,6 @@ import sirius.web.services.JSONStructuredOutput;
  * To use the captcha, a challenge is requested via {@link #captchaChallenge(WebContext, JSONStructuredOutput)} by the
  * Taglib t:captcha. To verify the solution, {@link #verifyCaptcha(WebContext)} must be
  * implemented in the form-submit Route to make protection work properly.
- *
  */
 @Register(classes = {CaptchaController.class, Controller.class})
 public class CaptchaController extends BasicController {
@@ -39,6 +38,7 @@ public class CaptchaController extends BasicController {
 
     /**
      * Provides a captcha challenge for form submissions.
+     * <p>
      * Called by the Taglib t:captcha to obtain a new challenge.
      *
      * @param webContext the current request
@@ -64,6 +64,7 @@ public class CaptchaController extends BasicController {
 
     /**
      * Verifies the captcha solution contained in the given context.
+     * <p>
      * This method should be called in form-submit routes to verify the captcha solution.
      *
      * @param webContext the web context containing the captcha solution
