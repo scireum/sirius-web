@@ -48,6 +48,31 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
      */
     public static final String PDF_PASTA = "pdf-pasta-gotenberg-chromium";
 
+    /**
+     * Key to override the author metadata for Gotenberg.
+     */
+    public static final String KEY_METADATA_AUTHOR = "gotenberg.metadata.author";
+
+    /**
+     * Key to override the creator metadata for Gotenberg.
+     */
+    public static final String KEY_METADATA_CREATOR = "gotenberg.metadata.creator";
+
+    /**
+     * Key to override the producer metadata for Gotenberg.
+     */
+    public static final String KEY_METADATA_PRODUCER = "gotenberg.metadata.producer";
+
+    /**
+     * Key to override the title metadata for Gotenberg.
+     */
+    public static final String KEY_METADATA_TITLE = "gotenberg.metadata.title";
+
+    /**
+     * Key to override the subject metadata for Gotenberg.
+     */
+    public static final String KEY_METADATA_SUBJECT = "gotenberg.metadata.subject";
+
     @SuppressWarnings("java:S1075")
     @Explain("The path is fixed by Gotenberg's API.")
     private static final String GOTENBERG_CHROMIUM_PATH = "/forms/chromium/convert/html";
@@ -92,27 +117,27 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
         ObjectNode metadata = Json.createObject()
                                   .put("Author",
                                        generator.getContext()
-                                                .getValue("gotenberg.metadata.author")
+                                                .getValue(KEY_METADATA_AUTHOR)
                                                 .asOptionalString()
                                                 .orElse(gotenbergDefaultAuthor))
                                   .put("Creator",
                                        generator.getContext()
-                                                .getValue("gotenberg.metadata.creator")
+                                                .getValue(KEY_METADATA_CREATOR)
                                                 .asOptionalString()
                                                 .orElse(gotenbergDefaultCreator))
                                   .put("Producer",
                                        generator.getContext()
-                                                .getValue("gotenberg.metadata.producer")
+                                                .getValue(KEY_METADATA_PRODUCER)
                                                 .asOptionalString()
                                                 .orElse(gotenbergDefaultProducer))
                                   .put("Title",
                                        generator.getContext()
-                                                .getValue("gotenberg.metadata.title")
+                                                .getValue(KEY_METADATA_TITLE)
                                                 .asOptionalString()
                                                 .orElse(gotenbergDefaultTitle))
                                   .put("Subject",
                                        generator.getContext()
-                                                .getValue("gotenberg.metadata.subject")
+                                                .getValue(KEY_METADATA_SUBJECT)
                                                 .asOptionalString()
                                                 .orElse(gotenbergDefaultSubject));
 
