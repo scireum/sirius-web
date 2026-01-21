@@ -122,6 +122,15 @@
             <version>1.19</version>
         </dependency>
 
+        <!-- Used to send multipart data to Gotenberg for PDF generation -->
+        <!-- Changelog: https://hc.apache.org/news.html -->
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+            <version>5.6</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- POI is used to generate excel exports -->
         <!-- Changelog: https://poi.apache.org/changes.html -->
         <dependency>
