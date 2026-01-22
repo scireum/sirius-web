@@ -109,8 +109,6 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
     @Explain("The path is fixed by Gotenberg's API.")
     private static final String GOTENBERG_CHROMIUM_PATH = "/forms/chromium/convert/html";
 
-    private URI gotenbergChromiumUri;
-
     @Part
     private Tagliatelle tagliatelle;
 
@@ -236,11 +234,7 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
                                                                                  .orElse(gotenbergDefaultMarginRight))
                                                            .build();
 
-        if (gotenbergChromiumUri == null) {
-            gotenbergChromiumUri = URI.create(gotenbergHost + GOTENBERG_CHROMIUM_PATH);
-        }
-
-        HttpPost postRequest = new HttpPost(gotenbergChromiumUri);
+        HttpPost postRequest = new HttpPost(URI.create(gotenbergHost + GOTENBERG_CHROMIUM_PATH));
         postRequest.setEntity(multipartEntity);
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
