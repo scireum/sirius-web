@@ -73,6 +73,36 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
      */
     public static final String KEY_METADATA_SUBJECT = "gotenberg.metadata.subject";
 
+    /**
+     * Key to override the page width for Gotenberg.
+     */
+    public static final String KEY_PAGE_WIDTH = "gotenberg.page.width";
+
+    /**
+     * Key to override the page height for Gotenberg.
+     */
+    public static final String KEY_PAGE_HEIGHT = "gotenberg.page.height";
+
+    /**
+     * Key to override the top page margin for Gotenberg.
+     */
+    public static final String KEY_PAGE_MARGIN_TOP = "gotenberg.page.marginTop";
+
+    /**
+     * Key to override the bottom page margin for Gotenberg.
+     */
+    public static final String KEY_PAGE_MARGIN_BOTTOM = "gotenberg.page.marginBottom";
+
+    /**
+     * Key to override the left page margin for Gotenberg.
+     */
+    public static final String KEY_PAGE_MARGIN_LEFT = "gotenberg.page.marginLeft";
+
+    /**
+     * Key to override the right page margin for Gotenberg.
+     */
+    public static final String KEY_PAGE_MARGIN_RIGHT = "gotenberg.page.marginRight";
+
     @SuppressWarnings("java:S1075")
     @Explain("The path is fixed by Gotenberg's API.")
     private static final String GOTENBERG_CHROMIUM_PATH = "/forms/chromium/convert/html";
@@ -99,6 +129,24 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
 
     @ConfigValue("tagliatelle.gotenberg.metadata.subject")
     private String gotenbergDefaultSubject;
+
+    @ConfigValue("tagliatelle.gotenberg.page.width")
+    private String gotenbergDefaultPageWidth;
+
+    @ConfigValue("tagliatelle.gotenberg.page.height")
+    private String gotenbergDefaultPageHeight;
+
+    @ConfigValue("tagliatelle.gotenberg.page.marginTop")
+    private String gotenbergDefaultMarginTop;
+
+    @ConfigValue("tagliatelle.gotenberg.page.marginBottom")
+    private String gotenbergDefaultMarginBottom;
+
+    @ConfigValue("tagliatelle.gotenberg.page.marginLeft")
+    private String gotenbergDefaultMarginLeft;
+
+    @ConfigValue("tagliatelle.gotenberg.page.marginRight")
+    private String gotenbergDefaultMarginRight;
 
     @Override
     public boolean generate(Generator generator, OutputStream out) throws Exception {
@@ -153,6 +201,37 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
                                                            .addTextBody("metadata", Json.write(metadata))
                                                            .addTextBody("generateDocumentOutline", "true")
                                                            .addTextBody("generateTaggedPdf", "true")
+                                                           .addTextBody("preferCssPageSize", "true")
+                                                           .addTextBody("paperWidth",
+                                                                        generator.getContext()
+                                                                                 .getValue(KEY_PAGE_WIDTH)
+                                                                                 .asOptionalString()
+                                                                                 .orElse(gotenbergDefaultPageWidth))
+                                                           .addTextBody("paperHeight",
+                                                                        generator.getContext()
+                                                                                 .getValue(KEY_PAGE_HEIGHT)
+                                                                                 .asOptionalString()
+                                                                                 .orElse(gotenbergDefaultPageHeight))
+                                                           .addTextBody("marginTop",
+                                                                        generator.getContext()
+                                                                                 .getValue(KEY_PAGE_MARGIN_TOP)
+                                                                                 .asOptionalString()
+                                                                                 .orElse(gotenbergDefaultMarginTop))
+                                                           .addTextBody("marginBottom",
+                                                                        generator.getContext()
+                                                                                 .getValue(KEY_PAGE_MARGIN_BOTTOM)
+                                                                                 .asOptionalString()
+                                                                                 .orElse(gotenbergDefaultMarginBottom))
+                                                           .addTextBody("marginLeft",
+                                                                        generator.getContext()
+                                                                                 .getValue(KEY_PAGE_MARGIN_LEFT)
+                                                                                 .asOptionalString()
+                                                                                 .orElse(gotenbergDefaultMarginLeft))
+                                                           .addTextBody("marginRight",
+                                                                        generator.getContext()
+                                                                                 .getValue(KEY_PAGE_MARGIN_RIGHT)
+                                                                                 .asOptionalString()
+                                                                                 .orElse(gotenbergDefaultMarginRight))
                                                            .build();
 
         if (gotenbergChromiumUri == null) {
