@@ -39,6 +39,40 @@ import java.nio.charset.StandardCharsets;
  * This handler expects <em>Tagliatelle</em> as template language which must generate valid HTML output. This HTML is
  * then post-processed by <em>Chromium</em> via <em>Gotenberg</em> to generate a PDF file. The name of this handler is
  * <b>{@value #PDF_PASTA}</b> and the file extension should be <b>.pdf.pasta</b>.
+ * <h6>Running Gotenberg</h6>
+ * To use this handler, a running instance of <em><a href="https://gotenberg.dev/">Gotenberg</a></em> must be available.
+ * You can run Gotenberg using <em>Docker</em> by adding a service like this to your <em>docker-compose.yml</em>:
+ * <pre>gotenberg:
+ * image: gotenberg/gotenberg:8
+ * ports:
+ *   - "3000:3000"
+ * hostname: gotenberg</pre>
+ * <h6>Metadata</h6>
+ * Various metadata fields such as author, title, subject, etc. can be set for the generated PDF file. These can either
+ * be defined via configuration values or can be overridden on a per-generation basis by setting specific
+ * {@linkplain Generator#getContext() context} values:
+ * <ul>
+ *     <li><b>{@link #KEY_METADATA_AUTHOR}</b>: Overrides the author string
+ *     <li><b>{@link #KEY_METADATA_CREATOR}</b>: Overrides the creator metadata
+ *     <li><b>{@link #KEY_METADATA_PRODUCER}</b>: Overrides the producer metadata
+ *     <li><b>{@link #KEY_METADATA_TITLE}</b>: Overrides the title metadata
+ *     <li><b>{@link #KEY_METADATA_SUBJECT}</b>: Overrides the subject
+ * </ul>
+ * <h6>Page Size and Margins</h6>
+ * The page size and margins can also be configured globally or overridden on a per-generation basis by setting specific
+ * {@linkplain Generator#getContext() context} values:
+ * <ul>
+ *     <li><b>{@link #KEY_PAGE_WIDTH}</b>: Overrides the page width
+ *     <li><b>{@link #KEY_PAGE_HEIGHT}</b>: Overrides the page height
+ *     <li><b>{@link #KEY_PAGE_MARGIN_TOP}</b>: Overrides the top
+ *     <li><b>{@link #KEY_PAGE_MARGIN_BOTTOM}</b>: Overrides the bottom margin
+ *     <li><b>{@link #KEY_PAGE_MARGIN_LEFT}</b>: Overrides the left
+ *     <li><b>{@link #KEY_PAGE_MARGIN_RIGHT}</b>: Overrides the right margin
+ * </ul>
+ * <h6>Note for Developer Systems</h6>
+ * Typically, a template file will use images. Make sure that such resources are either given inline as data blobs or
+ * using fully qualified URLs containing a real host name or IP. Gotenberg runs in a separate container and will not be
+ * able to resolve <em>localhost</em> or <em>127.0.0.1</em> to your development system.
  *
  * @see <a href="https://gotenberg.dev/docs/routes">Gotenberg API</a>
  */
@@ -51,57 +85,96 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
     public static final String PDF_PASTA = "pdf-pasta-gotenberg-chromium";
 
     /**
-     * Key to override the author metadata for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the PDF file's author information. If the context
+     * contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#metadata-chromium">Gotenberg API documentation on metadata</a>
      */
     public static final String KEY_METADATA_AUTHOR = "gotenberg.metadata.author";
 
     /**
-     * Key to override the creator metadata for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the PDF file's creator information. If the context
+     * contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#metadata-chromium">Gotenberg API documentation on metadata</a>
      */
     public static final String KEY_METADATA_CREATOR = "gotenberg.metadata.creator";
 
     /**
-     * Key to override the producer metadata for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the PDF file's producer information. If the context
+     * contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#metadata-chromium">Gotenberg API documentation on metadata</a>
      */
     public static final String KEY_METADATA_PRODUCER = "gotenberg.metadata.producer";
 
     /**
-     * Key to override the title metadata for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the PDF file's title information. If the context
+     * contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#metadata-chromium">Gotenberg API documentation on metadata</a>
      */
     public static final String KEY_METADATA_TITLE = "gotenberg.metadata.title";
 
     /**
-     * Key to override the subject metadata for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the PDF file's subject information. If the context
+     * contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#metadata-chromium">Gotenberg API documentation on metadata</a>
      */
     public static final String KEY_METADATA_SUBJECT = "gotenberg.metadata.subject";
 
     /**
-     * Key to override the page width for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the page width. The value should contain a valid CSS
+     * size including a unit (e.g. "8.5in" or "210mm"). If the unit is omitted, the default unit is inches. If the
+     * context contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#page-properties-chromium">Gotenberg API documentation on page properties</a>
      */
     public static final String KEY_PAGE_WIDTH = "gotenberg.page.width";
 
     /**
-     * Key to override the page height for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the page height. The value should contain a valid CSS
+     * size including a unit (e.g. "11in" or "297mm"). If the unit is omitted, the default unit is inches. If the
+     * context contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#page-properties-chromium">Gotenberg API documentation on page properties</a>
      */
     public static final String KEY_PAGE_HEIGHT = "gotenberg.page.height";
 
     /**
-     * Key to override the top page margin for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the top margin. The value should contain a valid CSS
+     * size including a unit (e.g. "11in" or "297mm"). If the unit is omitted, the default unit is inches. If the
+     * context contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#page-properties-chromium">Gotenberg API documentation on page properties</a>
      */
     public static final String KEY_PAGE_MARGIN_TOP = "gotenberg.page.marginTop";
 
     /**
-     * Key to override the bottom page margin for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the bottom margin. The value should contain a valid CSS
+     * size including a unit (e.g. "11in" or "297mm"). If the unit is omitted, the default unit is inches. If the
+     * context contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#page-properties-chromium">Gotenberg API documentation on page properties</a>
      */
     public static final String KEY_PAGE_MARGIN_BOTTOM = "gotenberg.page.marginBottom";
 
     /**
-     * Key to override the left page margin for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the left margin. The value should contain a valid CSS
+     * size including a unit (e.g. "11in" or "297mm"). If the unit is omitted, the default unit is inches. If the
+     * context contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#page-properties-chromium">Gotenberg API documentation on page properties</a>
      */
     public static final String KEY_PAGE_MARGIN_LEFT = "gotenberg.page.marginLeft";
 
     /**
-     * Key to override the right page margin for Gotenberg.
+     * {@linkplain Generator#getContext() Context} key to override the right margin. The value should contain a valid CSS
+     * size including a unit (e.g. "11in" or "297mm"). If the unit is omitted, the default unit is inches. If the
+     * context contains a value for this key, it is used instead of the configured default.
+     *
+     * @see <a href="https://gotenberg.dev/docs/routes#page-properties-chromium">Gotenberg API documentation on page properties</a>
      */
     public static final String KEY_PAGE_MARGIN_RIGHT = "gotenberg.page.marginRight";
 
