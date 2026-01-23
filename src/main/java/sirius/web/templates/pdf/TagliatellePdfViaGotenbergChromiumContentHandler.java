@@ -38,7 +38,7 @@ import java.nio.charset.StandardCharsets;
  * <p>
  * This handler expects <em>Tagliatelle</em> as template language which must generate valid HTML output. This HTML is
  * then post-processed by <em>Chromium</em> via <em>Gotenberg</em> to generate a PDF file. The name of this handler is
- * <b>{@value #PDF_PASTA}</b> and the expected file extension is <b>.pdf.pasta</b>.
+ * <b>{@value #PDF_PASTA}</b> and the file extension should be <b>.pdf.pasta</b>.
  *
  * @see <a href="https://gotenberg.dev/docs/routes">Gotenberg API</a>
  */
@@ -150,7 +150,7 @@ public class TagliatellePdfViaGotenbergChromiumContentHandler extends Tagliatell
 
     @Override
     public boolean generate(Generator generator, OutputStream out) throws Exception {
-        if (!PDF_PASTA.equals(generator.getHandlerType()) && !generator.isTemplateFileExtension("pdf.pasta")) {
+        if (!PDF_PASTA.equals(generator.getHandlerType())) {
             return false;
         }
 
