@@ -162,7 +162,7 @@
             _wrapper.appendChild(_dots);
             _slides.forEach(function (_slide, index) {
                 const _dot = document.createElement('a');
-                _dot.textContent = '●';
+                _dot.textContent = '○';
                 _dot.addEventListener('click', function (event) {
                     stopAnimationThread();
                     activateView(index, 1, columns !== 1);
@@ -321,11 +321,14 @@
                 // deactivate all dots
                 for (let i = 0; i < _dotList.length; i++) {
                     _dotList.item(i).classList.remove("sci-slider-dot-active");
+                    _dotList.item(i).textContent = '○';
                 }
 
                 // activate the dots for the current view and the next `columns` views
                 for (let i = 0; i < columns; i++) {
-                    _dotList.item((currentIndex + i) % _slides.length).classList.add("sci-slider-dot-active");
+                    const activeDot = _dotList.item((currentIndex + i) % _slides.length);
+                    activeDot.classList.add("sci-slider-dot-active");
+                    activeDot.textContent = '●';
                 }
             }
 
