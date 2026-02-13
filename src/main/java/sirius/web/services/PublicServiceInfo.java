@@ -140,6 +140,9 @@ public class PublicServiceInfo {
             return "blue";
         }
         if (httpMethod == HttpMethod.HEAD) {
+            return "orange";
+        }
+        if (httpMethod == HttpMethod.DELETE) {
             return "violet";
         }
         return "grey";
