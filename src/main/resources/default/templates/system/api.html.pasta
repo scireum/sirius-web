@@ -23,7 +23,7 @@
 
     <t:sidebar class="sticky-sidebar sticky-top mb-4">
         <i:block name="sidebar">
-            <t:navbox labelKey="template.html.tableOfContent.heading">
+            <t:navbox>
                 <i:for type="sirius.web.services.PublicServiceInfo" var="service" items="api.getServices()">
                     <t:navboxLink url="@apply('#%s', service.getAnchor())" muted="@service.isDeprecated()">
                         <div class="d-flex align-items-center gap-1">
