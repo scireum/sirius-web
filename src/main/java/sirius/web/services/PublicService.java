@@ -63,6 +63,7 @@ public @interface PublicService {
      * UI ({@link ApiController}).
      *
      * @return the name of the API section to which this service belongs
+     * @see PublicApiSectionInfo
      */
     String apiSection() default "";
 

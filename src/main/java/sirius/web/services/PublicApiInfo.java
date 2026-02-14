@@ -17,9 +17,35 @@ import java.util.List;
 /**
  * Provides a description of a public web API.
  * <p>
- * An API is a collection of {@link PublicServiceInfo services}. Each service is described using a
- * {@link PublicService} annotation, and the whole API itself is documented by creating a proper section
- * in the system config under <tt>http.api</tt>.
+ * An API is a collection of related {@linkplain PublicServiceInfo services} that may be grouped further into
+ * {@linkplain PublicApiSectionInfo sections}. Each service is described using a {@link PublicService} annotation, and
+ * the whole API itself is documented by creating a proper section in the system config under <tt>http.api</tt>. A
+ * typical configuration for an API with sections looks like this:
+ * <pre>
+ * http.api {
+ *     SomeAPI {
+ *         priority = 100
+ *         label = "Some API"
+ *         description = "Provides various services for doing something with some API."
+ *         requiredRoles = "feature-api"
+ *
+ *         sections {
+ *             export {
+ *                 label = "Export"
+ *                 description = "Contains services to export data via some API."
+ *                 priority = 100
+ *             }
+ *         }
+ *     }
+ * }
+ * </pre>
+ * Then, a public service can be added to the "Export" section of the "SomeAPI" API like this:
+ * <pre>
+ * {@literal @}PublicService(apiName = "SomeAPI", apiSection = "export")
+ * {@literal @}Routed("/some-api/export")
+ * </pre>
+ *
+ * @see PublicApiSectionInfo
  */
 public class PublicApiInfo {
 
