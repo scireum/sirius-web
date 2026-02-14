@@ -8,9 +8,9 @@
 
 package sirius.web.services;
 
-import org.apache.logging.log4j.util.Strings;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Files;
+import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Priorized;
 import sirius.kernel.settings.Extension;
 
