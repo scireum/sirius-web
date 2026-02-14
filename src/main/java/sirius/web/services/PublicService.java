@@ -51,8 +51,21 @@ public @interface PublicService {
      * API there has to be a block in the system config (see <tt>http.api</tt>).
      *
      * @return the name of the API to which this service belongs
+     * @see PublicApiInfo
      */
     String apiName();
+
+    /**
+     * Specifies the API section to which this service belongs. This can either be an identifier used in the system
+     * config (<tt>http.api.&lt;apiName&gt;.sections.&lt;apiSection&gt;</tt>), or a human-readable name.
+     * <p>
+     * An API section is a collection of services which belong to the same API, but are grouped closer together in the
+     * UI ({@link ApiController}).
+     *
+     * @return the name of the API section to which this service belongs
+     * @see PublicApiSectionInfo
+     */
+    String apiSection() default "";
 
     /**
      * Specifies a custom path to use.
