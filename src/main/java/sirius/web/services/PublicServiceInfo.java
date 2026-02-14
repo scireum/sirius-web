@@ -232,6 +232,10 @@ public class PublicServiceInfo {
         return anchor;
     }
 
+    public String getApiSection() {
+        return info.apiSection();
+    }
+
     private static String formatUri(String uri) {
         return URI_PARAMETER_PATTERN.matcher(uri)
                                     .replaceAll("<span style=\"color: var(--bs-code-color);\">{$1}</span>");
