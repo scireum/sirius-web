@@ -110,11 +110,14 @@
                             <div class="mt-4">
                                 <h5>@(pathComponents.size() == 1 ? "Path Component" : "Path Components")</h5>
                                 <table class="table" style="table-layout: fixed">
+                                    <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th colspan="2">Description</th>
                                         <th>Example</th>
                                     </tr>
+                                    </thead>
+                                    <tbody>
                                     <i:for type="io.swagger.v3.oas.annotations.Parameter"
                                            var="pathComponent"
                                            items="pathComponents">
@@ -131,6 +134,7 @@
                                             <td class="font-monospace whitespace-pre-wrap">@pathComponent.example()</td>
                                         </tr>
                                     </i:for>
+                                    </tbody>
                                 </table>
                             </div>
                         </i:if>
@@ -139,11 +143,14 @@
                             <div class="mt-4">
                                 <h5>@(parameters.size() == 1 ? "Parameter" : "Parameters")</h5>
                                 <table class="table" style="table-layout: fixed">
+                                    <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th colspan="2">Description</th>
                                         <th>Example</th>
                                     </tr>
+                                    </thead>
+                                    <tbody>
                                     <i:for type="io.swagger.v3.oas.annotations.Parameter"
                                            var="parameter"
                                            items="parameters">
@@ -162,6 +169,7 @@
                                             <td class="font-monospace whitespace-pre-wrap">@parameter.example()</td>
                                         </tr>
                                     </i:for>
+                                    </tbody>
                                 </table>
                             </div>
                         </i:if>
@@ -217,8 +225,10 @@
                                 <h5>Responses</h5>
                                 <table class="table table-hover" style="table-layout: fixed">
                                     <thead>
+                                    <tr>
                                     <th>Description</th>
                                     <th class="col-md-8">Example</th>
+                                    </tr>
                                     </thead>
                                     <tbody>
                                     <i:for type="io.swagger.v3.oas.annotations.responses.ApiResponse" var="response"
