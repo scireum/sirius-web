@@ -1,0 +1,39 @@
+<i:arg type="sirius.web.services.PublicServiceInfo" name="service"/>
+
+<div class="card card-border mb-4" id="@service.getAnchor()">
+    <div class="card-body">
+        <h4 class="card-title d-flex align-items-center">
+            <a href="@apply('#%s', service.getAnchor())"
+               class="@if (service.isDeprecated()) { text-muted text-decoration-line-through } else { text-black text-decoration-none }">
+                @service.getLabel()
+            </a>
+            <i:if test="service.isDeprecated()">
+                <t:tag color="red-light" class="ms-2" marginBottom="0">Deprecated</t:tag>
+            </i:if>
+        </h4>
+        <p>
+            <i:raw>@service.getDescription()</i:raw>
+        </p>
+        <i:if test="isFilled(service.getDocumentationUri())">
+            <p>
+                <a href="@service.getDocumentationUri()"><i class="fa-solid fa-file-alt"></i> Documentation</a>
+            </p>
+        </i:if>
+
+        <div class="p-2" style="border-radius: 4px; background-color: #EEEEEE">
+            <i:invoke template="/templates/system/service-format-tag.html.pasta"
+                      service="@service"/>
+
+            <span class="font-monospace whitespace-pre-wrap"><i:raw>@service.getFormattedUri()</i:raw></span>
+        </div>
+
+        <i:invoke template="/templates/system/api/service-path-components.html.pasta"
+                  service="@service"/>
+        <i:invoke template="/templates/system/api/service-parameters.html.pasta"
+                  service="@service"/>
+        <i:invoke template="/templates/system/api/service-request-bodies.html.pasta"
+                  service="@service"/>
+        <i:invoke template="/templates/system/api/service-responses.html.pasta"
+                  service="@service"/>
+    </div>
+</div>

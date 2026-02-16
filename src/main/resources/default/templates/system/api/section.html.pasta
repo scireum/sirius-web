@@ -1,0 +1,21 @@
+<i:arg type="sirius.web.services.PublicApiSectionInfo" name="section"/>
+
+<i:if test="isFilled(section.getLabel()) || isFilled(section.getDescription())">
+    <div class="ps-3 pe-3 pt-3 mt-1 mb-4 border-top"
+         id="@section.getAnchor()">
+        <i:if test="isFilled(section.getLabel())">
+            <h2>@expandMessage(smartTranslate(section.getLabel()))</h2>
+        </i:if>
+
+        <i:if test="isFilled(section.getDescription())">
+            <div>
+                <i:raw>@expandMessage(smartTranslate(section.getDescription()))</i:raw>
+            </div>
+        </i:if>
+    </div>
+</i:if>
+
+<i:for type="sirius.web.services.PublicServiceInfo" var="service" items="section.getServices()">
+    <i:invoke template="/templates/system/api/service.html.pasta"
+              service="@service"/>
+</i:for>

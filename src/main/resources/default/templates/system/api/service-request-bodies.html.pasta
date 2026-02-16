@@ -1,0 +1,49 @@
+<i:arg type="sirius.web.services.PublicServiceInfo" name="service"/>
+
+<i:if test="!service.getRequestBodies().isEmpty()">
+    <div class="mt-4">
+        <h5>Requests</h5>
+        <table class="table table-hover" style="table-layout: fixed">
+            <thead>
+            <tr>
+                <th>Description</th>
+                <th class="col-md-8">Example</th>
+            </tr>
+            </thead>
+            <tbody>
+            <i:for type="io.swagger.v3.oas.annotations.parameters.RequestBody"
+                   var="request"
+                   items="service.getRequestBodies()">
+                <tr>
+                    <i:local name="requestContents" value="@toList(request.content())"/>
+                    <i:if test="!requestContents.isEmpty()">
+                        <i:local name="requestContent"
+                                 value="requestContents.get(0).as(io.swagger.v3.oas.annotations.media.Content.class)"/>
+                        <td>
+                            <span><i:raw>@expandMessage(smartTranslate(request.description()))</i:raw></span>
+                            <i:if test="@isFilled(requestContent.mediaType())">
+                                <div class="mt-2"><strong>Content-Type:</strong>
+                                    @requestContent.mediaType()
+                                </div>
+                            </i:if>
+                        </td>
+                        <td>
+                            <i:for type="io.swagger.v3.oas.annotations.media.ExampleObject"
+                                   var="example"
+                                   items="@toList(requestContent.examples())">
+                                <pre class="prettyprint p-2">@example.value()</pre>
+                            </i:for>
+                        </td>
+
+                        <i:else>
+                            <td>
+                                <i:raw>@expandMessage(smartTranslate(request.description()))</i:raw>
+                            </td>
+                        </i:else>
+                    </i:if>
+                </tr>
+            </i:for>
+            </tbody>
+        </table>
+    </div>
+</i:if>

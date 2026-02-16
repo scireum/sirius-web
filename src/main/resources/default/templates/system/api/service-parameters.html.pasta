@@ -1,0 +1,37 @@
+<i:arg type="sirius.web.services.PublicServiceInfo" name="service"/>
+
+<i:local name="parameters" value="service.getParameters()"/>
+<i:if test="!parameters.isEmpty()">
+    <div class="mt-4">
+        <h5>@(parameters.size() == 1 ? "Parameter" : "Parameters")</h5>
+        <table class="table" style="table-layout: fixed">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th colspan="2">Description</th>
+                <th>Example</th>
+            </tr>
+            </thead>
+            <tbody>
+            <i:for type="io.swagger.v3.oas.annotations.Parameter"
+                   var="parameter"
+                   items="parameters">
+                <tr>
+                    <td class="@if (parameter.required()) { fw-bold }">
+                        @parameter.name()
+                        <i:if test="@parameter.required()">
+                            <div>
+                                <t:fullTag color="orange" class="align-text-top">Required</t:fullTag>
+                            </div>
+                        </i:if>
+                    </td>
+                    <td colspan="2">
+                        <i:raw>@expandMessage(smartTranslate(parameter.description()))</i:raw>
+                    </td>
+                    <td class="font-monospace whitespace-pre-wrap">@parameter.example()</td>
+                </tr>
+            </i:for>
+            </tbody>
+        </table>
+    </div>
+</i:if>
