@@ -30,7 +30,7 @@
                             <a href="#@section.getAnchor()"
                                class="text-decoration-none"
                                style="color: inherit;">
-                                @section.getLabel()
+                                @expandMessage(smartTranslate(section.getLabel()))
                             </a>
                         </li>
                     </i:if>
@@ -66,12 +66,12 @@
                 <div class="ps-3 pe-3 pt-3 mt-1 mb-4 border-top"
                      id="@section.getAnchor()">
                     <i:if test="isFilled(section.getLabel())">
-                        <h2>@section.getLabel()</h2>
+                        <h2>@expandMessage(smartTranslate(section.getLabel()))</h2>
                     </i:if>
 
                     <i:if test="isFilled(section.getDescription())">
                         <div>
-                            <i:raw>@section.getDescription()</i:raw>
+                            <i:raw>@expandMessage(smartTranslate(section.getDescription()))</i:raw>
                         </div>
                     </i:if>
                 </div>
