@@ -140,6 +140,9 @@ public class PublicServiceInfo {
             return "blue";
         }
         if (httpMethod == HttpMethod.HEAD) {
+            return "orange";
+        }
+        if (httpMethod == HttpMethod.DELETE) {
             return "violet";
         }
         return "grey";
@@ -227,6 +230,10 @@ public class PublicServiceInfo {
 
     public String getAnchor() {
         return anchor;
+    }
+
+    public String getApiSection() {
+        return info.apiSection();
     }
 
     private static String formatUri(String uri) {

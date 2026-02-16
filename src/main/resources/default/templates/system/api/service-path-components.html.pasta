@@ -1,0 +1,35 @@
+<i:arg type="sirius.web.services.PublicServiceInfo" name="service"/>
+
+<i:local name="pathComponents" value="service.getPathComponents()"/>
+<i:if test="!pathComponents.isEmpty()">
+    <div class="mt-4">
+        <h5>@(pathComponents.size() == 1 ? "Path Component" : "Path Components")</h5>
+        <table class="table" style="table-layout: fixed">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th colspan="2">Description</th>
+                <th>Example</th>
+            </tr>
+            </thead>
+            <tbody>
+            <i:for type="io.swagger.v3.oas.annotations.Parameter"
+                   var="pathComponent"
+                   items="pathComponents">
+                <tr>
+                    <td class="fw-bold">
+                        @pathComponent.name()
+                        <div>
+                            <t:fullTag color="orange" class="align-text-top">Required</t:fullTag>
+                        </div>
+                    </td>
+                    <td colspan="2">
+                        <i:raw>@expandMessage(smartTranslate(pathComponent.description()))</i:raw>
+                    </td>
+                    <td class="font-monospace whitespace-pre-wrap">@pathComponent.example()</td>
+                </tr>
+            </i:for>
+            </tbody>
+        </table>
+    </div>
+</i:if>
