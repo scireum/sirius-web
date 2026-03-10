@@ -36,7 +36,8 @@ interface Options {
     showClearButton: boolean,
     enableTabulator: boolean,
     showSuggestionsOnFocus: boolean,
-    requestDelay: number
+    requestDelay: number,
+    maxInputLength?: number | null,
 }
 
 enum SelectModes {
@@ -162,7 +163,8 @@ class TokenAutocomplete {
         showClearButton: false,
         enableTabulator: true,
         showSuggestionsOnFocus: true,
-        requestDelay: 200
+        requestDelay: 200,
+        maxInputLength: null,
     };
     log: any;
 
@@ -214,6 +216,9 @@ class TokenAutocomplete {
             }
 
             this.textInput.contentEditable = 'true';
+            this.textInput.addEventListener('input', () => {
+                this.enforceMaxInputLength();
+            });
             this.textInput.addEventListener("paste", event => {
                 event.preventDefault();
                 if (event.clipboardData) {
@@ -382,6 +387,7 @@ class TokenAutocomplete {
 
     setCurrentInput(input: string, silent: boolean) {
         this.textInput.textContent = input;
+        this.enforceMaxInputLength();
         this.select.updateHasValue();
 
         if (silent) {
@@ -390,7 +396,7 @@ class TokenAutocomplete {
 
         this.container.dispatchEvent(new CustomEvent('query-changed', {
             detail: {
-                query: input
+                query: this.getCurrentInput()
             }
         }));
     }
@@ -461,6 +467,61 @@ class TokenAutocomplete {
                 // Intentionally left empty to only log when debugging is enabled.
             }
         }
+    }
+
+    private enforceMaxInputLength(): void {
+        const maxInputLength = this.options.maxInputLength ?? -1;
+        if (maxInputLength <= 0) {
+            return;
+        }
+
+        const input = this.getCurrentInput();
+        if (input.length >= maxInputLength) {
+            if (input.length > maxInputLength) {
+                const cursorPos = this.getInputCursorPosition() ?? maxInputLength;
+
+                this.textInput.textContent = input.slice(0, maxInputLength);
+                this.setInputCursorPosition(cursorPos);
+            }
+            this.showInputLimitReachedFeedback();
+        }
+    }
+
+    private getInputCursorPosition(): number | null {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return null;
+        }
+
+        const range = selection.getRangeAt(0);
+        if (!this.textInput.contains(range.startContainer)) {
+            return null;
+        }
+
+        return Math.min(range.startOffset, this.getCurrentInput().length);
+    }
+
+    private setInputCursorPosition(position: number): void {
+        const selection = window.getSelection();
+        if (!selection || !this.textInput.firstChild) {
+            return;
+        }
+
+        const range = document.createRange();
+        range.setStart(this.textInput.firstChild, Math.min(position, this.textInput.textContent?.length ?? 0));
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    private showInputLimitReachedFeedback(): void {
+        const markerClass = 'token-autocomplete-input-limit-reached';
+        this.container.classList.remove(markerClass);
+        void this.container.offsetWidth;
+        this.container.classList.add(markerClass);
+        this.container.addEventListener('animationend', () => {
+            this.container.classList.remove(markerClass);
+        }, {once: true});
     }
 
     static MultiSelect = class implements MultiSelect {

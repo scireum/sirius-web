@@ -118,7 +118,8 @@ var TokenAutocomplete = /** @class */ (function () {
             showClearButton: false,
             enableTabulator: true,
             showSuggestionsOnFocus: true,
-            requestDelay: 200
+            requestDelay: 200,
+            maxInputLength: null,
         };
         this.options = __assign(__assign({}, this.defaults), options);
         if (this.options.selector instanceof HTMLElement) {
@@ -160,6 +161,9 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.textInput.dataset.placeholder = this.options.placeholderText;
             }
             this.textInput.contentEditable = 'true';
+            this.textInput.addEventListener('input', function () {
+                _this.enforceMaxInputLength();
+            });
             this.textInput.addEventListener("paste", function (event) {
                 var _c, _d, _e;
                 event.preventDefault();
@@ -372,13 +376,14 @@ var TokenAutocomplete = /** @class */ (function () {
     };
     TokenAutocomplete.prototype.setCurrentInput = function (input, silent) {
         this.textInput.textContent = input;
+        this.enforceMaxInputLength();
         this.select.updateHasValue();
         if (silent) {
             return;
         }
         this.container.dispatchEvent(new CustomEvent('query-changed', {
             detail: {
-                query: input
+                query: this.getCurrentInput()
             }
         }));
     };
@@ -447,6 +452,55 @@ var TokenAutocomplete = /** @class */ (function () {
                 // Intentionally left empty to only log when debugging is enabled.
             };
         }
+    };
+    TokenAutocomplete.prototype.enforceMaxInputLength = function () {
+        var _c, _d;
+        var maxInputLength = (_c = this.options.maxInputLength) !== null && _c !== void 0 ? _c : -1;
+        if (maxInputLength <= 0) {
+            return;
+        }
+        var input = this.getCurrentInput();
+        if (input.length >= maxInputLength) {
+            if (input.length > maxInputLength) {
+                var cursorPos = (_d = this.getInputCursorPosition()) !== null && _d !== void 0 ? _d : maxInputLength;
+                this.textInput.textContent = input.slice(0, maxInputLength);
+                this.setInputCursorPosition(cursorPos);
+            }
+            this.showInputLimitReachedFeedback();
+        }
+    };
+    TokenAutocomplete.prototype.getInputCursorPosition = function () {
+        var selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) {
+            return null;
+        }
+        var range = selection.getRangeAt(0);
+        if (!this.textInput.contains(range.startContainer)) {
+            return null;
+        }
+        return Math.min(range.startOffset, this.getCurrentInput().length);
+    };
+    TokenAutocomplete.prototype.setInputCursorPosition = function (position) {
+        var _c, _d;
+        var selection = window.getSelection();
+        if (!selection || !this.textInput.firstChild) {
+            return;
+        }
+        var range = document.createRange();
+        range.setStart(this.textInput.firstChild, Math.min(position, (_d = (_c = this.textInput.textContent) === null || _c === void 0 ? void 0 : _c.length) !== null && _d !== void 0 ? _d : 0));
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    };
+    TokenAutocomplete.prototype.showInputLimitReachedFeedback = function () {
+        var _this = this;
+        var markerClass = 'token-autocomplete-input-limit-reached';
+        this.container.classList.remove(markerClass);
+        void this.container.offsetWidth;
+        this.container.classList.add(markerClass);
+        this.container.addEventListener('animationend', function () {
+            _this.container.classList.remove(markerClass);
+        }, { once: true });
     };
     TokenAutocomplete.escapeQuotes = function (text) {
         var _c;

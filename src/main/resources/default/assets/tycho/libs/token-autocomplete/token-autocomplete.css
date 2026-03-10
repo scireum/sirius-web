@@ -183,3 +183,13 @@
     position: absolute;
     right: 18px;
 }
+
+@keyframes token-autocomplete-limit-flash {
+    0%       { border-color: #D12600; box-shadow: 0 0 0 2px rgba(229, 88, 88, 0.3); }
+    100%     { border-color: #D12600; box-shadow: 0 0 0 0 rgba(229, 88, 88, 0); }
+}
+
+.token-autocomplete-container.token-autocomplete-input-limit-reached {
+    border-color: #D12600;
+    animation: token-autocomplete-limit-flash 0.3s ease-out;
+}
