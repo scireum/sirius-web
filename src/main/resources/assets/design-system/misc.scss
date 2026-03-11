@@ -401,10 +401,42 @@
   /* No need to redefine --preloader-border-width; it adjusts automatically */
 }
 
-
 @keyframes sciPreloader {
   to {
     transform: rotate(360deg);
+  }
+}
+
+.sci-preloader-bar {
+  --preloader-size: 2px; /* Default size */
+
+  height: var(--preloader-size);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: $sirius-primary;
+    transform-origin: left center;
+    animation: sciPreloaderBar 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes sciPreloaderBar {
+  0% {
+    transform: translateX(-40%) scaleX(0.4);
+  }
+  50% {
+    transform: translateX(20%) scaleX(0.6);
+  }
+  100% {
+    transform: translateX(100%) scaleX(0.4);
   }
 }
 
