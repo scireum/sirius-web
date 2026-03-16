@@ -319,7 +319,7 @@ sirius.postJson = function (url, params, useSearchParams, abortSignal) {
     return fetch(url, {
         method: "post",
         body: body,
-        signal: abortSignal,
+        signal: abortSignal
     }).then(function (response) {
         return response.json();
     });
