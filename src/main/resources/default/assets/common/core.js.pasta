@@ -300,9 +300,10 @@ sirius.getJSON = function (url, params) {
  *        are not sent to the server)
  * @param {boolean} [useSearchParams] if true, the parameters are sent as URLSearchParams instead of FormData. If the
  *        parameters are specified as URLSearchParams or query string, this is ignored
+ * @param {AbortSignal} [abortSignal] the signal to abort the request if necessary
  * @returns {Promise<any>} the received JSON data
  */
-sirius.postJson = function (url, params, useSearchParams) {
+sirius.postJson = function (url, params, useSearchParams, abortSignal) {
     let body;
 
     if (typeof params === 'string' || params instanceof URLSearchParams) {
@@ -317,7 +318,8 @@ sirius.postJson = function (url, params, useSearchParams) {
 
     return fetch(url, {
         method: "post",
-        body: body
+        body: body,
+        signal: abortSignal
     }).then(function (response) {
         return response.json();
     });
