@@ -46,7 +46,7 @@ public class BarcodePdfReplaceHandler extends PdfReplaceHandler {
 
         Image awtImage = BarcodeController.generateBarcodeImage(barcodeInfo[0], barcodeInfo[1], cssWidth, cssHeight);
 
-        FSImage fsImage = new ITextFSImage(com.lowagie.text.Image.getInstance(awtImage, Color.WHITE, true));
+        FSImage fsImage = new ITextFSImage(org.openpdf.text.Image.getInstance(awtImage, Color.WHITE, true));
 
         if (cssWidth != -1 || cssHeight != -1) {
             return fsImage.scale(cssWidth, cssHeight);
