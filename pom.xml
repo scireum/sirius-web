@@ -97,6 +97,13 @@
             <artifactId>utils-mail-dkim</artifactId>
             <version>3.2.2</version>
         </dependency>
+        <!-- Required, as the version provided by org.simplemail utils-mail-dkim 3.2.2 has security issues -->
+        <!-- Changelog: https://www.bouncycastle.org/download/bouncy-castle-java/#release-notes -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk18on</artifactId>
+            <version>1.83</version>
+        </dependency>
 
         <!-- Used to generate PDFs -->
         <!-- Changelog: https://github.com/flyingsaucerproject/flyingsaucer/releases -->
