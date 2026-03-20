@@ -12,7 +12,7 @@ import com.google.zxing.Writer;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
-import org.openpdf.text.Image;
+import com.lowagie.text.Image;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.pdf.ITextFSImage;

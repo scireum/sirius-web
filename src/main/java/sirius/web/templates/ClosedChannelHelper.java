@@ -8,8 +8,8 @@
 
 package sirius.web.templates;
 
+import com.lowagie.text.ExceptionConverter;
 import org.asynchttpclient.exception.ChannelClosedException;
-import org.openpdf.text.ExceptionConverter;
 
 import java.nio.channels.ClosedChannelException;
 
