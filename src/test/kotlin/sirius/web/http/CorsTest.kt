@@ -18,6 +18,9 @@ import java.net.URI
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+/**
+ * Note: These tests are currently not running successfully in local Maven execution.
+ */
 @ExtendWith(SiriusExtension::class)
 class CorsTest {
     @Test
