@@ -8,11 +8,14 @@
 
 package sirius.pasta.noodle.compiler;
 
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
+
 /**
  * Represents a generic test class.
  *
  * @param <T> the generic type of the test member
  */
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public abstract class NoodleTestRefBase<T> extends NoodleTestBase<String> {
 
     protected T id;

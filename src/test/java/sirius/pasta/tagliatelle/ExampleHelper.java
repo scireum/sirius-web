@@ -13,9 +13,11 @@ import sirius.web.security.HelperFactory;
 import sirius.web.security.ScopeInfo;
 
 import javax.annotation.Nonnull;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 public class ExampleHelper {
 
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTestValue() {
         return "test";
     }
