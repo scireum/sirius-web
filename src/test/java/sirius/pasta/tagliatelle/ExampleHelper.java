@@ -8,18 +8,15 @@
 
 package sirius.pasta.tagliatelle;
 
-import sirius.kernel.di.std.Register;
-import sirius.web.security.HelperFactory;
-import sirius.web.security.ScopeInfo;
-
-import javax.annotation.Nonnull;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
+/**
+ * Provides helper methods for testing Tagliatelle templates.
+ */
 public class ExampleHelper {
 
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTestValue() {
         return "test";
     }
-
 }
