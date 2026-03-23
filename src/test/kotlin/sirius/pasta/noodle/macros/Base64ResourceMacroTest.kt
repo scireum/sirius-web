@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
+import sirius.pasta.noodle.sandbox.SandboxMode
 import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import kotlin.test.assertEquals
@@ -24,7 +25,7 @@ class Base64ResourceMacroTest {
 
     @Test
     fun `Base64Resource inlines the encoded file with correct media type`() {
-        val context = tagliatelle.createInlineCompilationContext("inline", "@base64Resource('/assets/test.png')", null)
+        val context = tagliatelle.createInlineCompilationContext("inline", "@base64Resource('/assets/test.png')", SandboxMode.DISABLED, null)
         TemplateCompiler(context).compile()
 
         assertEquals(

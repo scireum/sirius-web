@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
+import sirius.pasta.noodle.sandbox.SandboxMode
 import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import kotlin.test.assertEquals
@@ -24,7 +25,7 @@ class InlineSvgResourceMacroTest {
 
     @Test
     fun `InlineSVG excludes the XML declaration`() {
-        val context = tagliatelle.createInlineCompilationContext("inline", "@inlineSVG('/assets/test.svg')", null)
+        val context = tagliatelle.createInlineCompilationContext("inline", "@inlineSVG('/assets/test.svg')", SandboxMode.DISABLED, null)
         TemplateCompiler(context).compile()
         assertEquals(
                 "<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"#000000\" height=\"32\" version=\"1.1\" viewBox=\"0 0 32 32\" width=\"32\">\n" +

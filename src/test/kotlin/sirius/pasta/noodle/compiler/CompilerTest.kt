@@ -18,6 +18,7 @@ import sirius.kernel.tokenizer.Position
 import sirius.pasta.noodle.Callable
 import sirius.pasta.noodle.ScriptingException
 import sirius.pasta.noodle.SimpleEnvironment
+import sirius.pasta.noodle.sandbox.SandboxMode
 import kotlin.test.assertEquals
 
 
@@ -31,7 +32,7 @@ import kotlin.test.assertEquals
 class CompilerTest {
 
     private fun compile(input: String): Callable {
-        val compilationContext = CompilationContext(SourceCodeInfo.forInlineCode(input))
+        val compilationContext = CompilationContext(SourceCodeInfo.forInlineCode(input, SandboxMode.DISABLED))
         val script = NoodleCompiler(
                 compilationContext.addImport(Position.UNKNOWN, "NoodleExample", NoodleExample::class.java)
         ).compileScript()

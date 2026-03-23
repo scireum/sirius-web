@@ -9,12 +9,14 @@
 package sirius.pasta.noodle.compiler;
 
 import sirius.kernel.commons.UnitOfWork;
+import sirius.pasta.noodle.sandbox.NoodleSandbox;
 
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.stream.Stream;
 
+@NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
 public class NoodleExample {
 
     private static String privateStaticField = "Hello from the other side";
