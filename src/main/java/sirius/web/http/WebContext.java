@@ -100,7 +100,7 @@ public class WebContext implements SubContext {
     /**
      * Defines the config key for enabling the automatic CORS handling.
      */
-    public static final String CONFIG_KEYS_CORS_ALLOW_ALL = "http.corsAllowAll";
+    public static final String CONFIG_KEY_CORS_ALLOW_ALL = "http.corsAllowAll";
 
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
@@ -387,7 +387,7 @@ public class WebContext implements SubContext {
     /**
      * Should the automatic CORS handling be done or not?
      */
-    @ConfigValue(CONFIG_KEYS_CORS_ALLOW_ALL)
+    @ConfigValue(CONFIG_KEY_CORS_ALLOW_ALL)
     private static boolean corsAllowAll;
 
     /**
@@ -435,7 +435,7 @@ public class WebContext implements SubContext {
      * @return {@code true} if automatic CORS handling should be applied, {@code false} otherwise
      */
     public static boolean isCorsAllowAll() {
-        return UserContext.getCurrentScope().getSettings().get(CONFIG_KEYS_CORS_ALLOW_ALL).asBoolean(corsAllowAll);
+        return UserContext.getCurrentScope().getSettings().get(CONFIG_KEY_CORS_ALLOW_ALL).asBoolean(corsAllowAll);
     }
 
     /**
