@@ -63,7 +63,7 @@ class CorsTest {
 
     @Test
     fun `global cors setting is used if scope does not define an override`() {
-        UserContext.get().setCurrentScope(configuredScope("default", true))
+        UserContext.get().setCurrentScope(configuredScope("default", null))
         assertTrue(WebContext.isCorsAllowAll())
     }
 
@@ -73,7 +73,7 @@ class CorsTest {
             scopeType,
             scopeType,
             null,
-            corsAllowAll?.let { { ConfigFactory.parseString("http.corsAllowAll=$it") } },
+            corsAllowAll?.let { value -> { ConfigFactory.parseString("http.corsAllowAll=$value") } },
             null
         )
 }
