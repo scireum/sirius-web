@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
+import sirius.pasta.noodle.sandbox.SandboxMode
 import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import kotlin.test.assertEquals
@@ -35,7 +36,7 @@ class I18nMacroTest {
         '@i18n("")'                                 | ''"""
     )
     fun `Basic scenarios of the macro work as expected`(input: String, output: String) {
-        val context = tagliatelle.createInlineCompilationContext("inline", input, null)
+        val context = tagliatelle.createInlineCompilationContext("inline", input, SandboxMode.DISABLED, null)
         TemplateCompiler(context).compile()
         assertEquals(output, context.template.renderToString())
     }
