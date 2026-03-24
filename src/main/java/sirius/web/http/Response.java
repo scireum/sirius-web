@@ -279,7 +279,7 @@ public class Response {
     }
 
     private void setupCors(DefaultHttpResponse response) {
-        if (!WebContext.corsAllowAll || response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
+        if (!WebContext.isCorsAllowAll() || response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
             return;
         }
 

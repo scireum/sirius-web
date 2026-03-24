@@ -8,14 +8,18 @@
 
 package sirius.web.http
 
+import com.typesafe.config.ConfigFactory
 import io.netty.handler.codec.http.HttpHeaderNames
 import io.netty.handler.codec.http.HttpMethod
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
+import sirius.web.security.ScopeInfo
+import sirius.web.security.UserContext
 import java.net.HttpURLConnection
 import java.net.URI
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @ExtendWith(SiriusExtension::class)
@@ -44,11 +48,32 @@ class CorsTest {
         connection.getInputStream().close()
         assertEquals("TEST", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
         assertTrue {
-            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString()).indexOf("GET") >= 0
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString()).contains("GET")
         }
         assertTrue {
-            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS.toString()).indexOf("X-Test") >= 0
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS.toString()).contains("X-Test")
         }
     }
 
+    @Test
+    fun `configured scope disables automatic cors even if global setting is enabled`() {
+        UserContext.get().setCurrentScope(configuredScope("corsDisabled", false))
+        assertFalse(WebContext.isCorsAllowAll())
+    }
+
+    @Test
+    fun `global cors setting is used if scope does not define an override`() {
+        UserContext.get().setCurrentScope(configuredScope("default", true))
+        assertTrue(WebContext.isCorsAllowAll())
+    }
+
+    private fun configuredScope(scopeType: String, corsAllowAll: Boolean?): ScopeInfo =
+        ScopeInfo(
+            scopeType,
+            scopeType,
+            scopeType,
+            null,
+            corsAllowAll?.let { { ConfigFactory.parseString("http.corsAllowAll=$it") } },
+            null
+        )
 }
