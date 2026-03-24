@@ -335,7 +335,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (currentRequest != null && currentCall != null) {
             CallContext.setCurrent(currentCall);
             if (!preDispatched) {
-                if (WebContext.corsAllowAll && isPreflightRequest()) {
+                if (WebContext.isCorsAllowAll() && isPreflightRequest()) {
                     handlePreflightRequest();
                 } else {
                     dispatch();

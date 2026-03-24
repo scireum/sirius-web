@@ -52,6 +52,7 @@ import sirius.kernel.xml.StructuredInput;
 import sirius.kernel.xml.XMLStructuredInput;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.Controller;
+import sirius.web.security.UserContext;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -95,6 +96,11 @@ import java.util.stream.Collectors;
  * This context can either be passed along as variable or be accessed using {@link WebContext#getCurrent()}.
  */
 public class WebContext implements SubContext {
+
+    /**
+     * Defines the config key for enabling the automatic CORS handling.
+     */
+    public static final String CONFIG_KEY_CORS_ALLOW_ALL = "http.corsAllowAll";
 
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
@@ -381,8 +387,8 @@ public class WebContext implements SubContext {
     /**
      * Should the automatic CORS handling be done or not?
      */
-    @ConfigValue("http.corsAllowAll")
-    protected static boolean corsAllowAll;
+    @ConfigValue(CONFIG_KEY_CORS_ALLOW_ALL)
+    private static boolean corsAllowAll;
 
     /**
      * Should a Strict-Transport-Security header be sent?
@@ -419,6 +425,17 @@ public class WebContext implements SubContext {
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public static WebContext getCurrent() {
         return CallContext.getCurrent().getOrCreateSubContext(WebContext.class);
+    }
+
+    /**
+     * Determines if automatic CORS handling is enabled for the current request scope.
+     * <p>
+     * If the active security scope defines {@code http.corsAllowAll}, that value overrides the global setting.
+     *
+     * @return {@code true} if automatic CORS handling should be applied, {@code false} otherwise
+     */
+    public static boolean isCorsAllowAll() {
+        return UserContext.getCurrentScope().getSettings().get(CONFIG_KEY_CORS_ALLOW_ALL).asBoolean(corsAllowAll);
     }
 
     /**
