@@ -50,7 +50,7 @@
         <dependency>
             <groupId>org.asynchttpclient</groupId>
             <artifactId>async-http-client</artifactId>
-            <version>3.0.7</version>
+            <version>3.0.9</version>
             <exclusions>
                 <exclusion>
                     <groupId>io.netty</groupId>
