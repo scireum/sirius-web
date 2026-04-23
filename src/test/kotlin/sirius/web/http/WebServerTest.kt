@@ -588,7 +588,7 @@ class WebServerTest {
         url.setDoInput(true)
         url.setDoOutput(true)
         val output = url.outputStream
-        for (index in 1..1024) {
+        repeat(1024) {
             output.write(testByteArray)
         }
         output.close()
@@ -617,7 +617,7 @@ class WebServerTest {
 
         // Write some data and flush so that the server triggers a response
         val output = url.outputStream
-        for (index in 0..1024) {
+        repeat(1025) {
             output.write(testByteArray)
         }
         output.flush()
@@ -625,7 +625,7 @@ class WebServerTest {
         // Slow down to ensure that the response is created and sent
         // Still no IOException is expected, as the server will discard all data..
         Wait.millis(200)
-        for (index in 0..1024) {
+        repeat(1025) {
             output.write(testByteArray)
         }
 

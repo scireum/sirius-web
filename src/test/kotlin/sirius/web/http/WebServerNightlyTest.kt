@@ -12,7 +12,8 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.channel.ChannelInitializer
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.MultiThreadIoEventLoopGroup
+import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.*
@@ -76,7 +77,7 @@ class WebServerNightlyTest {
 
         val responses = ArrayList<HttpResponse>()
 
-        val workerGroup = NioEventLoopGroup()
+        val workerGroup = MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory())
 
         try {
             val bootstrap = Bootstrap()
