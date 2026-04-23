@@ -397,17 +397,17 @@ class WebServerTest {
             bootstrap.group(workerGroup)
             bootstrap.channel(NioSocketChannel::class.java)
             bootstrap.handler(object : ChannelInitializer<SocketChannel>() {
-                override fun initChannel(ch: SocketChannel) {
-                    ch.pipeline().addLast(HttpClientCodec())
+                override fun initChannel(channel: SocketChannel) {
+                    channel.pipeline().addLast(HttpClientCodec())
                     // Aggregator must hold the full streaming payload (~20 MiB) per response.
-                    ch.pipeline().addLast(HttpObjectAggregator(64 * 1024 * 1024))
-                    ch.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
-                        override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-                            if (msg is FullHttpResponse) {
-                                receivedLengths.add(msg.content().readableBytes())
-                                msg.release()
+                    channel.pipeline().addLast(HttpObjectAggregator(64 * 1024 * 1024))
+                    channel.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
+                        override fun channelRead(context: ChannelHandlerContext, message: Any) {
+                            if (message is FullHttpResponse) {
+                                receivedLengths.add(message.content().readableBytes())
+                                message.release()
                                 if (receivedLengths.size >= 3) {
-                                    ctx.channel().close()
+                                    context.channel().close()
                                 }
                             }
                         }
@@ -440,8 +440,10 @@ class WebServerTest {
             assertTrue(channel.closeFuture().await(10, TimeUnit.SECONDS), "Timed out waiting for client channel close")
         } finally {
             workerGroup.shutdownGracefully()
-            assertTrue(workerGroup.terminationFuture().await(10, TimeUnit.SECONDS),
-                       "Timed out waiting for client event loop shutdown")
+            assertTrue(
+                workerGroup.terminationFuture().await(10, TimeUnit.SECONDS),
+                "Timed out waiting for client event loop shutdown"
+            )
         }
 
         assertEquals(3, receivedLengths.size, "Expected exactly 3 responses")

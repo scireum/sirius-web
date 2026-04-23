@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * The tracker works without any production-code change by attaching a [ChannelHandler] to the
  * front of the listening (server) channel's pipeline. Netty dispatches every accepted child
- * channel through the server channel's pipeline as a [channelRead] event (where `msg` is the new
+ * channel through the server channel's pipeline as a [channelRead] event (where `message` is the new
  * child [Channel]) before `ServerBootstrapAcceptor` takes over. By intercepting that event, the
  * tracker learns about every new connection and registers a close listener to forget the channel
  * when it terminates.
@@ -86,12 +86,12 @@ internal object TestChannelTracker {
 
     @ChannelHandler.Sharable
     private class Tracker : ChannelInboundHandlerAdapter() {
-        override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-            if (msg is Channel) {
-                active.add(msg)
-                msg.closeFuture().addListener { active.remove(msg) }
+        override fun channelRead(context: ChannelHandlerContext, message: Any) {
+            if (message is Channel) {
+                active.add(message)
+                message.closeFuture().addListener { active.remove(message) }
             }
-            super.channelRead(ctx, msg)
+            super.channelRead(context, message)
         }
     }
 }

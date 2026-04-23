@@ -366,13 +366,13 @@ public class TunnelHandler implements AsyncHandler<String> {
             }
             ChannelInboundHandlerAdapter bridge = new ChannelInboundHandlerAdapter() {
                 @Override
-                public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-                    mirrorWritabilityToUpstream(ctx.channel().isWritable());
-                    ctx.fireChannelWritabilityChanged();
+                public void channelWritabilityChanged(ChannelHandlerContext context) throws Exception {
+                    mirrorWritabilityToUpstream(context.channel().isWritable());
+                    context.fireChannelWritabilityChanged();
                 }
 
                 @Override
-                public void handlerRemoved(ChannelHandlerContext ctx) {
+                public void handlerRemoved(ChannelHandlerContext context) {
                     mirrorWritabilityToUpstream(true);
                 }
             };
@@ -411,25 +411,25 @@ public class TunnelHandler implements AsyncHandler<String> {
     @SuppressWarnings("resource")
     @Explain("The upstream eventLoop gets managed by Netty.")
     private void mirrorWritabilityToUpstream(boolean writable) {
-        Channel up = upstreamChannel;
-        if (up == null || !up.isOpen()) {
+        Channel upstream = upstreamChannel;
+        if (upstream == null || !upstream.isOpen()) {
             return;
         }
-        if (up.eventLoop().inEventLoop()) {
-            up.config().setAutoRead(writable);
+        if (upstream.eventLoop().inEventLoop()) {
+            upstream.config().setAutoRead(writable);
         } else {
-            up.eventLoop().execute(() -> {
-                if (up.isOpen()) {
-                    up.config().setAutoRead(writable);
+            upstream.eventLoop().execute(() -> {
+                if (upstream.isOpen()) {
+                    upstream.config().setAutoRead(writable);
                 }
             });
         }
     }
 
     private void commitAndCompleteResponse(HttpResponseBodyPart bodyPart, ByteBuf data) {
-        HttpResponse res = response.createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
-        HttpUtil.setContentLength(res, bodyPart.getBodyByteBuffer().remaining());
-        response.complete(response.commit(res));
+        HttpResponse fullResponse = response.createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
+        HttpUtil.setContentLength(fullResponse, bodyPart.getBodyByteBuffer().remaining());
+        response.complete(response.commit(fullResponse));
     }
 
     private void completeResponse(HttpResponseBodyPart bodyPart) throws Exception {
@@ -509,10 +509,10 @@ public class TunnelHandler implements AsyncHandler<String> {
             WebServer.LOG.FINE("Tunnel - COMPLETE for %s", webContext.getRequestedURI());
         }
         if (!webContext.responseCommitted) {
-            HttpResponse res =
+            HttpResponse fullResponse =
                     response.createFullResponse(HttpResponseStatus.valueOf(responseCode), true, Unpooled.EMPTY_BUFFER);
-            HttpUtil.setContentLength(res, 0);
-            response.complete(response.commit(res));
+            HttpUtil.setContentLength(fullResponse, 0);
+            response.complete(response.commit(fullResponse));
         } else if (!webContext.responseCompleted) {
             ChannelFuture writeFuture =
                     response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
