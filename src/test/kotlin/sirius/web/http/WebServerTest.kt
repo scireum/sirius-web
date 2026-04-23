@@ -15,13 +15,15 @@ import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInboundHandlerAdapter
 import io.netty.channel.ChannelInitializer
-import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.MultiThreadIoEventLoopGroup
+import io.netty.channel.nio.NioIoHandler
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.DefaultFullHttpRequest
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.HttpClientCodec
 import io.netty.handler.codec.http.HttpHeaderNames
+import io.netty.handler.codec.http.HttpHeaderValues
 import io.netty.handler.codec.http.HttpMethod
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -388,7 +390,7 @@ class WebServerTest {
     @Test
     fun `Sequential keep-alive tunnel requests do not leak the backpressure bridge`() {
         val receivedLengths = Collections.synchronizedList(ArrayList<Int>())
-        val workerGroup = NioEventLoopGroup()
+        val workerGroup = MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory())
 
         try {
             val bootstrap = Bootstrap()
@@ -438,6 +440,8 @@ class WebServerTest {
             assertTrue(channel.closeFuture().await(10, TimeUnit.SECONDS), "Timed out waiting for client channel close")
         } finally {
             workerGroup.shutdownGracefully()
+            assertTrue(workerGroup.terminationFuture().await(10, TimeUnit.SECONDS),
+                       "Timed out waiting for client event loop shutdown")
         }
 
         assertEquals(3, receivedLengths.size, "Expected exactly 3 responses")
@@ -591,7 +595,7 @@ class WebServerTest {
         val result = String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
 
         assertEquals(result, (testByteArray.size * 1024).toString())
-        assertEquals(HttpHeaderNames.KEEP_ALIVE.toString(), url.getHeaderField(HttpHeaderNames.CONNECTION.toString()))
+        assertEquals(HttpHeaderValues.KEEP_ALIVE.toString(), url.getHeaderField(HttpHeaderNames.CONNECTION.toString()))
     }
 
     /**
