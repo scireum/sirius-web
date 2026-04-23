@@ -11,9 +11,23 @@
 package sirius.web.http
 
 
+import io.netty.bootstrap.Bootstrap
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelInboundHandlerAdapter
+import io.netty.channel.ChannelInitializer
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.SocketChannel
+import io.netty.channel.socket.nio.NioSocketChannel
+import io.netty.handler.codec.http.DefaultFullHttpRequest
+import io.netty.handler.codec.http.FullHttpResponse
+import io.netty.handler.codec.http.HttpClientCodec
 import io.netty.handler.codec.http.HttpHeaderNames
+import io.netty.handler.codec.http.HttpMethod
+import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpResponseStatus
+import io.netty.handler.codec.http.HttpVersion
 import org.junit.jupiter.api.Test
+import sirius.web.dispatch.TestDispatcher
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -28,8 +42,11 @@ import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
 import java.io.IOException
 import java.net.HttpURLConnection
+import java.net.Socket
 import java.net.URI
 import java.nio.charset.StandardCharsets
+import java.util.Collections
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -319,6 +336,170 @@ class WebServerTest {
         val data = callAndRead(uri, null, expectedHeaders)
 
         assertEquals("{\"success\":true,\"error\":false,\"test\":true}", data)
+    }
+
+    /**
+     * Tunnels a streaming payload through the back-pressure bridge while the client deliberately
+     * reads slowly.
+     * <p>
+     * The payload exceeds Netty's default high watermark (64 KiB), which forces the bridge to
+     * toggle {@code autoRead} on the upstream channel. The test verifies that the full payload
+     * arrives intact, i.e. that back-pressure never deadlocks the tunnel and that
+     * {@code autoRead} is eventually restored.
+     */
+    @Test
+    fun `Large tunneled payload is delivered completely to a slow consumer`() {
+        val connection =
+            URI("http://localhost:9999/tunnel/streaming-payload").toURL().openConnection() as HttpURLConnection
+        connection.connect()
+
+        var totalBytes = 0
+        // Reads in 8 KiB blocks so the artificial per-iteration sleep still exercises the bridge
+        // across multiple writability transitions without inflating the test's wall-clock time.
+        val chunk = ByteArray(8 * 1024)
+        var read: Int
+        try {
+            connection.inputStream.use { input ->
+                while (input.read(chunk).also { read = it } > 0) {
+                    totalBytes += read
+                    Wait.millis(1)
+                }
+            }
+        } finally {
+            connection.disconnect()
+        }
+
+        assertEquals(TestDispatcher.STREAMING_PAYLOAD_TOTAL_BYTES, totalBytes)
+    }
+
+    /**
+     * Sends multiple HTTP/1.1 keep-alive requests over a single Netty channel and waits for each
+     * full response before sending the next request.
+     * <p>
+     * Each response tunnels a payload that exceeds Netty's high watermark.
+     * <p>
+     * This exercises the full lifecycle of the back-pressure bridge across connection reuse. If the
+     * bridge were not properly removed after a response, the next tunnel attempt would cause a
+     * {@code DuplicateChannelHandlerNameException} inside the server-side event loop. While Netty
+     * swallows that exception, the bridge would not be installed for subsequent requests, leaving
+     * them without any back-pressure protection and eventually leading to corrupt or incomplete
+     * responses under load.
+     */
+    @Test
+    fun `Sequential keep-alive tunnel requests do not leak the backpressure bridge`() {
+        val receivedLengths = Collections.synchronizedList(ArrayList<Int>())
+        val workerGroup = NioEventLoopGroup()
+
+        try {
+            val bootstrap = Bootstrap()
+            bootstrap.group(workerGroup)
+            bootstrap.channel(NioSocketChannel::class.java)
+            bootstrap.handler(object : ChannelInitializer<SocketChannel>() {
+                override fun initChannel(ch: SocketChannel) {
+                    ch.pipeline().addLast(HttpClientCodec())
+                    // Aggregator must hold the full streaming payload (~20 MiB) per response.
+                    ch.pipeline().addLast(HttpObjectAggregator(64 * 1024 * 1024))
+                    ch.pipeline().addLast(object : ChannelInboundHandlerAdapter() {
+                        override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
+                            if (msg is FullHttpResponse) {
+                                receivedLengths.add(msg.content().readableBytes())
+                                msg.release()
+                                if (receivedLengths.size >= 3) {
+                                    ctx.channel().close()
+                                }
+                            }
+                        }
+                    })
+                }
+            })
+
+            val channel = bootstrap.connect("localhost", 9999).sync().channel()
+            repeat(3) { requestIndex ->
+                val expectedResponses = requestIndex + 1
+                channel.writeAndFlush(
+                    DefaultFullHttpRequest(
+                        HttpVersion.HTTP_1_1,
+                        HttpMethod.GET,
+                        "/tunnel/streaming-payload"
+                    )
+                ).sync()
+
+                val deadline = System.currentTimeMillis() + 15_000
+                while (receivedLengths.size < expectedResponses && System.currentTimeMillis() < deadline) {
+                    Wait.millis(10)
+                }
+                assertEquals(
+                    expectedResponses,
+                    receivedLengths.size,
+                    "Timed out waiting for response ${requestIndex + 1}"
+                )
+            }
+            channel.close()
+            assertTrue(channel.closeFuture().await(10, TimeUnit.SECONDS), "Timed out waiting for client channel close")
+        } finally {
+            workerGroup.shutdownGracefully()
+        }
+
+        assertEquals(3, receivedLengths.size, "Expected exactly 3 responses")
+        receivedLengths.forEach { length ->
+            assertEquals(TestDispatcher.STREAMING_PAYLOAD_TOTAL_BYTES, length)
+        }
+    }
+
+    /**
+     * Proves that the back-pressure bridge in [TunnelHandler] keeps the server-side outbound
+     * buffer bounded when a client stops reading.
+     * <p>
+     * A raw TCP socket sends a request for a ~20 MiB streaming tunnel response and then never
+     * reads anything. While the request is in flight, the test samples the pending bytes in
+     * every server-side child channel's outbound buffer via [TestChannelTracker].
+     * <p>
+     * Without back-pressure, every body part returned by the upstream HTTP client is immediately
+     * pushed into the client channel's {@link io.netty.channel.ChannelOutboundBuffer}. Since the
+     * stalled client never drains the socket, the buffer grows monotonically toward the full
+     * payload size. With back-pressure, once the client channel's buffer crosses the high
+     * watermark, upstream {@code autoRead} is flipped off and the pipeline stabilises near the
+     * high watermark plus a small amount of slack.
+     */
+    @Test
+    fun `Back-pressure keeps tunnel outbound buffering bounded for a stalled consumer`() {
+        // Measures the exact number of bytes currently queued in every server-side child
+        // channel's outbound buffer. The tracker attaches to the listening channel's pipeline and
+        // therefore covers all HTTP connections to the test WebServer without any modification of
+        // production code.
+        TestChannelTracker.install()
+
+        Socket("localhost", 9999).use { socket ->
+            socket.getOutputStream().apply {
+                write(
+                    ("GET /tunnel/streaming-payload HTTP/1.1\r\n" +
+                            "Host: localhost\r\n" +
+                            "Connection: close\r\n\r\n").toByteArray(StandardCharsets.US_ASCII)
+                )
+                flush()
+            }
+
+            // Sample long enough that, without back-pressure, the entire 20 MiB payload would have
+            // been handed to the client channel's outbound buffer on localhost.
+            var peak = 0L
+            val deadline = System.currentTimeMillis() + 5_000
+            while (System.currentTimeMillis() < deadline) {
+                peak = maxOf(peak, TestChannelTracker.totalPendingOutboundBytes())
+                Wait.millis(25)
+            }
+
+            // Back-pressure keeps the in-flight buffering at ~ high watermark (64 KiB) plus HTTP
+            // framing overhead. Without it, the delta climbs toward the full payload size
+            // (~20 MiB). The threshold is intentionally generous for CI jitter.
+            val threshold = 1L * 1024 * 1024
+            val payload = TestDispatcher.STREAMING_PAYLOAD_TOTAL_BYTES.toLong()
+            assertTrue(
+                peak < threshold,
+                "Peak pending outbound bytes across all server channels: $peak " +
+                        "(payload = $payload, threshold = $threshold). " +
+                        "This indicates the tunnel is not applying back-pressure to the upstream channel."
+            )
+        }
     }
 
     /**
