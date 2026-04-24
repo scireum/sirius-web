@@ -12,6 +12,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultHttpContent;
 import io.netty.handler.codec.http.DefaultLastHttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -25,6 +27,7 @@ import org.asynchttpclient.HttpResponseBodyPart;
 import org.asynchttpclient.netty.request.NettyRequest;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.ValueHolder;
@@ -51,6 +54,8 @@ import java.util.stream.Collectors;
  * Performs tunneling into a request by reading from another.
  */
 public class TunnelHandler implements AsyncHandler<String> {
+
+    private static final String BACKPRESSURE_HANDLER_NAME = "tunnelBackpressure";
 
     private static final Set<String> NON_TUNNELLED_HEADERS =
             Set.of(HttpHeaderNames.TRANSFER_ENCODING.toString().toLowerCase(),
@@ -88,6 +93,12 @@ public class TunnelHandler implements AsyncHandler<String> {
     private volatile int responseCode = HttpResponseStatus.OK.code();
     private volatile boolean contentLengthKnown;
 
+    @SuppressWarnings("java:S3077")
+    @Explain("Assigned by AsyncHttpClient connection callbacks (including pooled connections) and read from Netty "
+             + "event-loop callbacks that mirror client writability to the upstream channel; volatile provides the "
+             + "required cross-thread visibility.")
+    private volatile Channel upstreamChannel;
+
     private volatile boolean failed;
 
     TunnelHandler(Response response,
@@ -118,6 +129,15 @@ public class TunnelHandler implements AsyncHandler<String> {
     @Override
     public void onTcpConnectSuccess(InetSocketAddress remoteAddress, Channel connection) {
         this.timeToConnect = watch.elapsedMillis();
+        this.upstreamChannel = connection;
+    }
+
+    @Override
+    public void onConnectionPooled(Channel connection) {
+        // Pooled connections never trigger onTcpConnectSuccess, but we still need a reference
+        // to the upstream channel to apply back-pressure (toggling autoRead) once the response
+        // headers have been received.
+        this.upstreamChannel = connection;
     }
 
     @Override
@@ -172,6 +192,8 @@ public class TunnelHandler implements AsyncHandler<String> {
     @Override
     public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
         CallContext.setCurrent(callContext);
+
+        installBackpressureBridge();
 
         if (webContext.responseCommitted) {
             if (WebServer.LOG.isFINE()) {
@@ -324,10 +346,90 @@ public class TunnelHandler implements AsyncHandler<String> {
         }
     }
 
+    /**
+     * Installs an inbound handler in the client-side pipeline which mirrors the writability of the client channel
+     * onto the upstream channel's {@code autoRead} flag.
+     * <p>
+     * This implements proper back-pressure based on Netty's write-buffer high/low watermarks: as soon as the
+     * outbound buffer of the slow client crosses the high watermark, reading from the upstream is paused; once it
+     * drops below the low watermark, reading is resumed.
+     */
+    @SuppressWarnings("resource")
+    @Explain("The clientChannel eventLoop gets managed by Netty. We must not close it here.")
+    private void installBackpressureBridge() {
+        Channel clientChannel = response.getChannelHandlerContext().channel();
+        clientChannel.eventLoop().execute(() -> {
+            if (clientChannel.pipeline().context(BACKPRESSURE_HANDLER_NAME) != null) {
+                // onHeadersReceived may be invoked more than once (e.g. for interim 1xx responses) -
+                // keep the bridge that was installed first.
+                return;
+            }
+            ChannelInboundHandlerAdapter bridge = new ChannelInboundHandlerAdapter() {
+                @Override
+                public void channelWritabilityChanged(ChannelHandlerContext context) throws Exception {
+                    mirrorWritabilityToUpstream(context.channel().isWritable());
+                    context.fireChannelWritabilityChanged();
+                }
+
+                @Override
+                public void handlerRemoved(ChannelHandlerContext context) {
+                    mirrorWritabilityToUpstream(true);
+                }
+            };
+            // The pipeline name "handler" is registered by WebServerInitializer for WebServerHandler.
+            if (clientChannel.pipeline().get("handler") != null) {
+                clientChannel.pipeline().addBefore("handler", BACKPRESSURE_HANDLER_NAME, bridge);
+            } else {
+                clientChannel.pipeline().addLast(BACKPRESSURE_HANDLER_NAME, bridge);
+            }
+            // channelWritabilityChanged only fires on transitions, so apply the current writability
+            // immediately to avoid missing an already-unwritable client at install time.
+            mirrorWritabilityToUpstream(clientChannel.isWritable());
+        });
+    }
+
+    @SuppressWarnings("resource")
+    @Explain("The clientChannel eventLoop gets managed by Netty.")
+    private void removeBackpressureBridge() {
+        Channel clientChannel = response.getChannelHandlerContext().channel();
+        clientChannel.eventLoop().execute(() -> {
+            if (clientChannel.pipeline().context(BACKPRESSURE_HANDLER_NAME) != null) {
+                // handlerRemoved restores the upstream autoRead flag.
+                clientChannel.pipeline().remove(BACKPRESSURE_HANDLER_NAME);
+            } else {
+                // Defensive fallback: if the handler was never actually added (e.g. the install
+                // lambda ran on an already closed pipeline), make sure upstream is not left paused.
+                mirrorWritabilityToUpstream(true);
+            }
+        });
+    }
+
+    /**
+     * Mirrors the given writability state onto the upstream channel's {@code autoRead} flag,
+     * making sure the mutation happens on the upstream channel's own event loop.
+     */
+    @SuppressWarnings("resource")
+    @Explain("The upstream eventLoop gets managed by Netty.")
+    private void mirrorWritabilityToUpstream(boolean writable) {
+        Channel upstream = upstreamChannel;
+        if (upstream == null || !upstream.isOpen()) {
+            return;
+        }
+        if (upstream.eventLoop().inEventLoop()) {
+            upstream.config().setAutoRead(writable);
+        } else {
+            upstream.eventLoop().execute(() -> {
+                if (upstream.isOpen()) {
+                    upstream.config().setAutoRead(writable);
+                }
+            });
+        }
+    }
+
     private void commitAndCompleteResponse(HttpResponseBodyPart bodyPart, ByteBuf data) {
-        HttpResponse res = response.createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
-        HttpUtil.setContentLength(res, bodyPart.getBodyByteBuffer().remaining());
-        response.complete(response.commit(res));
+        HttpResponse fullResponse = response.createFullResponse(HttpResponseStatus.valueOf(responseCode), true, data);
+        HttpUtil.setContentLength(fullResponse, bodyPart.getBodyByteBuffer().remaining());
+        response.complete(response.commit(fullResponse));
     }
 
     private void completeResponse(HttpResponseBodyPart bodyPart) throws Exception {
@@ -388,6 +490,8 @@ public class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public String onCompleted() throws Exception {
+        removeBackpressureBridge();
+
         if (completionHandler != null) {
             completionHandler.accept(this);
         }
@@ -405,10 +509,10 @@ public class TunnelHandler implements AsyncHandler<String> {
             WebServer.LOG.FINE("Tunnel - COMPLETE for %s", webContext.getRequestedURI());
         }
         if (!webContext.responseCommitted) {
-            HttpResponse res =
+            HttpResponse fullResponse =
                     response.createFullResponse(HttpResponseStatus.valueOf(responseCode), true, Unpooled.EMPTY_BUFFER);
-            HttpUtil.setContentLength(res, 0);
-            response.complete(response.commit(res));
+            HttpUtil.setContentLength(fullResponse, 0);
+            response.complete(response.commit(fullResponse));
         } else if (!webContext.responseCompleted) {
             ChannelFuture writeFuture =
                     response.getChannelHandlerContext().writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
@@ -467,6 +571,8 @@ public class TunnelHandler implements AsyncHandler<String> {
 
     @Override
     public void onThrowable(Throwable throwable) {
+        removeBackpressureBridge();
+
         CallContext.setCurrent(callContext);
 
         WebServer.LOG.WARN("Tunnel - ERROR %s for tunneling to '%s' performed at '%s'",

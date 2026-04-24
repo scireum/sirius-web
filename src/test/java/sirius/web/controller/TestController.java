@@ -168,6 +168,11 @@ public class TestController extends BasicController {
         webContext.respondWith().tunnel("http://localhost:9999/api/test/test_large");
     }
 
+    @Routed("/tunnel/streaming-payload")
+    public void tunnelStreamingPayload(WebContext webContext) {
+        webContext.respondWith().tunnel("http://localhost:9999/test/streaming-payload");
+    }
+
     @Routed("/tunnel/test_transform")
     public void tunnelTestTransform(WebContext webContext) {
         webContext.respondWith().tunnel("http://localhost:9999/api/test/test_large", buffer -> {

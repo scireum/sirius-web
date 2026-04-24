@@ -10,6 +10,7 @@ package sirius.web.dispatch;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.di.std.Register;
+import sirius.web.http.ChunkedOutputStream;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 
@@ -24,6 +25,16 @@ public class TestDispatcher implements WebDispatcher {
         return 100;
     }
 
+    /**
+     * Number of 18-byte chunks emitted by {@link #STREAMING_PAYLOAD_PATH}. Yields ~20 MiB per
+     * response, well above Netty's default high watermark (64 KiB) so that any test which slows
+     * down the consumer forces the tunnel's back-pressure bridge through multiple writability
+     * transitions.
+     */
+    public static final int STREAMING_PAYLOAD_CHUNKS = 1_200_000;
+    public static final int STREAMING_PAYLOAD_TOTAL_BYTES = STREAMING_PAYLOAD_CHUNKS * 18;
+    public static final String STREAMING_PAYLOAD_PATH = "/test/streaming-payload";
+
     @Override
     public DispatchDecision dispatch(WebContext ctx) throws Exception {
         if ("/large-blocking-calls".equalsIgnoreCase(ctx.getRequestedURI())) {
@@ -31,6 +42,22 @@ public class TestDispatcher implements WebDispatcher {
             OutputStream out = ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain");
             for (int i = 0; i < 10000000; i++) {
                 out.write("THISISLARGECONTENT".getBytes(StandardCharsets.UTF_8));
+            }
+            out.close();
+            return DispatchDecision.DONE;
+        }
+        if (STREAMING_PAYLOAD_PATH.equalsIgnoreCase(ctx.getRequestedURI())) {
+            // Contention control makes the dispatcher block until each chunk has been written to
+            // the socket, which emulates what a real remote backend would see under TCP flow
+            // control. Without it, the dispatcher would dump the entire payload into its own Netty
+            // outbound buffer on the same JVM, masking any back-pressure applied on the tunnel
+            // side.
+            ChunkedOutputStream out = ctx.respondWith()
+                                         .outputStream(HttpResponseStatus.OK, "text/plain")
+                                         .enableContentionControl();
+            byte[] chunk = "THISISLARGECONTENT".getBytes(StandardCharsets.UTF_8);
+            for (int i = 0; i < STREAMING_PAYLOAD_CHUNKS; i++) {
+                out.write(chunk);
             }
             out.close();
             return DispatchDecision.DONE;
