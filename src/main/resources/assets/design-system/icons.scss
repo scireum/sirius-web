@@ -266,6 +266,11 @@
   background-color: currentColor;
 }
 
+.sci-icon-box-archive {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/box-archive.svg'));
+  background-color: currentColor;
+}
+
 /**
  * LEGACY: Following are legacy icons with explicit color definitions. Please use the icons defined above.
  */
