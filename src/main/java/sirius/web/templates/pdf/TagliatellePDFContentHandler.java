@@ -8,11 +8,11 @@
 
 package sirius.web.templates.pdf;
 
-import com.lowagie.text.pdf.BaseFont;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Entities;
+import org.openpdf.text.pdf.BaseFont;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import sirius.kernel.di.std.Part;

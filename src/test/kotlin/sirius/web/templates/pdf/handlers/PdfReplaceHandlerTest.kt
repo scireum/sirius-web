@@ -8,11 +8,9 @@
 
 package sirius.web.templates.pdf.handlers
 
-import com.lowagie.text.ImgRaw
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
+import org.openpdf.text.ImgRaw
 import org.xhtmlrenderer.pdf.ITextFSImage
-import sirius.kernel.SiriusExtension
 import kotlin.test.assertEquals
 
 class PdfReplaceHandlerTest {

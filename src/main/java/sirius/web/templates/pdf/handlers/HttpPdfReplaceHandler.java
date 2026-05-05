@@ -8,7 +8,7 @@
 
 package sirius.web.templates.pdf.handlers;
 
-import com.lowagie.text.Image;
+import org.openpdf.text.Image;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.pdf.ITextFSImage;
