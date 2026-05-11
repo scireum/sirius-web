@@ -23,16 +23,16 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Note: These tests are currently not running successfully in local Maven execution.
+ * Tests the CORS handling of the web server.
+ *
+ * Note: Some tests set the restricted `Origin:` header, requiring `-Dsun.net.http.allowRestrictedHeaders=true`. This is
+ * enabled centrally in [SiriusExtension.beforeAll].
  */
 @ExtendWith(SiriusExtension::class)
 class CorsTest {
     @Test
     fun `expect 'Access-Control-Allow-Origin' for requests with 'origin'`() {
-        // Allow us to set the Origin: header...
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
         val connection = URI("http://localhost:9999/system/ok").toURL().openConnection() as HttpURLConnection
-        // Setting the "Origin: header" must be allowed by -Dsun.net.http.allowRestrictedHeaders=true
         connection.addRequestProperty("Origin", "TEST")
         connection.getInputStream().close()
         assertEquals("TEST", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
@@ -40,8 +40,6 @@ class CorsTest {
 
     @Test
     fun `expect a CORS preflight request to be answered correctly`() {
-        // Allow us to set the Origin: header...
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
         val connection = URI("http://localhost:9999/system/ok").toURL().openConnection() as HttpURLConnection
         connection.setRequestMethod(HttpMethod.OPTIONS.name())
         connection.addRequestProperty("Origin", "TEST")
