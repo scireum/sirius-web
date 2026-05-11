@@ -37,7 +37,6 @@ public class LegacyDefaultGlobalsHandler extends LegacyGlobalsHandler {
             case "tychoRoot" -> "config('product.tychoRoot')";
             case "tagLine" -> "config('product.tagLine')";
             case "contentSecurityPolicy" -> "config('http.contentSecurityPolicy')";
-            case "saml" -> "part(sirius.web.security.SAMLHelper.class)";
             case "csrf" -> "part(sirius.web.http.CSRFHelper.class)";
             default -> null;
         };
