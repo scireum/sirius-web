@@ -22,8 +22,7 @@ An overview of all versions can be found on [Sonatype](https://oss.sonatype.org/
 
 ## Frameworks
 
-- [Tagliatelle](src/main/java/sirius/pasta/tagliatelle/README.md)\
-Provides an extensible templating mechanism for server-side rendering
+- [Tagliatelle](src/main/java/sirius/pasta/tagliatelle/README.md): Provides an extensible templating mechanism for server-side rendering
 
 ## Contributions
 
