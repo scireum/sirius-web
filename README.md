@@ -20,6 +20,10 @@ To use this library in your own project include:
 ```
 An overview of all versions can be found on [Sonatype](https://oss.sonatype.org/content/groups/public/com/scireum/sirius-web/). Releases are also available in **Maven Central**
 
+## Frameworks
+
+- [Tagliatelle](src/main/java/sirius/pasta/tagliatelle/README.md): Provides an extensible templating mechanism for server-side rendering
+
 ## Contributions
 
 Contributions as issues or pull requests are always welcome. Please [sign off](http://developercertificate.org) 
