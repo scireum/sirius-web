@@ -156,19 +156,6 @@ public class ScopeInfo extends Composable {
      * {@link sirius.kernel.nls.NLS#setDefaultLanguage(String)}.
      *
      * @return the language code used by this scope or <tt>null</tt> if there is no specific language used
-     * @deprecated Use {@link #getLanguage()} instead.
-     */
-    @Nullable
-    @Deprecated
-    public final String getLang() {
-        return getLanguage();
-    }
-
-    /**
-     * Returns the two letter language code of this scope as understood by
-     * {@link sirius.kernel.nls.NLS#setDefaultLanguage(String)}.
-     *
-     * @return the language code used by this scope or <tt>null</tt> if there is no specific language used
      */
     @Nullable
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
@@ -579,24 +566,6 @@ public class ScopeInfo extends Composable {
      */
     public static boolean isKnownLanguage(String language) {
         return getKnownLanguages().contains(language);
-    }
-
-    /**
-     * Checks if the given language is supported. Returns the default language otherwise.
-     * <p>
-     * Note that if the given language is empty or <tt>null</tt>, this method will also return <tt>null</tt> as a call
-     * to {@link sirius.kernel.async.CallContext#setLanguage(String)} with <tt>null</tt> as parameter won't change
-     * the language at all.
-     *
-     * @param language the language to check
-     * @return <tt>lang</tt> if it was a supported language or the defaultLanguage otherwise, unless an empty string
-     * was passed in, in which case <tt>null</tt> is returned.
-     * @deprecated Use {@link #makeLanguage(String)} instead.
-     */
-    @Nullable
-    @Deprecated
-    public final String makeLang(@Nullable String language) {
-        return makeLanguage(language);
     }
 
     /**

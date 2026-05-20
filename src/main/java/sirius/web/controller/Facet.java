@@ -14,7 +14,6 @@ import sirius.kernel.commons.Strings;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.util.LinkBuilder;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,34 +32,6 @@ public class Facet {
     private int maxVisibleFacetItems;
     private final List<FacetItem> items = new ArrayList<>();
     private boolean multiSelect = false;
-
-    /**
-     * @deprecated Facet ranges are no longer supported
-     */
-    @Deprecated(forRemoval = true)
-    private FacetRange facetRange;
-
-    /**
-     * Creates a new faced with the given parameters.
-     *
-     * @param title      the visible name of the facet
-     * @param field      the internal name of the facet
-     * @param value      the selected value
-     * @param translator the translator which provides "official" labels for filter values.
-     * @deprecated Use the constructor which doesn't require a value - as this is most probably supplied later anyway.
-     */
-    @Deprecated(forRemoval = true)
-    public Facet(String title,
-                 String field,
-                 @Nullable String value,
-                 @Nullable ValueComputer<String, String> translator) {
-        this.name = field;
-        this.title = title;
-        if (value != null) {
-            this.values.add(value);
-        }
-        this.translator = translator;
-    }
 
     /**
      * Creates a new facet with the given parameters.
@@ -379,43 +350,5 @@ public class Facet {
         this.values.addAll(values);
 
         return this;
-    }
-
-    /**
-     * Returns the used facet range.
-     * <p>
-     * Note: This will be deprecated soon.
-     *
-     * @return the facet range
-     */
-    @SuppressWarnings("deprecation")
-    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
-    public FacetRange getRange() {
-        return facetRange;
-    }
-
-    /**
-     * Specifies the facet range to use for this facet.
-     *
-     * @param facetRange the facet range to use
-     * @return the facet itself for fluent method calls
-     * @deprecated FacetRange has been deprecated.
-     */
-    @Deprecated(forRemoval = true)
-    public Facet withRange(FacetRange facetRange) {
-        this.facetRange = facetRange;
-
-        return this;
-    }
-
-    /**
-     * Determines if this facet has a range for filtering values.
-     *
-     * @return <tt>true</tt> if this facet has a range, <tt>false</tt> otherwise
-     * @deprecated FacetRange has been deprecated.
-     */
-    @Deprecated(forRemoval = true)
-    public boolean hasRange() {
-        return facetRange != null;
     }
 }

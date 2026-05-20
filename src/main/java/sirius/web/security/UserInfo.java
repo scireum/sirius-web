@@ -182,18 +182,6 @@ public class UserInfo extends Composable {
          *
          * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
          * @return the builder itself for fluent method calls
-         * @deprecated Use {@link #withLanguage(String)} instead.
-         */
-        @Deprecated
-        public final Builder withLang(String language) {
-            return withLanguage(language);
-        }
-
-        /**
-         * Sets the language code of the user.
-         *
-         * @param language a two-letter language code which should be understood by {@link sirius.kernel.nls.NLS}.
-         * @return the builder itself for fluent method calls
          */
         public Builder withLanguage(String language) {
             verifyState();
@@ -325,17 +313,6 @@ public class UserInfo extends Composable {
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public String getTenantName() {
         return tenantName;
-    }
-
-    /**
-     * The language code of the user.
-     *
-     * @return the two-letter language code of the user
-     * @deprecated Use {@link #getLanguage()} instead.
-     */
-    @Deprecated
-    public final String getLang() {
-        return getLanguage();
     }
 
     /**
