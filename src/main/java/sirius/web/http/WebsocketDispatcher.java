@@ -18,9 +18,9 @@ package sirius.web.http;
 public interface WebsocketDispatcher {
 
     /**
-     * Returns the URI which is used to determine if a request is eligble for upgrading to web sockets.
+     * Returns the URI which is used to determine if a request is eligible for upgrading to web sockets.
      *
-     * @return the uri which is used to start websockets
+     * @return the URI which is used to start websockets
      */
     String getWebsocketUri();
 

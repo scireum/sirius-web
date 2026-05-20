@@ -68,7 +68,7 @@ public class BlockwiseMacro extends BasicMacro {
 
     @Override
     public String getDescription() {
-        return "Transforms an interable into a list of lists with a given size";
+        return "Transforms an iterable into a list of lists with a given size";
     }
 
     @Nonnull

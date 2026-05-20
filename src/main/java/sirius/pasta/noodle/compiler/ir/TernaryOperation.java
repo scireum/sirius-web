@@ -15,7 +15,7 @@ import sirius.pasta.noodle.compiler.CompilationContext;
 import java.lang.reflect.Type;
 
 /**
- * Represents a tenary operation.
+ * Represents a ternary operation.
  */
 public class TernaryOperation extends Node {
 
@@ -24,7 +24,7 @@ public class TernaryOperation extends Node {
     private final Node whenFalse;
 
     /**
-     * Creates a new tenary operation.
+     * Creates a new ternary operation.
      *
      * @param condition the condition to check
      * @param whenTrue  the expression to evaluate when the condition is <tt>true</tt>
@@ -75,6 +75,6 @@ public class TernaryOperation extends Node {
 
     @Override
     public String toString() {
-        return "TenaryOperation:" + condition + " ? " + whenTrue + " : " + whenFalse;
+        return "TernaryOperation:" + condition + " ? " + whenTrue + " : " + whenFalse;
     }
 }
