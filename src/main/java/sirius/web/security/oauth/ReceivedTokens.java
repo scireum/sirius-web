@@ -59,7 +59,7 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
                 LocalDateTime refreshTokenExpiresAt =
                         JWT.decode(refreshToken).getExpiresAtAsInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
                 return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, refreshTokenExpiresAt);
-            } catch (JWTDecodeException exception) {
+            } catch (JWTDecodeException _) {
                 // No valid JWT, fall back to implementation from OAuth expires_in or the default value
             }
         }

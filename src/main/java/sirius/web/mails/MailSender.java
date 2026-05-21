@@ -429,18 +429,6 @@ public class MailSender {
      *
      * @param languages an array of languages. The first non-empty value is used.
      * @return the builder itself
-     * @deprecated Use {@link #setLanguage(String...)} instead.
-     */
-    @Deprecated
-    public final MailSender setLang(String... languages) {
-        return setLanguage(languages);
-    }
-
-    /**
-     * Sets the language used to perform {@link sirius.kernel.nls.NLS} lookups when rendering templates.
-     *
-     * @param languages an array of languages. The first non-empty value is used.
-     * @return the builder itself
      */
     public MailSender setLanguage(String... languages) {
         if (languages == null) {
@@ -626,17 +614,6 @@ public class MailSender {
             return preDomainPart + IDN.toASCII(domain, IDN.ALLOW_UNASSIGNED);
         }
         return mailAddress;
-    }
-
-    /**
-     * Returns the language which is set for the mail for example to set NLS-keys in the context to the right language.
-     *
-     * @return the language
-     * @deprecated Use {@link #getLanguage()} instead.
-     */
-    @Deprecated
-    public final String getLang() {
-        return getLanguage();
     }
 
     /**

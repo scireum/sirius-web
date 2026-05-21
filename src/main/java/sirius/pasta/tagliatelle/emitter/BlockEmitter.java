@@ -15,7 +15,7 @@ import sirius.pasta.tagliatelle.rendering.LocalRenderContext;
  * Invokes a given parameter block.
  * <p>
  * Template blocks can be defined using <tt>&lt;i:block&gt;</tt>. These can be passed to a tag and invoked there. This
- * invokation is represented by this emitter. If no parameter value was given, the tag body (which is the
+ * invocation is represented by this emitter. If no parameter value was given, the tag body (which is the
  * <tt>alternative</tt>) is evaluated.
  */
 public class BlockEmitter extends Emitter {

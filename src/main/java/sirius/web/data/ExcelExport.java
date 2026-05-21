@@ -212,7 +212,7 @@ public class ExcelExport {
     /**
      * Creates an excel sheet, adds it to the current workbook and
      *
-     * @param name the name of the worksheet, if <tt>null</tt> a default name is choosen
+     * @param name the name of the worksheet, if <tt>null</tt> a default name is chosen
      */
     public void createSheet(@Nullable String name) {
         if (Strings.isFilled(name)) {
@@ -266,7 +266,7 @@ public class ExcelExport {
     /**
      * Creates a new export which uses the modern Excel format (.xlsx) in a special streaming mode.
      * <p>
-     * This is usefull when writing large amounts of data with a limited heap size as written rows are periodically written to disk
+     * This is useful when writing large amounts of data with a limited heap size as written rows are periodically written to disk
      * in contrast to the standard mode where all rows are kept in memory until the entire sheet is finalized.
      *
      * @return a new exporter using the modern Excel format
@@ -306,7 +306,7 @@ public class ExcelExport {
     /**
      * Creates a new export which uses the modern Excel format (.xlsx) in a special streaming mode.
      * <p>
-     * This is usefull when writing large amounts of data with a limited heap size as written rows are periodically written to disk
+     * This is useful when writing large amounts of data with a limited heap size as written rows are periodically written to disk
      * in contrast to the standard mode where all rows are kept in memory until the entire sheet is finalized.
      * If the the export should create a excel sheet with an default name, set the parameter
      * <tt>createDefaultSheet</tt> to true. Otherwise you must call {@link #createSheet(String)} with a name to create a

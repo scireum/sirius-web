@@ -28,13 +28,13 @@ public abstract class WebsocketSession {
     }
 
     /**
-     * Triggered when the websocket was sucessfully initialized.
+     * Triggered when the websocket was successfully initialized.
      */
     public void onWebsocketOpened() {
     }
 
     /**
-     * Tirggered when the websocket is closed.
+     * Triggered when the websocket is closed.
      */
     public void onWebsocketClosed() {
     }

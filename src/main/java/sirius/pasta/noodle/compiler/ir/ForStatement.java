@@ -8,8 +8,8 @@
 
 package sirius.pasta.noodle.compiler.ir;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.MethodPointer;
 import sirius.pasta.noodle.OpCode;
 import sirius.pasta.noodle.compiler.Assembler;
@@ -99,7 +99,7 @@ public class ForStatement extends Statement {
             loopBlock.emit(assembler);
             assembler.emitJump(OpCode.JMP_BACK, startLabel, position);
             endLabel.define();
-        } catch (IllegalAccessException | NoSuchMethodException e) {
+        } catch (IllegalAccessException | NoSuchMethodException _) {
             // This almost certainly cannot happen, therefore we handle it quite rude
             throw new IllegalStateException(Strings.apply(
                     "Failed to use reflection in order to setup loop construct for: %s",

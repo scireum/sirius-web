@@ -13,7 +13,6 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.Log;
-import sirius.kernel.nls.Formatter;
 import sirius.web.security.oauth.OAuth;
 import sirius.web.security.oauth.OAuthTokenProviderUtils;
 import sirius.web.services.JSONCall;
@@ -320,10 +319,6 @@ public class MicrosoftGraphApiMail {
                                     responseCode)
                             .handle();
         }
-    }
-
-    private URI createEndpoint(String user, String microsoftGraphApiEndpoint) {
-        return URI.create(Formatter.create(microsoftGraphApiEndpoint).set("user", user).format());
     }
 
     /**

@@ -96,7 +96,7 @@ public class Assembler {
      * Also, if the constant isn't built-in, the value is added to the constant pool of the generated script.
      *
      * @param constant the constant to push
-     * @param position the position in the souce code for which this push is generated
+     * @param position the position in the source code for which this push is generated
      */
     public void emitPushConstant(Object constant, Position position) {
         int sharedIndex = Invocation.SHARED_CONSTANT_POOL.getIndex(constant);

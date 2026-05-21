@@ -174,7 +174,7 @@ public class Color implements Expression {
         this.r = r;
         this.g = g;
         this.b = b;
-        this.a = Math.max(0f, Math.min(1f, a));
+        this.a = Math.clamp(a, 0f, 1f);
     }
 
     /**
@@ -249,7 +249,7 @@ public class Color implements Expression {
         double max = Math.max(red, Math.max(green, blue));
         double delta = max - min;
 
-        // Now calculate the luminace value by adding the max and min values and divide by 2.
+        // Now calculate the luminance value by adding the max and min values and divide by 2.
         double l = (min + max) / 2;
 
         // The next step is to find the Saturation.

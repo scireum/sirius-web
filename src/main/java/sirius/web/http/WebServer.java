@@ -33,6 +33,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.Startable;
 import sirius.kernel.Stoppable;
 import sirius.kernel.async.Operation;
+import sirius.kernel.commons.Outcall;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -48,7 +49,6 @@ import sirius.kernel.health.metrics.MetricProvider;
 import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.MetricsCollector;
 import sirius.kernel.timer.EveryTenSeconds;
-import sirius.kernel.commons.Outcall;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;
@@ -214,10 +214,10 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         if (filterRanges == null) {
             try {
                 filterRanges = IPRange.parseRangeSet(ipFilter);
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 Exceptions.handle()
                           .to(LOG)
-                          .error(e)
+                          .error(exception)
                           .withSystemErrorMessage(
                                   "Error parsing config value: 'http.firewall.filterIPs': %s (%s). Defaulting to localhost!")
                           .handle();
@@ -239,10 +239,10 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         if (proxyRanges == null) {
             try {
                 proxyRanges = IPRange.parseRangeSet(proxyIPs);
-            } catch (Exception e) {
+            } catch (Exception exception) {
                 Exceptions.handle()
                           .to(LOG)
-                          .error(e)
+                          .error(exception)
                           .withSystemErrorMessage("Error parsing config value: 'http.firewall.proxyIPs': %s (%s)")
                           .handle();
                 proxyRanges = IPRange.NO_FILTER;
@@ -302,15 +302,15 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
             }
 
             return InetAddress.getByName(forwardedForIp);
-        } catch (Exception e) {
-            Exceptions.ignore(e);
+        } catch (Exception exception) {
+            Exceptions.ignore(exception);
             WebServer.LOG.WARN(Strings.apply(
                     "Cannot parse X-Forwarded-For address: %s, Remote-IP: %s, Request: %s - %s (%s)",
                     forwardedFor,
                     ip,
                     request.uri(),
-                    e.getMessage(),
-                    e.getClass().getName()));
+                    exception.getMessage(),
+                    exception.getClass().getName()));
             return ip;
         }
     }
@@ -332,8 +332,8 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
             return Optional.of(Instant.from(Outcall.RFC2616_INSTANT.parse(httpDateHeader))
                                       .atZone(ZoneId.systemDefault())
                                       .toLocalDateTime());
-        } catch (DateTimeParseException e) {
-            Exceptions.ignore(e);
+        } catch (DateTimeParseException exception) {
+            Exceptions.ignore(exception);
             return Optional.empty();
         }
     }
@@ -418,21 +418,21 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
         reportSettings();
         configureNetty();
-        try (Operation op = new Operation(() -> "WebServer.createHTTPChannel:" + port, Duration.ofSeconds(15))) {
+        try (var _ = new Operation(() -> "WebServer.createHTTPChannel:" + port, Duration.ofSeconds(15))) {
             createHTTPChannel(port);
         }
         for (String additionalPort : additionalPorts) {
             Value additionalPortValue = Value.of(additionalPort);
             if (additionalPortValue.isNumeric()) {
-                try (Operation op = new Operation(() -> "WebServer.createHTTPChannel:" + additionalPort,
-                                                  Duration.ofSeconds(15))) {
+                try (var _ = new Operation(() -> "WebServer.createHTTPChannel:" + additionalPort,
+                                           Duration.ofSeconds(15))) {
                     createHTTPChannel(additionalPortValue.asInt(-1));
                 }
             }
         }
 
         if (ssl) {
-            try (Operation op = new Operation(() -> "WebServer.createHTTPSChannel", Duration.ofSeconds(15))) {
+            try (var _ = new Operation(() -> "WebServer.createHTTPSChannel", Duration.ofSeconds(15))) {
                 createHTTPSChannel();
             }
         }
@@ -483,7 +483,7 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
 
     private void configureNetty() {
         setupUploads();
-        try (Operation op = new Operation(() -> "WebServer.createEventLoop", Duration.ofSeconds(15))) {
+        try (var _ = new Operation(() -> "WebServer.createEventLoop", Duration.ofSeconds(15))) {
             eventLoop = createEventLoop("netty-");
         }
     }
@@ -580,21 +580,21 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     public void stopped() {
         stopChannel(channel, "http");
         stopChannel(sslChannel, "https");
-        try (Operation op = new Operation(() -> "eventLoop.shutdownGracefully", Duration.ofSeconds(15))) {
+        try (var _ = new Operation(() -> "eventLoop.shutdownGracefully", Duration.ofSeconds(15))) {
             eventLoop.shutdownGracefully();
         }
-        try (Operation op = new Operation(() -> "Response.closeAsyncClient", Duration.ofSeconds(15))) {
+        try (var _ = new Operation(() -> "Response.closeAsyncClient", Duration.ofSeconds(15))) {
             Response.closeAsyncClient();
         }
     }
 
     private void stopChannel(Channel channel, String name) {
-        try (Operation op = new Operation(() -> "stopChannel(" + name + ")", Duration.ofSeconds(15))) {
+        try (var _ = new Operation(() -> "stopChannel(" + name + ")", Duration.ofSeconds(15))) {
             if (channel != null) {
                 channel.close().sync();
             }
-        } catch (InterruptedException e) {
-            Exceptions.ignore(e);
+        } catch (InterruptedException exception) {
+            Exceptions.ignore(exception);
             LOG.SEVERE(Strings.apply("Interrupted while waiting for the %s channel to shut down", name));
             Thread.currentThread().interrupt();
         }
@@ -606,8 +606,8 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
             if (!eventLoop.terminationFuture().await(10, TimeUnit.SECONDS)) {
                 LOG.SEVERE("Worker Group did not shutdown within 10 seconds!");
             }
-        } catch (InterruptedException e) {
-            Exceptions.ignore(e);
+        } catch (InterruptedException exception) {
+            Exceptions.ignore(exception);
             LOG.SEVERE("Interrupted while waiting for the Worker Group to shut down");
             Thread.currentThread().interrupt();
         }
@@ -873,14 +873,14 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         }
     }
 
-    /*
+    /**
      * Used to notify the web server about an open connection
      */
     protected static void addOpenConnection(WebServerHandler webServerHandler) {
         openConnections.put(webServerHandler, webServerHandler);
     }
 
-    /*
+    /**
      * Used to notify the web server about an closed connection
      */
     protected static void removeOpenConnection(WebServerHandler webServerHandler) {

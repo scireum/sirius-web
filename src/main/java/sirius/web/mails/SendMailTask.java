@@ -137,8 +137,8 @@ class SendMailTask implements Runnable {
         checkForSimulation();
         determineTechnicalSender();
 
-        try (Operation op = new Operation(() -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
-                                          Duration.ofSeconds(30))) {
+        try (var _ = new Operation(() -> "Sending eMail: " + mail.subject + " to: " + mail.receiverEmail,
+                                   Duration.ofSeconds(30))) {
             if (mail.simulate) {
                 messageId = "SIMULATED";
                 success = true;
@@ -288,33 +288,33 @@ class SendMailTask implements Runnable {
     }
 
     private SMTPMessage createMessage(Session session) throws Exception {
-        SMTPMessage msg = new SMTPMessage(session);
-        msg.setSubject(mail.subject);
-        msg.setRecipients(Message.RecipientType.TO,
-                          new InternetAddress[]{new InternetAddress(mail.receiverEmail, mail.receiverName)});
-        setupReplyTo(msg);
-        setupSender(msg);
+        SMTPMessage message = new SMTPMessage(session);
+        message.setSubject(mail.subject);
+        message.setRecipients(Message.RecipientType.TO,
+                              new InternetAddress[]{new InternetAddress(mail.receiverEmail, mail.receiverName)});
+        setupReplyTo(message);
+        setupSender(message);
         if (Strings.isFilled(mail.html) || !mail.attachments.isEmpty()) {
             MimeMultipart content = createContent(mail.text, mail.html, mail.attachments);
-            msg.setContent(content);
-            msg.setHeader(CONTENT_TYPE, content.getContentType());
+            message.setContent(content);
+            message.setHeader(CONTENT_TYPE, content.getContentType());
         } else {
-            msg.setText(Objects.requireNonNullElse(mail.text, ""));
+            message.setText(Objects.requireNonNullElse(mail.text, ""));
         }
-        msg.setHeader(MIME_VERSION, MIME_VERSION_1_0);
+        message.setHeader(MIME_VERSION, MIME_VERSION_1_0);
         if (Strings.isFilled(mail.bounceToken)) {
-            msg.setHeader(X_BOUNCETOKEN, mail.bounceToken);
+            message.setHeader(X_BOUNCETOKEN, mail.bounceToken);
         }
-        msg.setHeader(X_MAILER, mailer);
-        for (Map.Entry<String, String> e : mail.headers.entrySet()) {
-            if (Strings.isEmpty(e.getValue())) {
-                msg.removeHeader(e.getKey());
+        message.setHeader(X_MAILER, mailer);
+        for (Map.Entry<String, String> entry : mail.headers.entrySet()) {
+            if (Strings.isEmpty(entry.getValue())) {
+                message.removeHeader(entry.getKey());
             } else {
-                msg.setHeader(e.getKey(), e.getValue());
+                message.setHeader(entry.getKey(), entry.getValue());
             }
         }
-        msg.setSentDate(new Date());
-        return msg;
+        message.setSentDate(new Date());
+        return message;
     }
 
     private static boolean isDkimDomain(String domain) {

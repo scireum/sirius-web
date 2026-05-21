@@ -8,7 +8,6 @@
 
 package sirius.pasta.noodle;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
@@ -16,6 +15,7 @@ import sirius.kernel.di.transformers.Transformable;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.Pasta;
 import sirius.pasta.noodle.compiler.ir.LambdaNode;
 import sirius.pasta.noodle.macros.Macro;
@@ -262,7 +262,7 @@ public class Invocation {
             } else {
                 push(field.get(pop()));
             }
-        } catch (Exception e) {
+        } catch (Exception _) {
             throw createVmError(Strings.apply("Cannot read the field %s of %s",
                                               field.getName(),
                                               field.getDeclaringClass().getName()));
@@ -278,7 +278,7 @@ public class Invocation {
                 Object self = pop();
                 field.set(self, pop());
             }
-        } catch (Exception e) {
+        } catch (Exception _) {
             throw createVmError(Strings.apply("Cannot store into the field %s of %s",
                                               field.getName(),
                                               field.getDeclaringClass().getName()));
@@ -360,7 +360,7 @@ public class Invocation {
         StringBuilder result = new StringBuilder(" Line:\n");
         result.append(offendingLine);
         result.append("\n");
-        result.append(" ".repeat(Math.max(0, position.getPos() - 2)));
+        result.repeat(" ", Math.max(0, position.getPos() - 2));
         result.append("^\n");
         return result.toString();
     }
@@ -469,14 +469,12 @@ public class Invocation {
 
     private void handleInvoke(int numberOfArguments, boolean isStatic) throws Throwable {
         Object target = pop();
-        if (target instanceof MethodPointer methodPointer) {
-            invokeMethod(numberOfArguments, isStatic, methodPointer.getMethodHandle());
-        } else if (target instanceof Macro macro) {
-            invokeMacro(numberOfArguments, macro);
-        } else if (target instanceof Constructor<?> constructor) {
-            invokeConstructor(numberOfArguments, constructor);
-        } else {
-            throw createVmError(Strings.apply("Cannot invoke: %s", target));
+        switch (target) {
+            case MethodPointer methodPointer ->
+                    invokeMethod(numberOfArguments, isStatic, methodPointer.getMethodHandle());
+            case Macro macro -> invokeMacro(numberOfArguments, macro);
+            case Constructor<?> constructor -> invokeConstructor(numberOfArguments, constructor);
+            default -> throw createVmError(Strings.apply("Cannot invoke: %s", target));
         }
     }
 

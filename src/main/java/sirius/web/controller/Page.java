@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Represents a slice of a result set which is being "paged through" and can provide filter facets.
@@ -205,23 +204,6 @@ public class Page<E> {
         }
 
         return this;
-    }
-
-    /**
-     * Specifies the supplier used to compute the facets available to further filter the page (or underlying data
-     * source).
-     *
-     * @param facetsSupplier the facets supplier computing the facets available for further filtering
-     * @return the page itself for fluent method calls
-     * @deprecated This method provides unneeded complexity and was never used.
-     */
-    @Deprecated(forRemoval = true)
-    public Page<E> withFacetsSupplier(Supplier<List<Facet>> facetsSupplier) {
-        if (facetsSupplier != null) {
-            return withFacets(facetsSupplier.get());
-        } else {
-            return this;
-        }
     }
 
     /**

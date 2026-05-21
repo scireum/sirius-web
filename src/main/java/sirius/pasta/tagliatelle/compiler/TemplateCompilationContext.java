@@ -151,7 +151,7 @@ public class TemplateCompilationContext extends CompilationContext {
         TemplateCompilationContext compilationContext = this;
         StringBuilder loop = new StringBuilder();
         while (compilationContext != null) {
-            if (loop.length() > 0) {
+            if (!loop.isEmpty()) {
                 loop.append("; ");
             }
             loop.append(compilationContext.getTemplate().getName());

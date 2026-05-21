@@ -8,11 +8,11 @@
 
 package sirius.pasta.tagliatelle.emitter;
 
-import sirius.kernel.tokenizer.Position;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
+import sirius.kernel.tokenizer.Position;
 import sirius.pasta.noodle.Callable;
 import sirius.pasta.noodle.ConstantCall;
 import sirius.pasta.noodle.ScriptingException;
@@ -28,21 +28,21 @@ import javax.annotation.Nonnull;
  */
 public class AttributeExpressionEmitter extends Emitter {
 
-    private final String attibuteName;
+    private final String attributeName;
     private final Callable attributeExpression;
 
     /**
      * Contains a new emitter with the given position.
      *
      * @param startOfBlock        the start position where the emitter was created
-     * @param attibuteName        the name of the attribute to emit
+     * @param attributeName       the name of the attribute to emit
      * @param attributeExpression the expression to evaluate and to output the result
      */
     public AttributeExpressionEmitter(@Nonnull Position startOfBlock,
-                                      String attibuteName,
+                                      String attributeName,
                                       Callable attributeExpression) {
         super(startOfBlock);
-        this.attibuteName = attibuteName;
+        this.attributeName = attributeName;
         this.attributeExpression = attributeExpression;
     }
 
@@ -53,12 +53,12 @@ public class AttributeExpressionEmitter extends Emitter {
     protected void emitToContext(@Nonnull LocalRenderContext context) throws Exception {
         Object value = attributeExpression.call(context);
         if (Boolean.TRUE.equals(value)) {
-            context.outputRaw(attibuteName);
+            context.outputRaw(attributeName);
             context.outputRaw("=\"");
-            context.outputRaw(attibuteName);
+            context.outputRaw(attributeName);
             context.outputRaw("\"");
         } else if (Strings.isFilled(value) && !Boolean.FALSE.equals(value)) {
-            context.outputRaw(attibuteName);
+            context.outputRaw(attributeName);
             context.outputRaw("=\"");
             context.outputRaw(NLS.toMachineString(value));
             context.outputRaw("\"");
@@ -75,14 +75,14 @@ public class AttributeExpressionEmitter extends Emitter {
             try {
                 Object value = attributeExpression.call(null);
                 if (Boolean.TRUE.equals(value)) {
-                    return new ConstantEmitter(startOfBlock).append(attibuteName)
+                    return new ConstantEmitter(startOfBlock).append(attributeName)
                                                             .append("=\"")
-                                                            .append(attibuteName)
+                                                            .append(attributeName)
                                                             .append("\"");
                 } else if (Strings.isEmpty(value) || Boolean.FALSE.equals(value)) {
                     return ConstantEmitter.EMPTY;
                 } else {
-                    return new ConstantEmitter(startOfBlock).append(attibuteName)
+                    return new ConstantEmitter(startOfBlock).append(attributeName)
                                                             .append("=\"")
                                                             .append(NLS.toMachineString(value))
                                                             .append("\"");

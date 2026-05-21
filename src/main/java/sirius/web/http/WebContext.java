@@ -442,17 +442,6 @@ public class WebContext implements SubContext {
      * Provides access to the underlying ChannelHandlerContext
      *
      * @return the underlying channel handler context
-     * @deprecated Use {@link #getChannelHandlerContext()} instead.
-     */
-    @Deprecated
-    public final ChannelHandlerContext getCtx() {
-        return getChannelHandlerContext();
-    }
-
-    /**
-     * Provides access to the underlying ChannelHandlerContext
-     *
-     * @return the underlying channel handler context
      */
     public ChannelHandlerContext getChannelHandlerContext() {
         return channelHandlerContext;
@@ -518,17 +507,6 @@ public class WebContext implements SubContext {
         }
 
         return completionPromise;
-    }
-
-    /**
-     * Sets the ChannelHandlerContext for this context.
-     *
-     * @param ctx the channel handler context to use
-     * @deprecated Use {@link #setChannelHandlerContext(ChannelHandlerContext)} instead.
-     */
-    @Deprecated
-    protected final void setCtx(ChannelHandlerContext ctx) {
-        setChannelHandlerContext(ctx);
     }
 
     /**
@@ -1543,18 +1521,6 @@ public class WebContext implements SubContext {
         }
 
         return sessionCookieSameSiteUnsecure;
-    }
-
-    /**
-     * Returns the accepted language of the client as two-letter language code.
-     *
-     * @return the two-letter code of the accepted language of the user agent or <tt>null</tt> if no valid accept
-     * language was found
-     * @deprecated Use {@link #fetchLanguage()} instead.
-     */
-    @Deprecated
-    public final Optional<String> getLang() {
-        return fetchLanguage();
     }
 
     /**

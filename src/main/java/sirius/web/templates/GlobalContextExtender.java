@@ -57,7 +57,7 @@ public interface GlobalContextExtender {
     }
 
     /**
-     * Collects the names and values of the globals avilable when generating content.
+     * Collects the names and values of the globals available when generating content.
      *
      * @param globalParameterCollector the collector to be supplied with the variable name and value.
      */
