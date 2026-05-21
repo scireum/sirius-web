@@ -32,7 +32,7 @@ public class Functions {
      */
     public static Color changeLightness(Color color, int changeInPercent) {
         Color.HSL hsl = color.getHSL();
-        hsl.setL(Math.max(Math.min(hsl.getL() * (1 + (changeInPercent / 100d)), 1d), 0d));
+        hsl.setL(Math.clamp(hsl.getL() * (1 + (changeInPercent / 100d)), 0d, 1d));
         return hsl.getColor();
     }
 
@@ -45,7 +45,7 @@ public class Functions {
      */
     public static Color changeSaturation(Color color, int changeInPercent) {
         Color.HSL hsl = color.getHSL();
-        hsl.setS(Math.max(Math.min(hsl.getS() * (1 + (changeInPercent / 100d)), 1d), 0d));
+        hsl.setS(Math.clamp(hsl.getS() * (1 + (changeInPercent / 100d)), 0d, 1d));
         return hsl.getColor();
     }
 

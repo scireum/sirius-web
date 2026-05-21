@@ -48,32 +48,32 @@ import java.util.TreeSet;
  */
 public class Generator {
 
-    /*
+    /**
      * Prevents circular imports
      */
     protected Set<String> importedSheets = new TreeSet<>();
 
-    /*
+    /**
      * Contains all sections which will be part of the output
      */
     protected List<Section> sections = new ArrayList<>();
 
-    /*
+    /**
      * Contains all sections which can be referenced via @extend
      */
     protected Map<String, Section> extensibleSections = new HashMap<>();
 
-    /*
+    /**
      * Contains all media queries
      */
     protected Map<String, Section> mediaQueries = new LinkedHashMap<>();
 
-    /*
+    /**
      * Contains all known mixins
      */
     protected Map<String, Mixin> mixins = new HashMap<>();
 
-    /*
+    /**
      * Contains the evaluation context (all variables)
      */
     protected Scope scope = new Scope();
@@ -543,7 +543,7 @@ public class Generator {
                                                                       .replaceAll("[^a-z0-9]", ""),
                                                                   Generator.class,
                                                                   FunctionCall.class).invoke(null, this, call);
-        } catch (NoSuchMethodException ignored) {
+        } catch (NoSuchMethodException _) {
             return new Value(call.toString());
         } catch (InvocationTargetException exception) {
             if (exception.getTargetException() instanceof IllegalArgumentException) {

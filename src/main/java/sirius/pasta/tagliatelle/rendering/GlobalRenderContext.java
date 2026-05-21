@@ -15,11 +15,9 @@ import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -42,7 +40,7 @@ public class GlobalRenderContext {
     protected Map<String, String> extraBlocks;
     protected UnaryOperator<String> escaper = GlobalRenderContext::escapeRAW;
 
-    private Set<String> guards = new HashSet<>();
+    private final Set<String> guards = new HashSet<>();
 
     private static final Pattern OPENING_SCRIPT_TAG = Pattern.compile("<script(\\s.*)?>", Pattern.CASE_INSENSITIVE);
     private static final Pattern CLOSING_SCRIPT_TAG = Pattern.compile("</script>", Pattern.CASE_INSENSITIVE);
@@ -402,6 +400,7 @@ public class GlobalRenderContext {
 
     /**
      * Adds the given guard to the list of defined guards.
+     *
      * @param guard the guard String to add
      */
     public void addGuard(String guard) {

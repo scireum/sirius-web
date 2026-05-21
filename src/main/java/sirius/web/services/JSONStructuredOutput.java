@@ -113,7 +113,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     }
 
     private void writeString(String value) throws IOException {
-        if (value == null || value.length() == 0) {
+        if (Strings.isEmpty(value)) {
             writer.append("\"\"");
             return;
         }

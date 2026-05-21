@@ -140,7 +140,7 @@ public class Section {
     public String getMediaQuery(Scope scope, Generator generator) {
         StringBuilder builder = new StringBuilder();
         for (Expression expression : mediaQueries) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(" and ");
             }
             builder.append(expression.eval(scope, generator));
@@ -156,11 +156,11 @@ public class Section {
     public String getSelectorString() {
         StringBuilder builder = new StringBuilder();
         for (List<String> selector : selectors) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(",");
             }
             for (String selectorPart : selector) {
-                if (builder.length() > 0) {
+                if (!builder.isEmpty()) {
                     builder.append(" ");
                 }
                 builder.append(selectorPart);
