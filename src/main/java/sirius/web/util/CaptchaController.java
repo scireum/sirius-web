@@ -21,26 +21,33 @@ import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
 
 /**
- * Provides captcha related functionality for bot/spam-protection in forms.
+ * Provides captcha-related functionality for bot and spam protection in forms. This is advisable for public contact or
+ * registration forms.
  * <p>
- * This may be helpful for public forms like contact or registration forms.
+ * To use the captcha, a challenge is requested via {@link #captchaChallenge(WebContext, JSONStructuredOutput)} by
+ * <tt>t:captcha</tt>. To verify the solution, {@link #verifyCaptcha(WebContext)} must be called in the form-submit
+ * route to make the protection work properly.
+ * <p>
+ * This controller intentionally uses the ALTCHA v1 widget payload contract, which submits the solution in the
+ * <tt>altcha</tt> form field and signs challenges using the configured <tt>http.captcha.secret</tt>.
+ * <p>
  * For more information, see <a href="https://github.com/altcha-org/altcha">Altcha on GitHub</a>.
- * To use the captcha, a challenge is requested via {@link #captchaChallenge(WebContext, JSONStructuredOutput)} by the
- * Taglib t:captcha. To verify the solution, {@link #verifyCaptcha(WebContext)} must be
- * implemented in the form-submit Route to make protection work properly.
  */
 @Register(classes = {CaptchaController.class, Controller.class})
 public class CaptchaController extends BasicController {
 
     private static final String NLS_CAPTCHA_FAILED = "CaptchaController.captchaFailed";
 
+    /**
+     * Contains the HMAC secret used to sign and verify captcha challenges.
+     */
     @ConfigValue("http.captcha.secret")
     private static String captchaSecret;
 
     /**
      * Provides a captcha challenge for form submissions.
      * <p>
-     * Called by the Taglib t:captcha to obtain a new challenge.
+     * Called by <tt>t:captcha</tt> to obtain a new challenge.
      *
      * @param webContext the current request
      * @param output     JSON output for writing the challenge to the request
