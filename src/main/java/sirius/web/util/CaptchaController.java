@@ -8,7 +8,7 @@
 
 package sirius.web.util;
 
-import org.altcha.altcha.Altcha;
+import org.altcha.altcha.v1.Altcha;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -53,11 +53,11 @@ public class CaptchaController extends BasicController {
             options.hmacKey = captchaSecret;
 
             Altcha.Challenge challenge = Altcha.createChallenge(options);
-            output.property("algorithm", challenge.algorithm);
-            output.property("challenge", challenge.challenge);
-            output.property("maxnumber", challenge.maxnumber);
-            output.property("salt", challenge.salt);
-            output.property("signature", challenge.signature);
+            output.property("algorithm", challenge.algorithm());
+            output.property("challenge", challenge.challenge());
+            output.property("maxnumber", challenge.maxnumber());
+            output.property("salt", challenge.salt());
+            output.property("signature", challenge.signature());
         } catch (Exception _) {
             throw Exceptions.createHandled().withNLSKey(NLS_CAPTCHA_FAILED).handle();
         }
