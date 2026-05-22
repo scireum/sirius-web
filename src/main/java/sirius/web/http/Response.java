@@ -1576,10 +1576,9 @@ public class Response {
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json(HttpResponseStatus status) {
-        String callback = webContext.safeGet("callback").getString();
         String encoding = webContext.safeGet("encoding").first().asString(StandardCharsets.UTF_8.name());
-        String mimeType = Strings.isFilled(callback) ? "application/javascript" : MimeHelper.APPLICATION_JSON;
-        return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), callback, encoding);
+        String mimeType = MimeHelper.APPLICATION_JSON;
+        return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), null, encoding);
     }
 
     /**
