@@ -1556,7 +1556,6 @@ public class Response {
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent.
      * <p>
-     * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
      *
      * @return a structured output which will be sent as JSON response
      */
@@ -1570,15 +1569,14 @@ public class Response {
      * By default, caching will be disabled. If the generated JSON is small enough, it will be transmitted in
      * one go. Otherwise, a chunked response will be sent. The response will have the given {@link HttpResponseStatus}.
      * <p>
-     * If a callback parameter is given in the request, the output will automatically be boxed into that function as JSONP.
      *
      * @param status the {@link HttpResponseStatus} the response shall have.
      * @return a structured output which will be sent as JSON response
      */
     public JSONStructuredOutput json(HttpResponseStatus status) {
         String encoding = webContext.safeGet("encoding").first().asString(StandardCharsets.UTF_8.name());
-        String mimeType = MimeHelper.APPLICATION_JSON;
-        return new JSONStructuredOutput(outputStream(status, mimeType + ";charset=" + encoding), null, encoding);
+        return new JSONStructuredOutput(outputStream(status, MimeHelper.APPLICATION_JSON + ";charset=" + encoding),
+                                        encoding);
     }
 
     /**

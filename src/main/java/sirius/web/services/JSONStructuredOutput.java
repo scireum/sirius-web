@@ -37,7 +37,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
      * @param out      the destination for the generated output
      * @param encoding the character encoding to use
      */
-    public JSONStructuredOutput(OutputStream out, @Nullable String callback, String encoding) {
+    public JSONStructuredOutput(OutputStream out, String encoding) {
         try {
             writer = new OutputStreamWriter(out, encoding);
         } catch (UnsupportedEncodingException exception) {
@@ -50,7 +50,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
      *
      * @param destination the destination for the generated output
      */
-    public JSONStructuredOutput(Writer destination, @Nullable String callback) {
+    public JSONStructuredOutput(Writer destination) {
         this.writer = destination;
     }
 

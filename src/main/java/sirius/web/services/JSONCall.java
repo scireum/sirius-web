@@ -131,7 +131,7 @@ public class JSONCall {
      * @throws IOException in case of an IO error while sending the JSON document
      */
     public JSONStructuredOutput getOutput() throws IOException {
-        return new JSONStructuredOutput(outcall.postFromOutput(), null, StandardCharsets.UTF_8.name());
+        return new JSONStructuredOutput(outcall.postFromOutput(), StandardCharsets.UTF_8.name());
     }
 
     private void logRequest(String response) throws IOException {
