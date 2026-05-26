@@ -23,7 +23,7 @@ class JsonOutputTest {
     @Test
     fun `json output uses attributes`() {
         val outputStream = ByteArrayOutputStream()
-        val jsonOutput = JSONStructuredOutput(outputStream, null, "UTF8");
+        val jsonOutput = JSONStructuredOutput(outputStream, "UTF8");
         jsonOutput.beginResult("test")
         jsonOutput.beginObject("1", Attribute.set("a", "b"))
         jsonOutput.endObject()
