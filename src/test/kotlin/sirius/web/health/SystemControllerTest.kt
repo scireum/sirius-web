@@ -11,6 +11,7 @@ package sirius.web.health
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import sirius.kernel.BaseSpecification
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Value
 import sirius.kernel.di.Injector
@@ -27,7 +28,7 @@ class SystemControllerTest {
     @Test
     fun ` system ok returns 200 OK`() {
         val result = TestRequest.GET("/system/ok").execute()
-        assertEquals(HttpResponseStatus.OK, result.status)
+        assertEquals(HttpResponseStatus.OK, result.getStatus())
     }
 
     @Test
@@ -37,21 +38,18 @@ class SystemControllerTest {
                 .withPermissions(Collections.singleton(SystemController.PERMISSION_SYSTEM_STATE)).build()
         )
         val result = TestRequest.GET("/system/state").execute()
-        assertEquals(HttpResponseStatus.OK, result.status)
-        assertEquals(TestResponse.ResponseType.TEMPLATE, result.type)
-        assertEquals("/templates/system/state.html.pasta", result.templateName)
-        assertEquals(
-            Injector.context().getPart(Cluster::class.java),
-            Value.indexOf(0, result.templateParameters).get()
-        )
+        assertEquals(HttpResponseStatus.OK, result.getStatus())
+        assertEquals(TestResponse.ResponseType.TEMPLATE, result.getType())
+        assertEquals("/templates/system/state.html.pasta", result.getTemplateName())
+        assertEquals( Injector.context().getPart(Cluster::class.java), Value.indexOf(0, result.getTemplateParameters()).get())
     }
 
     @Test
     fun ` system info renders its template`() {
         val result = TestRequest.GET("/system/info").execute()
-        assertEquals(HttpResponseStatus.OK, result.status)
-        assertEquals(TestResponse.ResponseType.TEMPLATE, result.type)
-        assertEquals("/templates/system/info.html.pasta", result.templateName)
+        assertEquals(HttpResponseStatus.OK, result.getStatus())
+        assertEquals(TestResponse.ResponseType.TEMPLATE, result.getType())
+        assertEquals("/templates/system/info.html.pasta",  result.getTemplateName())
     }
 
 }

@@ -8,15 +8,14 @@
 
 package sirius.web.sass;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Assert;
+import org.junit.Test;
 import sirius.kernel.commons.Streams;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests the SASS to CSS compiler
@@ -27,6 +26,7 @@ public class SassTest {
     public void testVariables() {
         compare("variables.scss", "variables.css");
     }
+
 
     @Test
     public void testFunctions() {
@@ -105,35 +105,35 @@ public class SassTest {
 
     private void compare(String scssFile, String cssFile) {
         try {
-            Generator generator = new Generator() {
+            Generator gen = new Generator() {
                 @SuppressWarnings("UseOfSystemOutOrSystemErr")
                 @Override
                 public void warn(String message) {
                     System.err.println(message);
                 }
             };
-            generator.importStylesheet("/sass/" + scssFile);
-            generator.compile();
+            gen.importStylesheet("/sass/" + scssFile);
+            gen.compile();
 
             List<String> expectedLines =
                     Streams.readLines(new InputStreamReader(getClass().getResourceAsStream("/sass/" + cssFile)));
 
-            StringWriter writer = new StringWriter();
-            Output output = new Output(writer, false);
-            generator.generate(output);
-            String result = writer.toString();
+            StringWriter out = new StringWriter();
+            Output output = new Output(out, false);
+            gen.generate(output);
+            String result = out.toString();
 
             String[] resultLines = result.split("\\r?\\n");
             for (int i = 0; i < expectedLines.size(); i++) {
-                String expectedLine = expectedLines.get(i);
-                String resultLine = resultLines.length > i ? resultLines[i] : "";
+                String exp = expectedLines.get(i);
+                String res = resultLines.length > i ? resultLines[i] : "";
 
-                if (!expectedLine.equals(resultLine)) {
-                    fail(String.format("%s - Line %d: '%s' vs '%s'", scssFile, i + 1, expectedLine, resultLine));
+                if (!exp.equals(res)) {
+                    Assert.fail(String.format("%s - Line %d: '%s' vs '%s'", scssFile, i + 1, exp, res));
                 }
             }
-        } catch (IOException exception) {
-            fail(exception.getMessage());
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
         }
     }
 }
