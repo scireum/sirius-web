@@ -7,7 +7,7 @@
  */
 package sirius.web.http
 
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.net.InetAddress
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
