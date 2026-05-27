@@ -29,7 +29,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import org.junit.jupiter.api.Test
-import sirius.web.dispatch.TestDispatcher
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -42,6 +41,7 @@ import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
 import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
+import sirius.web.dispatch.TestDispatcher
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.Socket
@@ -887,8 +887,7 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """
-            uri                             | method | result
+            """uri                             | method | result
             /test/restricted-method         | GET    | GET OK
             /test/restricted-method         | POST   | POST OK
             /test/restricted-methods        | GET    | GET/POST OK
@@ -903,8 +902,7 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """
-            uri                             | method | allow
+            """uri                             | method | allow
             /test/restricted-method         | PUT    | GET, POST
             /test/restricted-method         | DELETE | GET, POST
             /test/restricted-methods        | PUT    | GET, POST
@@ -922,8 +920,7 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """
-            uri                                 | method | result
+            """uri                                 | method | result
             /test/restricted-method-api         | GET    | GET OK
             /test/restricted-method-api         | POST   | POST OK
             /test/restricted-methods-api        | GET    | GET/POST OK
@@ -938,8 +935,7 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """
-            uri                                 | method | allow
+            """uri                                 | method | allow
             /test/restricted-method-api         | PUT    | GET, POST
             /test/restricted-method-api         | DELETE | GET, POST
             /test/restricted-methods-api        | PUT    | GET, POST
@@ -961,8 +957,7 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """
-            uri
+            """uri
             /test/without-method
             /test/without-method-api"""
     )

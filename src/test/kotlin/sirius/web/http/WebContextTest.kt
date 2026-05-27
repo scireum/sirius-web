@@ -74,14 +74,14 @@ class WebContextTest {
     }
 
     @CsvSource(
-        delimiter = '|', useHeadersInDisplayName = true, textBlock = """
-        header                      | lang
-        de, en;q=0.8                | de
-        en, de;q=0.8                | en
-        xx, de;q=0.8, en-gb;q=0.7   | de
-        xx, de;q=0.5, en-gb;q=0.7   | en"""
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """header                      | lang
+            de, en;q=0.8                | de
+            en, de;q=0.8                | en
+            xx, de;q=0.8, en-gb;q=0.7   | de
+            xx, de;q=0.5, en-gb;q=0.7   | en"""
     )
-    @ParameterizedTest()
+    @ParameterizedTest
     fun `parseAcceptLanguage works as expected`(header: String, lang: String) {
         assertEquals(
             lang, TestRequest.GET("/test?a=a").addHeader(HttpHeaderNames.ACCEPT_LANGUAGE, header).fetchLanguage()

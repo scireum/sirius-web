@@ -171,18 +171,18 @@ class CompilerTest {
 
     @ParameterizedTest
     @CsvSource(
-        delimiter = '|', useHeadersInDisplayName = true, textBlock = """
-         input                                      | output
-        'false'                                     | false
-        'true'                                      | true
-        'false && true'                             | false
-        'true && true'                              | true
-        'false || false'                            | false
-        'false || true'                             | true
-        'null.as(java.lang.Boolean.class) && true'  | false
-        'null.as(java.lang.Boolean.class) && false' | false
-        'null.as(java.lang.Boolean.class) || true'  | true
-        'null.as(java.lang.Boolean.class) || false' | false"""
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """input                                      | output
+            'false'                                     | false
+            'true'                                      | true
+            'false && true'                             | false
+            'true && true'                              | true
+            'false || false'                            | false
+            'false || true'                             | true
+            'null.as(java.lang.Boolean.class) && true'  | false
+            'null.as(java.lang.Boolean.class) && false' | false
+            'null.as(java.lang.Boolean.class) || true'  | true
+            'null.as(java.lang.Boolean.class) || false' | false"""
     )
     fun `Conditions work as expected`(input: String, output: Boolean) {
         assertEquals(output, compile(input).call(SimpleEnvironment()))

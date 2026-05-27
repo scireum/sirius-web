@@ -9,14 +9,13 @@
 package sirius.web.dispatch
 
 import io.netty.handler.codec.http.HttpHeaderNames
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
 import sirius.web.sass.Output
 import java.io.StringWriter
-import java.net.URL
-import org.junit.jupiter.api.Test
 import java.net.URI
 import kotlin.test.assertEquals
 
@@ -27,17 +26,17 @@ import kotlin.test.assertEquals
 @ExtendWith(SiriusExtension::class)
 class AssetsDispatcherTest {
     @CsvSource(
-            delimiter = '|', useHeadersInDisplayName = true, textBlock = """
-         uri                            | header
-        /assets/test/test.css           | public, max-age=21600
-        /assets/test/test.txt           | public, max-age=21600
-        /assets/test/test.js            | public, max-age=21600
-        /assets/no-cache/test/test.css  | no-cache, max-age=0
-        /assets/no-cache/test/test.txt  | no-cache, max-age=0
-        /assets/no-cache/test/test.js   | no-cache, max-age=0
-        /assets/dynamic/X/test/test.css | public, max-age=615168000
-        /assets/dynamic/X/test/test.txt | public, max-age=615168000
-        /assets/dynamic/X/test/test.js  | public, max-age=615168000"""
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """uri                            | header
+            /assets/test/test.css           | public, max-age=21600
+            /assets/test/test.txt           | public, max-age=21600
+            /assets/test/test.js            | public, max-age=21600
+            /assets/no-cache/test/test.css  | no-cache, max-age=0
+            /assets/no-cache/test/test.txt  | no-cache, max-age=0
+            /assets/no-cache/test/test.js   | no-cache, max-age=0
+            /assets/dynamic/X/test/test.css | public, max-age=615168000
+            /assets/dynamic/X/test/test.txt | public, max-age=615168000
+            /assets/dynamic/X/test/test.js  | public, max-age=615168000"""
     )
     @ParameterizedTest
     fun `proper caching set for all kind of assets and cache-control URIs`(uri: String, header: String) {
