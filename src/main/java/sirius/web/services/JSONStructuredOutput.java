@@ -30,18 +30,15 @@ import java.io.Writer;
 public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     private final Writer writer;
-    private final String callback;
 
     /**
      * Generates a new output, writing to the given output stream.
      *
      * @param out      the destination for the generated output
-     * @param callback name of the callback function for JSONP requests
      * @param encoding the character encoding to use
      */
-    public JSONStructuredOutput(OutputStream out, @Nullable String callback, String encoding) {
+    public JSONStructuredOutput(OutputStream out, String encoding) {
         try {
-            this.callback = callback;
             writer = new OutputStreamWriter(out, encoding);
         } catch (UnsupportedEncodingException exception) {
             throw Exceptions.handle(exception);
@@ -52,10 +49,8 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
      * Generates a new output, writing to the given writer.
      *
      * @param destination the destination for the generated output
-     * @param callback    name of the callback function for JSONP requests
      */
-    public JSONStructuredOutput(Writer destination, @Nullable String callback) {
-        this.callback = callback;
+    public JSONStructuredOutput(Writer destination) {
         this.writer = destination;
     }
 
@@ -181,16 +176,7 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
 
     @Override
     public StructuredOutput beginResult() {
-        try {
-            if (Strings.isFilled(callback)) {
-                writer.write(callback);
-                writer.write("(");
-            }
-            beginObject("result");
-        } catch (IOException exception) {
-            throw handleOutputException(exception);
-        }
-
+        beginObject("result");
         return this;
     }
 
@@ -286,9 +272,6 @@ public class JSONStructuredOutput extends AbstractStructuredOutput {
     public void finalizeOutput() {
         try {
             super.endResult();
-            if (Strings.isFilled(callback)) {
-                writer.write(")");
-            }
             writer.close();
         } catch (IOException exception) {
             throw handleOutputException(exception);

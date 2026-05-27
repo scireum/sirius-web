@@ -28,7 +28,7 @@ class JSONStructuredOutputTest {
     @Test
     void writeEmptyArray() {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
+        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, StandardCharsets.UTF_8.name());
 
         out.beginArray("");
         out.endArray();
@@ -40,7 +40,7 @@ class JSONStructuredOutputTest {
     @Test
     void writeAmountsWithinJacksonObject() {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
+        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, StandardCharsets.UTF_8.name());
 
         ObjectNode objectNodeWithAmount = Json.createObject();
         objectNodeWithAmount.putPOJO("amountDefault", Amount.of(1.234567));
@@ -57,7 +57,7 @@ class JSONStructuredOutputTest {
     @Test
     void writeJacksonArrayWithObjects() {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
+        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, StandardCharsets.UTF_8.name());
 
         ArrayNode array = Json.createArray(List.of(new AnObject("a", 1), new AnObject("b", 2)));
         out.writeProperty(null, array);
@@ -70,7 +70,7 @@ class JSONStructuredOutputTest {
     @Test
     void writeJacksonPojoWithObject() {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, null, StandardCharsets.UTF_8.name());
+        JSONStructuredOutput out = new JSONStructuredOutput(byteArrayOutputStream, StandardCharsets.UTF_8.name());
 
         out.writeProperty(null, new POJONode(new AnObject("a", 1)));
         out.finalizeOutput();
@@ -79,21 +79,6 @@ class JSONStructuredOutputTest {
                      {"field1":"a","field2":1}""", byteArrayOutputStream.toString());
     }
 
-    private static class AnObject {
-        private final String field1;
-        private final int field2;
-
-        public AnObject(String field1, int field2) {
-            this.field1 = field1;
-            this.field2 = field2;
-        }
-
-        public String getField1() {
-            return field1;
-        }
-
-        public int getField2() {
-            return field2;
-        }
+    private record AnObject(String field1, int field2) {
     }
 }

@@ -32,7 +32,7 @@ class CaptchaControllerTest {
     fun `challenge serialization uses the legacy widget contract`() {
         val challenge = captchaController.createCaptchaChallenge(CAPTCHA_SECRET)
         val outputStream = ByteArrayOutputStream()
-        val jsonOutput = JSONStructuredOutput(outputStream, null, StandardCharsets.UTF_8.name())
+        val jsonOutput = JSONStructuredOutput(outputStream, StandardCharsets.UTF_8.name())
 
         jsonOutput.beginResult()
         captchaController.writeCaptchaChallenge(jsonOutput, challenge)

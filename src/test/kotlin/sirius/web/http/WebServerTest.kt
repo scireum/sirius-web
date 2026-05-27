@@ -522,6 +522,25 @@ class WebServerTest {
         assertEquals("Hello_World", Json.parseObject(data).get("test").asText())
     }
 
+    @ParameterizedTest
+    @CsvSource(
+        "foo",
+        "fooBar",
+        "alert('xss')",
+        "alert('xss')//",
+        "alert('xss')/*",
+        "callback%29%3Balert%28%27xss%27%29%3B%2F%2F",
+        "constructor%5B%27prototype%27%5D%5B%27isAdmin%27%5D%3Dtrue"
+    )
+    fun `JSON responses ignore JSONP callback parameters`(callback: String) {
+        val uri = "/test/json?test=Hello_World&callback=$callback"
+        val expectedHeaders = mapOf("content-type" to "application/json;charset=UTF-8")
+
+        val data = callAndRead(uri, null, expectedHeaders)
+
+        assertEquals("""{"success":true,"error":false,"test":"Hello_World"}""", data)
+    }
+
     @Test
     fun `Invoke test-json-param testing built in JSON handling`() {
 
