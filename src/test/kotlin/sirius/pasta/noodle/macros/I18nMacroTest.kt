@@ -26,14 +26,14 @@ class I18nMacroTest {
 
     @ParameterizedTest
     @CsvSource(
-            delimiter = '|', useHeadersInDisplayName = true, textBlock = """
-         input                                      | output
-        '@i18n("I18nMacroSpec.test")'               | test
-        '@i18n("I18nMacroSpec.multipleTest", 0)'    | first
-        '@i18n("I18nMacroSpec.multipleTest", 1)'    | second
-        '@i18n("I18nMacroSpec.multipleTest", 2)'    | third
-        '@i18n("", 2)'                              | ''
-        '@i18n("")'                                 | ''"""
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """input                                      | output
+            '@i18n("I18nMacroSpec.test")'               | test
+            '@i18n("I18nMacroSpec.multipleTest", 0)'    | first
+            '@i18n("I18nMacroSpec.multipleTest", 1)'    | second
+            '@i18n("I18nMacroSpec.multipleTest", 2)'    | third
+            '@i18n("", 2)'                              | ''
+            '@i18n("")'                                 | ''"""
     )
     fun `Basic scenarios of the macro work as expected`(input: String, output: String) {
         val context = tagliatelle.createInlineCompilationContext("inline", input, SandboxMode.DISABLED, null)
