@@ -471,7 +471,7 @@ public class Route {
     }
 
     /**
-     * Determines if the CSRF token validation for this route.
+     * Determines if CSRF token validation is skipped for this route.
      *
      * @return <tt>true</tt> if CSRF validation is skipped, <tt>false</tt> otherwise
      */
