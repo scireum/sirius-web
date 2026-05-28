@@ -5,7 +5,8 @@
 <i:arg type="String" name="framework" default=""/>
 <i:arg type="String" name="class" default=""/>
 <i:arg type="String" name="url"/>
-<i:arg type="boolean" name="sendPostRequest" default="false"/>
+<i:arg type="boolean" name="sendPostRequest" default="false"
+       description="Whether to send a POST request (including a CSRF token) instead of a GET request when the dropdown item is clicked"/>
 <i:arg type="boolean" name="adminOnly" default="false"/>
 <i:arg type="String" name="linkTarget" default="_self"/>
 <i:arg type="java.util.Map" name="data" default="java.util.Collections.emptyMap()"/>

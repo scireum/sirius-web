@@ -118,7 +118,7 @@ public class ControllerDispatcher implements WebDispatcher {
     @Explain("We actually can use object identity here as this is a marker object.")
     public Callback<WebContext> preparePreDispatch(WebContext webContext) {
         String uri = determineEffectiveURI(webContext);
-        for (final Route route : getRoutes()) {
+        for (Route route : getRoutes()) {
             final List<Object> parameters = shouldExecute(webContext, uri, route, true);
             if (parameters != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 InputStreamHandler handler = new InputStreamHandler();
@@ -219,7 +219,7 @@ public class ControllerDispatcher implements WebDispatcher {
         String uri = determineEffectiveURI(webContext);
         List<Route> routesWithDifferentMethod = new ArrayList<>();
 
-        for (final Route route : getRoutes()) {
+        for (Route route : getRoutes()) {
             final List<Object> parameters = shouldExecute(webContext, uri, route, false);
             if (parameters != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 preparePerformRoute(webContext, route, parameters, null);
@@ -443,7 +443,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void compileController(PriorityCollector<Route> collector, Controller controller) {
-        for (final Method method : controller.getClass().getMethods()) {
+        for (Method method : controller.getClass().getMethods()) {
             if (method.isAnnotationPresent(Routed.class)) {
                 Routed routed = method.getAnnotation(Routed.class);
                 Route route = compileMethod(routed, controller, method);
