@@ -14,7 +14,7 @@
 
 <!--@
 Only declare as POST request if no confirmation is required as both simultaneously would clash. In the case of
-requiering confirmation via an extra dialog, it will automatically be a POST request including a CSRF token after the
+requiring confirmation via an extra dialog, it will automatically be a POST request including a CSRF token after the
 user confirms the action.
 -->
 <t:dropdownItem class="@dropdownClass"
