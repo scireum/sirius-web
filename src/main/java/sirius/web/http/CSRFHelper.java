@@ -68,11 +68,6 @@ public class CSRFHelper {
         return webContext.getSessionValue(CSRF_TOKEN).asString();
     }
 
-    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
-        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).compareTo(csrfTokenLifetime)
-               > 0;
-    }
-
     /**
      * Forces an explicit re-computation of the CSRF token.
      *
@@ -96,6 +91,11 @@ public class CSRFHelper {
         String lastSessionToken = webContext.getSessionValue(PREVIOUS_CSRF_TOKEN).asString();
 
         return Strings.isFilled(requestToken) && isValidRequestToken(requestToken, sessionToken, lastSessionToken);
+    }
+
+    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
+        Duration timeSinceLastRecompute = Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now());
+        return timeSinceLastRecompute.compareTo(csrfTokenLifetime) > 0;
     }
 
     private boolean isValidRequestToken(String requestToken, String sessionToken, String lastSessionToken) {
