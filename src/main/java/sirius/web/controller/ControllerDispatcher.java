@@ -11,6 +11,7 @@ package sirius.web.controller;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.async.TaskContext;
@@ -29,6 +30,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -62,10 +64,19 @@ public class ControllerDispatcher implements WebDispatcher {
     @ConfigValue("http.maintenanceRetryAfter")
     private static Duration maintenanceRetryAfter;
 
+    @ConfigValue("http.skipCSRFTokens")
+    private static boolean skipCsrfTokens;
+
     /**
      * Used to log general controller related activities.
      */
     public static final Log LOG = Log.get("controller");
+
+    /**
+     * HTTP methods that require CSRF token validation unless explicitly skipped.
+     */
+    public static final Set<HttpMethod> CSRF_VALIDATED_METHODS =
+            Set.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE);
 
     private static final String SYSTEM_MVC = "MVC";
 
@@ -83,6 +94,9 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Part
     private Tasks tasks;
+
+    @Part
+    private CSRFHelper csrfHelper;
 
     @Part
     @Nullable
@@ -175,6 +189,8 @@ public class ControllerDispatcher implements WebDispatcher {
                           .error(HttpResponseStatus.SERVICE_UNAVAILABLE);
                 return;
             }
+
+            validateCsrfTokenUnlessSkipped(webContext, route);
 
             // Inject WebContext as first parameter...
             params.addFirst(webContext);
@@ -468,5 +484,27 @@ public class ControllerDispatcher implements WebDispatcher {
                      exception.getClass().getName());
             return null;
         }
+    }
+
+    private void validateCsrfTokenUnlessSkipped(WebContext webContext, Route route) {
+        if (!skipCsrfTokens
+            && !route.isSkipCsrfValidation()
+            && isCsrfValidatedMethod(webContext)
+            && !isExemptFromCsrfValidation(route)
+            && !csrfHelper.hasValidCsrfToken(webContext)) {
+            throw Exceptions.createHandled()
+                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
+                            .withNLSKey("WebContext.invalidCSRFToken")
+                            .handle();
+        }
+    }
+
+    private boolean isCsrfValidatedMethod(WebContext webContext) {
+        return CSRF_VALIDATED_METHODS.contains(webContext.getRequest().method());
+    }
+
+    private static boolean isExemptFromCsrfValidation(Route route) {
+        return Sirius.getSettings().getStringList("http.csrfExemptions").contains(route.getRawRoute())
+               || UserContext.getSettings().getStringList("http.csrfExemptions").contains(route.getRawRoute());
     }
 }

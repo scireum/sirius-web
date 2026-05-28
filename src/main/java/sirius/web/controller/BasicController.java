@@ -265,6 +265,11 @@ public class BasicController implements Controller {
         out.endResult();
     }
 
+    @Override
+    public boolean isSkipCsrfValidation() {
+        return false;
+    }
+
     private StructuredOutput createStructuredOutput(WebContext webContext,
                                                     Format format,
                                                     HttpResponseStatus status,

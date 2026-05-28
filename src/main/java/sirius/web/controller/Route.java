@@ -72,6 +72,8 @@ public class Route {
     private Set<String> permissions = null;
     private String subScope;
     private boolean deprecated;
+    private boolean skipCsrfValidation;
+    private String rawRoute;
 
     /**
      * Compiles a method defined by a {@link Controller}
@@ -89,6 +91,8 @@ public class Route {
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
+        result.skipCsrfValidation = controller.isSkipCsrfValidation() || routed.skipCsrfValidation();
+        result.rawRoute = routed.value();
 
         result.httpMethods.addAll(Arrays.stream(routed.methods())
                                         .map(sirius.web.controller.HttpMethod::toHttpMethod)
@@ -467,6 +471,15 @@ public class Route {
     }
 
     /**
+     * Determines if the CSRF token validation for this route.
+     *
+     * @return <tt>true</tt> if CSRF validation is skipped, <tt>false</tt> otherwise
+     */
+    public boolean isSkipCsrfValidation() {
+        return skipCsrfValidation;
+    }
+
+    /**
      * Returns a string representation of the internal matching pattern, to detect routes which match the same URLs.
      *
      * @return a string representation of the internal matching pattern
@@ -481,6 +494,15 @@ public class Route {
 
     public String getUri() {
         return uri;
+    }
+
+    /**
+     * Returns the raw route string as it is defined in the {@link Routed} annotation, e.g. <tt>/system/api/:1</tt>.
+     *
+     * @return the raw route string as it is defined in the {@link Routed} annotation
+     */
+    public String getRawRoute() {
+        return rawRoute;
     }
 
     /**
