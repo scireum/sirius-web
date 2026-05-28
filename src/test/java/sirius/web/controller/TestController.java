@@ -59,7 +59,7 @@ public class TestController extends BasicController {
         webContext.respondWith().error(HttpResponseStatus.INTERNAL_SERVER_ERROR, error.getMessage());
     }
 
-    @Routed("/test/post")
+    @Routed(value = "/test/post", skipCsrfValidation = true)
     public void postTest(WebContext webContext) {
         webContext.respondWith()
                   .setHeader(HttpHeaderNames.CONTENT_TYPE, "text/plain")
@@ -138,7 +138,7 @@ public class TestController extends BasicController {
                           null);
     }
 
-    @Routed("/tunnel/test/tune/target")
+    @Routed(value = "/tunnel/test/tune/target", skipCsrfValidation = true)
     public void tunnelTuneTestTarget(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, webContext.getRequest().method().name());
     }
@@ -191,7 +191,7 @@ public class TestController extends BasicController {
         }, null);
     }
 
-    @Routed(value = "/test/predispatch", preDispatchable = true)
+    @Routed(value = "/test/predispatch", preDispatchable = true, skipCsrfValidation = true)
     public void testPredispatch(WebContext webContext, InputStreamHandler input) throws Exception {
         int size = 0;
         while (input.read() >= 0) {
@@ -201,7 +201,7 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, String.valueOf(size));
     }
 
-    @Routed(value = "/test/predispatch/abort", preDispatchable = true)
+    @Routed(value = "/test/predispatch/abort", preDispatchable = true, skipCsrfValidation = true)
     public void testPredispatchAbort(WebContext webContext, InputStreamHandler input) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "ABORT");
     }
@@ -259,37 +259,38 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
-    @Routed("/test/fake-delete-data")
+    @Routed(value = "/test/fake-delete-data", methods = HttpMethod.POST)
     public void deleteData(WebContext webContext) {
-        if (!webContext.isSafePOST()) {
-            webContext.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-            return;
-        }
         webContext.respondWith().status(HttpResponseStatus.OK);
     }
 
-    @Routed("/test/fake-delete-data-unsafe")
+    @Routed(value = "/test/fake-delete-data-unsafe", skipCsrfValidation = true)
     public void deleteDataUnsafe(WebContext webContext) {
-        if (!webContext.isUnsafePOST()) {
+        if (!webContext.isPostRequest()) {
             webContext.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
             return;
         }
         webContext.respondWith().status(HttpResponseStatus.OK);
     }
 
-    @Routed("/test/fake-delete-data-ensure-safe")
-    public void deleteDataEnsureSafe(WebContext webContext) {
-        try {
-            if (!webContext.ensureSafePOST()) {
-                webContext.respondWith().status(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                return;
-            }
-        } catch (HandledException _) {
-            webContext.respondWith().status(HttpResponseStatus.UNAUTHORIZED);
-            return;
-        }
+    @Routed(value = "/test/routed-ensure-safe-post", methods = HttpMethod.POST)
+    public void routedEnsureSafePost(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
 
-        webContext.respondWith().status(HttpResponseStatus.OK);
+    @Routed(value = "/test/routed-split", methods = HttpMethod.GET)
+    public void routedSplitGet(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "GET");
+    }
+
+    @Routed(value = "/test/routed-split", methods = HttpMethod.POST)
+    public void routedSplitPost(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "POST");
+    }
+
+    @Routed(value = "/test/routed-skip-csrf", methods = HttpMethod.POST, skipCsrfValidation = true)
+    public void routedSkipCsrf(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
     @Routed("/test/provide-security-token")
@@ -335,12 +336,13 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, "GET OK");
     }
 
-    @Routed(value = "/test/restricted-method", methods = HttpMethod.POST)
+    @Routed(value = "/test/restricted-method", methods = HttpMethod.POST, skipCsrfValidation = true)
     public void postOnlyTest(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "POST OK");
     }
 
-    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST})
+    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
+            skipCsrfValidation = true)
     public void getAndPostOnlyTest(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "GET/POST OK");
     }
@@ -351,13 +353,14 @@ public class TestController extends BasicController {
         output.property("status", "GET OK");
     }
 
-    @Routed(value = "/test/restricted-method-api", methods = HttpMethod.POST)
+    @Routed(value = "/test/restricted-method-api", methods = HttpMethod.POST, skipCsrfValidation = true)
     @InternalService
     public void postOnlyTest(WebContext webContext, JSONStructuredOutput output) {
         output.property("status", "POST OK");
     }
 
-    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST})
+    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
+            skipCsrfValidation = true)
     @InternalService
     public void getAndPostOnlyTest(WebContext webContext, JSONStructuredOutput output) {
         output.property("status", "GET/POST OK");
