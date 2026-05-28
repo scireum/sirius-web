@@ -54,7 +54,6 @@ import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.Controller;
 import sirius.web.security.UserContext;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.namespace.NamespaceContext;
@@ -1685,18 +1684,6 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Determines if the current request is a POST request with checking for a valid CSRF-token.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
-     *
-     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid,
-     * <tt>false</tt> otherwise
-     */
-    public boolean isSafePOST() {
-        return isUnsafePOST() && checkCSRFToken();
-    }
-
-    /**
      * Determines if the current request is a POST request without checking for a valid CSRF-token.
      * <p>
      * A POST request signal the server to alter its state, knowing that side effects will occur.
@@ -1705,32 +1692,6 @@ public class WebContext implements SubContext {
      */
     public boolean isUnsafePOST() {
         return HttpMethod.POST.equals(request.method()) && !hidePost;
-    }
-
-    /**
-     * Determines if the current request is a POST request with checking for a valid CSRF-token.
-     * If the token is not valid an exception is thrown in contrast to {@link #isSafePOST()}.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
-     *
-     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid,
-     * <tt>false</tt> otherwise
-     */
-    @CheckReturnValue
-    public boolean ensureSafePOST() {
-        if (!isUnsafePOST()) {
-            return false;
-        }
-
-        if (!checkCSRFToken()) {
-            throw Exceptions.createHandled().withNLSKey("WebContext.invalidCSRFToken").handle();
-        }
-
-        return true;
-    }
-
-    private boolean checkCSRFToken() {
-        return csrfHelper.hasValidCsrfToken(this);
     }
 
     /**
