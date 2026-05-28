@@ -486,6 +486,8 @@ public class ControllerDispatcher implements WebDispatcher {
         }
     }
 
+    @SuppressWarnings("java:S1067")
+    @Explain("The check is complex, but that is the nature of having multiple skip options and call cases.")
     private void validateCsrfTokenUnlessSkipped(WebContext webContext, Route route) {
         if (!skipCsrfTokens
             && !route.isSkipCsrfValidation()
@@ -503,8 +505,11 @@ public class ControllerDispatcher implements WebDispatcher {
         return CSRF_VALIDATED_METHODS.contains(webContext.getRequest().method());
     }
 
-    private static boolean isExemptFromCsrfValidation(Route route) {
+    private boolean isExemptFromCsrfValidation(Route route) {
         return Sirius.getSettings().getStringList("http.csrfExemptions").contains(route.getRawRoute())
-               || UserContext.getSettings().getStringList("http.csrfExemptions").contains(route.getRawRoute());
+               || UserContext.getCurrentScope()
+                             .getSettings()
+                             .getStringList("http.csrfExemptions")
+                             .contains(route.getRawRoute());
     }
 }
