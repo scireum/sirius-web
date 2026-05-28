@@ -36,11 +36,14 @@
     Dropzone.options[sirius.camelize('@id')] = {
         url: function (files) {
             const uploadUrl = '@raw {@escapeJS(uploadUrl)}';
+            const csrfToken = '@escapeJS(part(sirius.web.http.CSRFHelper.class).getCSRFToken())';
             let parameterIndicator = '?';
             if (uploadUrl.indexOf('?') >= 0) {
                 parameterIndicator = '&';
             }
-            return uploadUrl + parameterIndicator + 'filename=' + encodeURIComponent(files[0].name);
+            return uploadUrl + parameterIndicator
+                + 'filename=' + encodeURIComponent(files[0].name)
+                + '&CSRFToken=' + encodeURIComponent(csrfToken);
         },
         sendFileAsBody: true,
         parallelUploads: 1,
