@@ -24,7 +24,10 @@
                     }
 
                     term.pause();
-                    $.post('/system/console/api', {command: command})
+                    $.post('/system/console/api', {
+                        command: command,
+                        CSRFToken: '@part(sirius.web.http.CSRFHelper.class).getCSRFToken()'
+                    })
                         .done(function (response) {
                             term.echo(response.result, {exec: false}).resume();
                         })
