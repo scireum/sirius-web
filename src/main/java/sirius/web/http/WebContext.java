@@ -1684,25 +1684,22 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Determines if the current request is a POST request without checking for a valid CSRF-token.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
+     * Determines if the current request should be treated as a POST request.
      *
-     * @return <tt>true</tt> if the method of the current request is POST, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if the method of the current request is POST and that fact isn't hidden, <tt>false</tt> otherwise
      */
-    public boolean isUnsafePOST() {
+    public boolean isPostRequest() {
         return HttpMethod.POST.equals(request.method()) && !hidePost;
     }
 
     /**
      * Hide the fact that this request is a POST request.
      * <p>
-     * Sometimes it is useful to make <tt>isPOST</tt> methods return false even if the
-     * current request is a POST requests. Login forms would be one example. As
-     * a login request is sent to any URL, we don't want a common POST handler to
-     * trigger on that post data.
+     * This can be used to prevent common POST handlers from triggering on this request. This is especially useful for
+     * login forms, as they are often sent to the same URL as the actual page, and we don't want a common POST handler
+     * to trigger on the login data.
      */
-    public void hidePost() {
+    public void hidePostRequest() {
         this.hidePost = true;
     }
 
