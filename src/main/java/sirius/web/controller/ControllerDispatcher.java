@@ -506,10 +506,6 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean isExemptFromCsrfValidation(Route route) {
-        return Sirius.getSettings().getStringList("http.csrfExemptions").contains(route.getRawRoute())
-               || UserContext.getCurrentScope()
-                             .getSettings()
-                             .getStringList("http.csrfExemptions")
-                             .contains(route.getRawRoute());
+        return Sirius.getSettings().getStringList("http.csrfExemptions").contains(route.getRawRoute());
     }
 }

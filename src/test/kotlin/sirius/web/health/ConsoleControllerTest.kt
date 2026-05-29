@@ -19,7 +19,6 @@ import sirius.kernel.commons.Json
 import sirius.web.health.console.ConsoleController
 import sirius.web.http.TestRequest
 import sirius.web.http.TestResponse
-import sirius.web.security.ScopeInfo
 import sirius.web.security.UserContext
 import sirius.web.security.UserInfo
 import java.util.*
@@ -47,8 +46,6 @@ class ConsoleControllerTest {
         UserContext.get().setCurrentUser(
             UserInfo.Builder.createUser("test")
                 .withPermissions(Collections.singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE))
-                // Avoid resolving settings via scope while CSRF is validated (that would clear the test user).
-                .withSettingsSupplier { ScopeInfo.DEFAULT_SCOPE.settings }
                 .build()
         )
         val result = TestRequest.SAFEPOST("/system/console/api")
