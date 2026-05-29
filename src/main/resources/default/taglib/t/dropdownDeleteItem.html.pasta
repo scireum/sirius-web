@@ -15,7 +15,7 @@
 <!--@
 Only declare as POST request if no confirmation is required as both simultaneously would clash. In the case of
 requiring confirmation via an extra dialog, it will automatically be a POST request including a CSRF token after the
-user confirms the action.
+user confirms the action. TODO SIRI-1223: Fix this.
 -->
 <t:dropdownItem class="@dropdownClass"
                 permission="@permission"

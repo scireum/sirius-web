@@ -13,6 +13,11 @@
 
 <i:pragma name="description" value="Renders menu entry within a tycho template"/>
 
+<!--@
+Note: Do not declare both the 'confirm-link-js' class and 'sendPostRequest=true' at the same time as they clash with
+each other. TODO SIRI-1223: Fix this.
+-->
+
 <i:local name="dataSerialized"
          value="@data.entrySet()
                      .stream()
