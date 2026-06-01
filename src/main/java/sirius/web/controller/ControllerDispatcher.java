@@ -11,7 +11,6 @@ package sirius.web.controller;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.async.TaskContext;
@@ -66,6 +65,9 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @ConfigValue("http.skipCSRFTokens")
     private static boolean skipCsrfTokens;
+
+    @ConfigValue("http.csrfExemptions")
+    private static Set<String> csrfExemptions;
 
     /**
      * Used to log general controller related activities.
@@ -505,6 +507,6 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private boolean isExemptFromCsrfValidation(Route route) {
-        return Sirius.getSettings().getStringList("http.csrfExemptions").contains(route.getUri());
+        return csrfExemptions.contains(route.getUri());
     }
 }
