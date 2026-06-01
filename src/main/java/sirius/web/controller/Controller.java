@@ -113,5 +113,7 @@ public interface Controller {
      *
      * @return <tt>true</tt> if the CSRF token validation should be skipped, <tt>false</tt> otherwise
      */
-    boolean isSkipCsrfValidation();
+    default boolean isSkipCsrfValidation() {
+        return false;
+    }
 }
