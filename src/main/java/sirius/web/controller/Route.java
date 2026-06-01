@@ -73,7 +73,6 @@ public class Route {
     private String subScope;
     private boolean deprecated;
     private boolean skipCsrfValidation;
-    private String rawRoute;
 
     /**
      * Compiles a method defined by a {@link Controller}
@@ -92,7 +91,6 @@ public class Route {
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
         result.skipCsrfValidation = controller.isSkipCsrfValidation() || routed.skipCsrfValidation();
-        result.rawRoute = routed.value();
 
         result.httpMethods.addAll(Arrays.stream(routed.methods())
                                         .map(sirius.web.controller.HttpMethod::toHttpMethod)
@@ -494,15 +492,6 @@ public class Route {
 
     public String getUri() {
         return uri;
-    }
-
-    /**
-     * Returns the raw route string as it is defined in the {@link Routed} annotation, e.g. <tt>/system/api/:1</tt>.
-     *
-     * @return the raw route string as it is defined in the {@link Routed} annotation
-     */
-    public String getRawRoute() {
-        return rawRoute;
     }
 
     /**
