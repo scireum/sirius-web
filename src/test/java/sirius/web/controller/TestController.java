@@ -12,11 +12,13 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.cookie.CookieHeaderNames;
 import sirius.kernel.async.Future;
+import sirius.kernel.async.Promise;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Wait;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.CSRFHelper;
 import sirius.web.http.InputStreamHandler;
@@ -310,6 +312,35 @@ public class TestController extends BasicController {
             Wait.seconds(1);
             output.property("test", "1");
         });
+    }
+
+    @InternalService
+    @Routed("/test/mapped/greet")
+    public GreetResult mappedGreet(WebContext webContext, GreetInput input) {
+        return new GreetResult("Hello " + input.getName());
+    }
+
+    @InternalService
+    @Routed("/test/mapped/echo/:1")
+    public GreetResult mappedEcho(WebContext webContext, String value) {
+        return new GreetResult(value);
+    }
+
+    @InternalService
+    @Routed("/test/mapped/async")
+    public Promise<GreetResult> mappedAsyncGreet(WebContext webContext, GreetInput input) {
+        Promise<GreetResult> promise = new Promise<>();
+        tasks.defaultExecutor().start(() -> {
+            Wait.millis(100);
+            promise.success(new GreetResult("Hello " + input.getName()));
+        });
+        return promise;
+    }
+
+    @InternalService
+    @Routed("/test/mapped/fail")
+    public GreetResult mappedFail(WebContext webContext, GreetInput input) {
+        throw Exceptions.createHandled().withDirectMessage("Intentional failure for " + input.getName()).handle();
     }
 
     @Routed("/test/session-test")

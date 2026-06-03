@@ -68,6 +68,8 @@ public class Route {
     private Controller controller;
     private boolean preDispatchable;
     private Format format;
+    private boolean mappedPayload;
+    private Class<?> inputType;
     private boolean enforceMaintenanceMode;
     private Set<String> permissions = null;
     private String subScope;
@@ -113,6 +115,9 @@ public class Route {
         if (finalPattern.isEmpty()) {
             finalPattern = new StringBuilder("/");
         }
+        if (result.mappedPayload) {
+            extractMappedInputType(method, result, parameterTypes, params);
+        }
         failForInvalidParameterCount(routed, parameterTypes, params);
 
         result.parameterTypes = parameterTypes.toArray(CLASS_ARRAY);
@@ -140,18 +145,54 @@ public class Route {
         }
         parameterTypes.removeFirst();
         if (result.format == Format.JSON) {
-            failForInvalidJSONMethod(parameterTypes);
-            parameterTypes.removeFirst();
+            if (isLegacyStructuredOutput(JSONStructuredOutput.class, parameterTypes)) {
+                parameterTypes.removeFirst();
+            } else {
+                result.mappedPayload = true;
+            }
         }
         if (result.format == Format.XML) {
-            failForInvalidXMLMethod(parameterTypes);
-            parameterTypes.removeFirst();
+            if (isLegacyStructuredOutput(XMLStructuredOutput.class, parameterTypes)) {
+                parameterTypes.removeFirst();
+            } else {
+                result.mappedPayload = true;
+            }
         }
         if (result.preDispatchable) {
             failForInvalidPredispatchableMethod(parameterTypes);
             parameterTypes.removeLast();
         }
         return parameterTypes;
+    }
+
+    private static boolean isLegacyStructuredOutput(Class<?> structuredOutputType, List<Class<?>> parameterTypes) {
+        return !parameterTypes.isEmpty() && structuredOutputType.equals(parameterTypes.getFirst());
+    }
+
+    /**
+     * Extracts the leading input POJO of a mapped service method (if any) from the parameter list.
+     * <p>
+     * A mapped method binds its request body to a POJO which is passed right after the {@link WebContext}. We detect
+     * such a parameter via the body-only binding rule: after removing the {@link WebContext}, the method declares
+     * exactly one parameter more than the route has path parameters. In that case the leading parameter is the input
+     * POJO. Otherwise (the parameter count matches the path parameters), the method has no request body.
+     */
+    private static void extractMappedInputType(Method method,
+                                               Route result,
+                                               List<Class<?>> parameterTypes,
+                                               int pathParameters) {
+        failForInvalidMappedMethod(method);
+        if (parameterTypes.size() == pathParameters + 1) {
+            result.inputType = parameterTypes.removeFirst();
+        }
+    }
+
+    private static void failForInvalidMappedMethod(Method method) {
+        if (void.class.equals(method.getReturnType())) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' must return a result object (or Promise/Future) instead of void",
+                    method.getName()));
+        }
     }
 
     private static void createMethodHandle(Method method, Route result) {
@@ -225,20 +266,6 @@ public class Route {
                                                              parameterTypes.size(),
                                                              routed.value(),
                                                              params));
-        }
-    }
-
-    private static void failForInvalidJSONMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.getFirst())) {
-            throw new IllegalArgumentException(Strings.apply("JSON API method needs '%s' as second parameter",
-                                                             JSONStructuredOutput.class.getName()));
-        }
-    }
-
-    private static void failForInvalidXMLMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !XMLStructuredOutput.class.equals(parameterTypes.getFirst())) {
-            throw new IllegalArgumentException(Strings.apply("XML API method needs '%s' as second parameter",
-                                                             XMLStructuredOutput.class.getName()));
         }
     }
 
@@ -446,6 +473,26 @@ public class Route {
      */
     public Format getApiResponseFormat() {
         return format;
+    }
+
+    /**
+     * Determines if this route uses the mapped payload mode in which the request body is deserialized into an input
+     * POJO and the returned object is serialized as response (instead of streaming via a
+     * {@link sirius.kernel.xml.StructuredOutput}).
+     *
+     * @return <tt>true</tt> if this route maps its payload to/from POJOs, <tt>false</tt> for the legacy streaming mode
+     */
+    public boolean isMappedPayload() {
+        return mappedPayload;
+    }
+
+    /**
+     * Returns the type into which the request body is deserialized for a {@link #isMappedPayload() mapped} route.
+     *
+     * @return the input POJO type or <tt>null</tt> if the route does not accept a request body
+     */
+    public Class<?> getInputType() {
+        return inputType;
     }
 
     /**

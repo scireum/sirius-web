@@ -23,6 +23,7 @@ import sirius.kernel.commons.Strings;
 import sirius.kernel.di.Injector;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.di.std.Parts;
 import sirius.kernel.di.std.PriorityParts;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -38,6 +39,7 @@ import sirius.web.http.WebDispatcher;
 import sirius.web.security.MaintenanceInfo;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+import sirius.web.services.ApiPayloadCodec;
 import sirius.web.services.Format;
 import sirius.web.templates.ClosedChannelHelper;
 
@@ -46,6 +48,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +90,9 @@ public class ControllerDispatcher implements WebDispatcher {
     @Part
     @Nullable
     private Firewall firewall;
+
+    @Parts(ApiPayloadCodec.class)
+    private Collection<ApiPayloadCodec> apiPayloadCodecs;
 
     /**
      * The priority of this controller is {@code PriorityCollector.DEFAULT_PRIORITY + 10} as it is quite complex
@@ -277,6 +283,11 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeApiCall(WebContext webContext, Route route, List<Object> params) throws Exception {
+        if (route.isMappedPayload()) {
+            executeMappedApiCall(webContext, route, params);
+            return;
+        }
+
         StructuredOutput out = createOutput(webContext, route.getApiResponseFormat());
         params.add(1, out);
         out.beginResult();
@@ -289,6 +300,34 @@ public class ControllerDispatcher implements WebDispatcher {
         } else {
             out.endResult();
         }
+    }
+
+    private void executeMappedApiCall(WebContext webContext, Route route, List<Object> params) throws Exception {
+        ApiPayloadCodec codec = findApiPayloadCodec(route.getApiResponseFormat());
+
+        if (route.getInputType() != null) {
+            params.add(1, codec.readBody(webContext, route.getInputType()));
+        }
+
+        Object result = route.invoke(params);
+        if (result instanceof Promise<?> promise) {
+            promise.onSuccess(value -> codec.writeResult(webContext, value))
+                   .onFailure(throwable -> handleFailure(webContext, route, throwable));
+        } else {
+            codec.writeResult(webContext, result);
+        }
+    }
+
+    private ApiPayloadCodec findApiPayloadCodec(Format format) {
+        return apiPayloadCodecs.stream()
+                               .filter(codec -> codec.getFormat() == format)
+                               .findFirst()
+                               .orElseThrow(() -> Exceptions.handle()
+                                                            .to(LOG)
+                                                            .withSystemErrorMessage(
+                                                                    "No ApiPayloadCodec is registered for format %s",
+                                                                    format)
+                                                            .handle());
     }
 
     private StructuredOutput createOutput(WebContext webContext, Format apiResponseFormat) {
