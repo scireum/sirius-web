@@ -28,9 +28,7 @@ each other. TODO SIRI-1223: Fix this.
     <t:permission permission="@permission">
         <i:if test="sendPostRequest">
             <form method="POST" action="@url" target="@linkTarget" <i:raw>@dataSerialized</i:raw>>
-                <input name="CSRFToken"
-                       value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken(WebContext.getCurrent())"
-                       type="hidden"/>
+                <input name="CSRFToken" value="@part(CSRFHelper.class).getCSRFToken()" type="hidden"/>
                 <button type="submit" class="dropdown-item @if (adminOnly) { admin-link } @class">
                     <i:if test="isFilled(icon)">
                         <i class="@icon fa-fw"></i>

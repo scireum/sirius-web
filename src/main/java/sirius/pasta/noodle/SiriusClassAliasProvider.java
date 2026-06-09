@@ -26,6 +26,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.nls.Formatter;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.Page;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.WebContext;
 import sirius.web.security.UserContext;
 
@@ -81,5 +82,6 @@ public class SiriusClassAliasProvider implements ClassAliasProvider {
         consumer.accept("Context", Context.class);
         consumer.accept("Wait", Wait.class);
         consumer.accept("Watch", Watch.class);
+        consumer.accept("CSRFHelper", CSRFHelper.class);
     }
 }
