@@ -29,6 +29,7 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
@@ -62,10 +63,22 @@ public class ControllerDispatcher implements WebDispatcher {
     @ConfigValue("http.maintenanceRetryAfter")
     private static Duration maintenanceRetryAfter;
 
+    @ConfigValue("http.skipCSRFTokens")
+    private static boolean skipCsrfTokens;
+
+    @ConfigValue("http.csrfExemptions")
+    private static Set<String> csrfExemptions;
+
     /**
      * Used to log general controller related activities.
      */
     public static final Log LOG = Log.get("controller");
+
+    /**
+     * HTTP methods that require CSRF token validation unless explicitly skipped.
+     */
+    public static final Set<HttpMethod> CSRF_VALIDATED_METHODS =
+            Set.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE);
 
     private static final String SYSTEM_MVC = "MVC";
 
@@ -83,6 +96,9 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Part
     private Tasks tasks;
+
+    @Part
+    private CSRFHelper csrfHelper;
 
     @Part
     @Nullable
@@ -104,7 +120,7 @@ public class ControllerDispatcher implements WebDispatcher {
     @Explain("We actually can use object identity here as this is a marker object.")
     public Callback<WebContext> preparePreDispatch(WebContext webContext) {
         String uri = determineEffectiveURI(webContext);
-        for (final Route route : getRoutes()) {
+        for (Route route : getRoutes()) {
             final List<Object> parameters = shouldExecute(webContext, uri, route, true);
             if (parameters != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 InputStreamHandler handler = new InputStreamHandler();
@@ -147,6 +163,7 @@ public class ControllerDispatcher implements WebDispatcher {
                                      Route route,
                                      List<Object> params,
                                      InputStreamHandler inputStreamHandler) {
+        webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getUri());
 
         Optional<HandledException> optionalException = webContext.checkParameterReadability();
         if (optionalException.isPresent()) {
@@ -176,6 +193,8 @@ public class ControllerDispatcher implements WebDispatcher {
                 return;
             }
 
+            validateCsrfTokenUnlessSkipped(webContext, route);
+
             // Inject WebContext as first parameter...
             params.addFirst(webContext);
 
@@ -203,7 +222,7 @@ public class ControllerDispatcher implements WebDispatcher {
         String uri = determineEffectiveURI(webContext);
         List<Route> routesWithDifferentMethod = new ArrayList<>();
 
-        for (final Route route : getRoutes()) {
+        for (Route route : getRoutes()) {
             final List<Object> parameters = shouldExecute(webContext, uri, route, false);
             if (parameters != Route.NO_MATCH && route.matchesHttpMethod(webContext)) {
                 preparePerformRoute(webContext, route, parameters, null);
@@ -267,8 +286,6 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
-        webContext.setAttribute(ATTRIBUTE_MATCHED_ROUTE, route.getUri());
-
         if (route.getApiResponseFormat() != null && route.getApiResponseFormat() != Format.RAW) {
             executeApiCall(webContext, route, params);
         } else {
@@ -427,7 +444,7 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void compileController(PriorityCollector<Route> collector, Controller controller) {
-        for (final Method method : controller.getClass().getMethods()) {
+        for (Method method : controller.getClass().getMethods()) {
             if (method.isAnnotationPresent(Routed.class)) {
                 Routed routed = method.getAnnotation(Routed.class);
                 Route route = compileMethod(routed, controller, method);
@@ -468,5 +485,28 @@ public class ControllerDispatcher implements WebDispatcher {
                      exception.getClass().getName());
             return null;
         }
+    }
+
+    @SuppressWarnings("java:S1067")
+    @Explain("The check is complex, but that is the nature of having multiple skip options and call cases.")
+    private void validateCsrfTokenUnlessSkipped(WebContext webContext, Route route) {
+        if (!skipCsrfTokens
+            && !route.isSkipCsrfValidation()
+            && isCsrfValidatedMethod(webContext)
+            && !isExemptFromCsrfValidation(route)
+            && !csrfHelper.hasValidCsrfToken(webContext)) {
+            throw Exceptions.createHandled()
+                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
+                            .withNLSKey("WebContext.invalidCSRFToken")
+                            .handle();
+        }
+    }
+
+    private boolean isCsrfValidatedMethod(WebContext webContext) {
+        return CSRF_VALIDATED_METHODS.contains(webContext.getRequest().method());
+    }
+
+    private boolean isExemptFromCsrfValidation(Route route) {
+        return csrfExemptions.contains(route.getUri());
     }
 }

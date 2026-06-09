@@ -96,8 +96,7 @@ public @interface Routed {
      * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
      * @deprecated Use {@link InternalService} or {@link PublicService}
      */
-    @Deprecated(since = "2021/07/01")
-    boolean jsonCall() default false;
+    @Deprecated(since = "2021/07/01") boolean jsonCall() default false;
 
     /**
      * Determines the HTTP methods supported by the route. By default, all methods are supported.
@@ -113,4 +112,15 @@ public @interface Routed {
                                     HttpMethod.OPTIONS,
                                     HttpMethod.PATCH,
                                     HttpMethod.TRACE};
+
+    /**
+     * Determines if the CSRF token validation should be skipped for this route.
+     * <p>
+     * By default, the dispatcher validates the CSRF token for all {@link ControllerDispatcher#CSRF_VALIDATED_METHODS}
+     * requests before invoking the route. Set this to <tt>true</tt> to opt out.
+     *
+     * @return <tt>true</tt> if CSRF validation is skipped for this route, <tt>false</tt> otherwise
+     * @see Controller#isSkipCsrfValidation() for skipping CSRF validation for all routes of a specific controller
+     */
+    boolean skipCsrfValidation() default false;
 }

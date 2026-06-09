@@ -106,7 +106,8 @@ public class TestRequest extends WebContext implements HttpRequest {
     /**
      * Creates a mock request simulating a POST on the given uri.
      * <p>
-     * The Request will be sent with a valid CSRF parameter so that it may pass a {@link WebContext#ensureSafePOST()} check.
+     * The request will be sent with a valid CSRF parameter so that routes with automatic CSRF validation can be
+     * invoked.
      *
      * @param uri the relative uri to call
      * @return an instance used to further specify the request to send

@@ -21,39 +21,45 @@ import sirius.web.http.TestRequest
 import sirius.web.http.TestResponse
 import sirius.web.security.UserContext
 import sirius.web.security.UserInfo
+import java.util.*
 import kotlin.test.assertEquals
-import java.util.Collections
 
 @ExtendWith(SiriusExtension::class)
 class ConsoleControllerTest {
     @Test
     fun `System console renders its template`() {
-        UserContext.get().setCurrentUser(UserInfo.Builder.createUser("test")
-            .withPermissions(Collections.
-            singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE))
-            .build())
+        UserContext.get().setCurrentUser(
+            UserInfo.Builder.createUser("test")
+                .withPermissions(
+                    Collections.singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE)
+                )
+                .build()
+        )
         val result = TestRequest.GET("/system/console").execute()
-        assertEquals(HttpResponseStatus.OK,result.getStatus())
-        assertEquals(TestResponse.ResponseType.TEMPLATE, result.getType())
-        assertEquals("/templates/system/console.html.pasta", result.getTemplateName())
+        assertEquals(HttpResponseStatus.OK, result.status)
+        assertEquals(TestResponse.ResponseType.TEMPLATE, result.type)
+        assertEquals("/templates/system/console.html.pasta", result.templateName)
     }
 
     @Test
     fun `System console API returns JSON for help`() {
-        UserContext.get().setCurrentUser(UserInfo.
-        Builder.
-        createUser("test").
-        withPermissions(Collections.singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE)).
-        build())
-        val result = TestRequest.
-        POST("/system/console/api").
-        withParameters(Context.create().set("command", "help")).
-        execute()
+        UserContext.get().setCurrentUser(
+            UserInfo.Builder.createUser("test")
+                .withPermissions(Collections.singleton(ConsoleController.PERMISSION_SYSTEM_CONSOLE))
+                .build()
+        )
+        val result = TestRequest.SAFEPOST("/system/console/api")
+            .withParameters(Context.create().set("command", "help"))
+            .execute()
         val json = result.getContentAsJson()
-        assertEquals(HttpResponseStatus.OK,result.getStatus())
-        assertTrue{Json.tryGetAt(json, JsonPointer.compile("/error/code"))
-            .map { Json.convertToValue(it) }.map { it.isEmptyString()}.orElse(true) }
-        assertTrue{ Json.tryGetAt(json, JsonPointer.compile("/result"))
-            .map { Json.convertToValue(it) }.map { it.isFilled() }.orElse(false)}
+        assertEquals(HttpResponseStatus.OK, result.status)
+        assertTrue {
+            Json.tryGetAt(json, JsonPointer.compile("/error/code"))
+                .map { Json.convertToValue(it) }.map { it.isEmptyString }.orElse(true)
+        }
+        assertTrue {
+            Json.tryGetAt(json, JsonPointer.compile("/result"))
+                .map { Json.convertToValue(it) }.map { it.isFilled }.orElse(false)
+        }
     }
 }

@@ -54,7 +54,6 @@ import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.Controller;
 import sirius.web.security.UserContext;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.namespace.NamespaceContext;
@@ -1685,72 +1684,22 @@ public class WebContext implements SubContext {
     }
 
     /**
-     * Determines if the current request is a POST request with checking for a valid CSRF-token.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
+     * Determines if the current request should be treated as a POST request.
      *
-     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid,
-     * <tt>false</tt> otherwise
+     * @return <tt>true</tt> if the method of the current request is POST and that fact isn't hidden, <tt>false</tt> otherwise
      */
-    public boolean isSafePOST() {
-        return isUnsafePOST() && checkCSRFToken();
-    }
-
-    /**
-     * Determines if the current request is a POST request without checking for a valid CSRF-token.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
-     *
-     * @return <tt>true</tt> if the method of the current request is POST, <tt>false</tt> otherwise
-     */
-    public boolean isUnsafePOST() {
+    public boolean isPostRequest() {
         return HttpMethod.POST.equals(request.method()) && !hidePost;
-    }
-
-    /**
-     * Determines if the current request is a POST request with checking for a valid CSRF-token.
-     * If the token is not valid an exception is thrown in contrast to {@link #isSafePOST()}.
-     * <p>
-     * A POST request signal the server to alter its state, knowing that side effects will occur.
-     *
-     * @return <tt>true</tt> if the method of the current request is POST and the provided CSRF-token is valid,
-     * <tt>false</tt> otherwise
-     */
-    @CheckReturnValue
-    public boolean ensureSafePOST() {
-        if (!isUnsafePOST()) {
-            return false;
-        }
-
-        if (!checkCSRFToken()) {
-            throw Exceptions.createHandled().withNLSKey("WebContext.invalidCSRFToken").handle();
-        }
-
-        return true;
-    }
-
-    private boolean checkCSRFToken() {
-        if (skipCSRFTokens) {
-            return true;
-        }
-
-        String requestToken = this.get(CSRFHelper.CSRF_TOKEN).asString();
-        String sessionToken = getSessionValue(CSRFHelper.CSRF_TOKEN).asString();
-        String lastSessionToken = getSessionValue(CSRFHelper.PREVIOUS_CSRF_TOKEN).asString();
-        return Strings.isFilled(requestToken) && (Strings.areEqual(requestToken, sessionToken) || Strings.areEqual(
-                requestToken,
-                lastSessionToken));
     }
 
     /**
      * Hide the fact that this request is a POST request.
      * <p>
-     * Sometimes it is useful to make <tt>isPOST</tt> methods return false even if the
-     * current request is a POST requests. Login forms would be one example. As
-     * a login request is sent to any URL, we don't want a common POST handler to
-     * trigger on that post data.
+     * This can be used to prevent common POST handlers from triggering on this request. This is especially useful for
+     * login forms, as they are often sent to the same URL as the actual page, and we don't want a common POST handler
+     * to trigger on the login data.
      */
-    public void hidePost() {
+    public void hidePostRequest() {
         this.hidePost = true;
     }
 

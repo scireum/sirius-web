@@ -16,5 +16,5 @@
         <i class="fa fa-trash"></i>
         @i18n("NLS.delete")
     </a>
-    <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
+    <input name="CSRFToken" value="@part(CSRFHelper.class).getCSRFToken()" type="hidden"/>
 </form>

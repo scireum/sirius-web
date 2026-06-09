@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
@@ -67,11 +68,6 @@ public class CSRFHelper {
         return webContext.getSessionValue(CSRF_TOKEN).asString();
     }
 
-    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
-        return Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now()).compareTo(csrfTokenLifetime)
-               > 0;
-    }
-
     /**
      * Forces an explicit re-computation of the CSRF token.
      *
@@ -81,5 +77,28 @@ public class CSRFHelper {
         webContext.setSessionValue(PREVIOUS_CSRF_TOKEN, webContext.getSessionValue(CSRF_TOKEN).asString());
         webContext.setSessionValue(CSRF_TOKEN, UUID.randomUUID().toString());
         webContext.setSessionValue(LAST_CSRF_RECOMPUTE, Value.of(Instant.now().toEpochMilli()).asString());
+    }
+
+    /**
+     * Determines if the given request contains a valid CSRF token.
+     *
+     * @param webContext the request to check
+     * @return <tt>true</tt> if the request contains a valid CSRF token, <tt>false</tt> otherwise
+     */
+    public boolean hasValidCsrfToken(WebContext webContext) {
+        String requestToken = webContext.get(CSRF_TOKEN).asString();
+        String sessionToken = webContext.getSessionValue(CSRF_TOKEN).asString();
+        String lastSessionToken = webContext.getSessionValue(PREVIOUS_CSRF_TOKEN).asString();
+
+        return Strings.isFilled(requestToken) && isValidRequestToken(requestToken, sessionToken, lastSessionToken);
+    }
+
+    private boolean isCSRFTokenOutdated(long lastCSRFRecompute) {
+        Duration timeSinceLastRecompute = Duration.between(Instant.ofEpochMilli(lastCSRFRecompute), Instant.now());
+        return timeSinceLastRecompute.compareTo(csrfTokenLifetime) > 0;
+    }
+
+    private boolean isValidRequestToken(String requestToken, String sessionToken, String lastSessionToken) {
+        return Strings.areEqual(requestToken, sessionToken) || Strings.areEqual(requestToken, lastSessionToken);
     }
 }

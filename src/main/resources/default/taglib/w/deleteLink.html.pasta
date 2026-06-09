@@ -10,5 +10,5 @@
     <a role="button" class="link link-danger guarded-link @if (adminOnly) {admin-link}" data-deleteid="@deleteFormId">
         @i18n("NLS.delete")
     </a>
-    <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
+    <input name="CSRFToken" value="@part(CSRFHelper.class).getCSRFToken()" type="hidden"/>
 </form>

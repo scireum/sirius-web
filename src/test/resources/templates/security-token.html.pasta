@@ -1,1 +1,1 @@
-@part(sirius.web.http.CSRFHelper.class).getCSRFToken()
+@part(CSRFHelper.class).getCSRFToken()
