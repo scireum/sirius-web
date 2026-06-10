@@ -226,10 +226,13 @@ public class ControllerDispatcher implements WebDispatcher {
             final List<Object> parameters = shouldExecute(webContext, uri, route, false);
             boolean parametersMatch = parameters != Route.NO_MATCH;
             boolean httpMethodMatches = route.matchesHttpMethod(webContext);
+
             if (parametersMatch && httpMethodMatches) {
                 preparePerformRoute(webContext, route, parameters, null);
                 return DispatchDecision.DONE;
-            } else if (parametersMatch) {
+            }
+
+            if (parametersMatch) {
                 routesWithDifferentMethod.add(route);
             } else if (route.isPreDispatchable()) {
                 final List<Object> preDispatchParameters = shouldExecute(webContext, uri, route, true);
