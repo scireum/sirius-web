@@ -935,12 +935,13 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """uri                                 | method | allow
-            /test/restricted-method-api         | PUT    | GET, POST
-            /test/restricted-method-api         | DELETE | GET, POST
-            /test/restricted-methods-api        | PUT    | GET, POST
-            /test/restricted-methods-api        | DELETE | GET, POST
-            /test/another-restricted-method-api | POST   | GET"""
+            """uri                                  | method | allow
+            /test/restricted-method-api             | PUT    | GET, POST
+            /test/restricted-method-api             | DELETE | GET, POST
+            /test/restricted-methods-api            | PUT    | GET, POST
+            /test/restricted-methods-api            | DELETE | GET, POST
+            /test/another-restricted-method-api     | POST   | GET
+            /test/restricted-method-api-predispatch | GET    | POST"""
     )
     fun `Requests to JSON routes with wrong method fail with 405`(uri: String, method: String, allow: String) {
         val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
