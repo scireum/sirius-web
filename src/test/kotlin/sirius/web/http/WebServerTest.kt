@@ -935,12 +935,13 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """uri                                 | method | allow
-            /test/restricted-method-api         | PUT    | GET, POST
-            /test/restricted-method-api         | DELETE | GET, POST
-            /test/restricted-methods-api        | PUT    | GET, POST
-            /test/restricted-methods-api        | DELETE | GET, POST
-            /test/another-restricted-method-api | POST   | GET"""
+            """uri                                     | method | allow
+            /test/restricted-method-api             | PUT    | GET, POST
+            /test/restricted-method-api             | DELETE | GET, POST
+            /test/restricted-methods-api            | PUT    | GET, POST
+            /test/restricted-methods-api            | DELETE | GET, POST
+            /test/another-restricted-method-api     | POST   | GET
+            /test/restricted-method-api-predispatch | GET    | POST"""
     )
     fun `Requests to JSON routes with wrong method fail with 405`(uri: String, method: String, allow: String) {
         val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
@@ -952,6 +953,28 @@ class WebServerTest {
         val result = Json.parseObject(String(Streams.toByteArray(connection.errorStream), StandardCharsets.UTF_8))
         assertTrue(result.get("error").asBoolean())
         assertFalse(result.get("success").asBoolean())
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """uri                                        | method
+            /test/restricted-method-api-predispatch-2 | GET
+            /test/restricted-method-api-predispatch-2 | POST"""
+    )
+    fun `Requests to pre-dispatchable routes with non-matching parameters fail with 404`(
+        uri: String,
+        method: String
+    ) {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod(method)
+
+        if (HttpMethod.POST.name() == method) {
+            connection.setDoOutput(true)
+            connection.outputStream.use { it.write("test".toByteArray()) }
+        }
+
+        assertEquals(404, connection.responseCode)
     }
 
     @ParameterizedTest

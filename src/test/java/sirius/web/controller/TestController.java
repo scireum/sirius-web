@@ -359,6 +359,36 @@ public class TestController extends BasicController {
         output.property("status", "POST OK");
     }
 
+    @Routed(value = "/test/restricted-method-api-predispatch",
+            methods = HttpMethod.POST,
+            preDispatchable = true,
+            skipCsrfValidation = true)
+    @InternalService
+    public void postOnlyPredispatchTest(WebContext webContext,
+                                        JSONStructuredOutput output,
+                                        InputStreamHandler upload) throws IOException {
+        try (upload) {
+            Streams.exhaust(upload);
+            output.property("status", "POST OK");
+        }
+    }
+
+    @Routed(value = "/test/restricted-method-api-predispatch-2/:1",
+            methods = HttpMethod.POST,
+            preDispatchable = true,
+            skipCsrfValidation = true)
+    @InternalService
+    public void postOnlyPredispatchWithParameterTest(WebContext webContext,
+                                                     JSONStructuredOutput output,
+                                                     String parameter1,
+                                                     InputStreamHandler upload) throws IOException {
+        try (upload) {
+            Streams.exhaust(upload);
+            output.property("status", "POST OK");
+            output.property("parameter1", parameter1);
+        }
+    }
+
     @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
             skipCsrfValidation = true)
     @InternalService
