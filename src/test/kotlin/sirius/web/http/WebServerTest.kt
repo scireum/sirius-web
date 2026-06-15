@@ -902,12 +902,12 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """uri                             | method | allow
-            /test/restricted-method         | PUT    | GET, POST
-            /test/restricted-method         | DELETE | GET, POST
-            /test/restricted-methods        | PUT    | GET, POST
-            /test/restricted-methods        | DELETE | GET, POST
-            /test/another-restricted-method | POST   | GET"""
+            """uri                          | method | allow
+            /test/restricted-method         | PUT    | GET, OPTIONS, POST 
+            /test/restricted-method         | DELETE | GET, OPTIONS, POST
+            /test/restricted-methods        | PUT    | GET, OPTIONS, POST
+            /test/restricted-methods        | DELETE | GET, OPTIONS, POST
+            /test/another-restricted-method | POST   | GET, OPTIONS"""
     )
     fun `Requests to plain text routes with wrong method fail with 405`(uri: String, method: String, allow: String) {
         val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
@@ -935,13 +935,13 @@ class WebServerTest {
     @ParameterizedTest
     @CsvSource(
         delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
-            """uri                                     | method | allow
-            /test/restricted-method-api             | PUT    | GET, POST
-            /test/restricted-method-api             | DELETE | GET, POST
-            /test/restricted-methods-api            | PUT    | GET, POST
-            /test/restricted-methods-api            | DELETE | GET, POST
-            /test/another-restricted-method-api     | POST   | GET
-            /test/restricted-method-api-predispatch | GET    | POST"""
+            """uri                                  | method | allow
+            /test/restricted-method-api             | PUT    | GET, OPTIONS, POST
+            /test/restricted-method-api             | DELETE | GET, OPTIONS, POST
+            /test/restricted-methods-api            | PUT    | GET, OPTIONS, POST
+            /test/restricted-methods-api            | DELETE | GET, OPTIONS, POST
+            /test/another-restricted-method-api     | POST   | GET, OPTIONS
+            /test/restricted-method-api-predispatch | GET    | OPTIONS, POST"""
     )
     fun `Requests to JSON routes with wrong method fail with 405`(uri: String, method: String, allow: String) {
         val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
