@@ -447,60 +447,58 @@ sirius.debounce = function (fn, delay) {
 /**@
  * Adds an event listener that triggers exactly once per element when it becomes visible or is about to become visible.
  * <p>
- * The event will trigger once an element comes within a certain distance to the viewport. By default, the vertical and
- * horizontal distances are equal to the element's height and width respectively. This distance can be increased by
- * specifying a value greater than 1 as the distanceFactor.
+ * The event will trigger once an element comes within the viewport or the configured root margin. By default, the root
+ * margin is 200px in every direction, so the listener runs shortly before the element reaches the viewport.
+ * Elements added to the DOM after this method is called are also handled. However, elements must already match the
+ * selector when they are initially observed; later selector matches caused only by attribute changes are ignored.
  *
- * @param selector       the selector the elements need to match
- * @param listener       the function to call for every element
- * @param distanceFactor the optional distance factor to control how far away the event will trigger, 1 by default
+ * @param selector   the selector the elements need to match
+ * @param listener   the function to call for every element
+ * @param rootMargin the optional IntersectionObserver root margin, '200px' by default
  */
-sirius.addElementVisibleListener = function (selector, listener, distanceFactor) {
-    const isElementNowOrSoonVisible = function (element) {
-        const factor = distanceFactor || 1;
-        const rect = element.getBoundingClientRect();
+sirius.addElementVisibleListener = function (selector, listener, rootMargin) {
+    const intersectionObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            const _element = entry.target;
 
-        // Check the position relative to the view port
-        const verticalMargin = rect.height * factor;
-        const horizontalMargin = rect.width * factor;
-        const clientHeight = document.documentElement.clientHeight;
-        const clientWidth = document.documentElement.clientWidth;
+            if (entry.isIntersecting) {
+                intersectionObserver.unobserve(_element);
 
-        const visibleVertically = (rect.bottom + verticalMargin) >= 0 && (rect.top - verticalMargin) < clientHeight;
-        const visibleHorizontally = (rect.left + horizontalMargin) >= 0 && (rect.right - horizontalMargin) < clientWidth;
-
-        return visibleVertically && visibleHorizontally && sirius.isVisibleNode(element);
-    };
-
-    const handleVisibleElements = function () {
-        const elements = document.querySelectorAll(selector);
-
-        for (let i = 0; i < elements.length; i++) {
-            let element = elements[i];
-
-            if (!element.getAttribute('data-scroll-event-handled') && isElementNowOrSoonVisible(element)) {
-                element.setAttribute('data-scroll-event-handled', true);
-
-                listener(element);
+                listener(_element);
             }
-        }
-    };
-
-    // Check after the page is loaded and when resizing or scrolling the page
-    sirius.ready(handleVisibleElements);
-    window.addEventListener('resize', sirius.throttle(handleVisibleElements, 20));
-    document.addEventListener('scroll', sirius.throttle(handleVisibleElements, 20), {
-        capture: true
+        });
+    }, {
+        rootMargin: rootMargin || '200px'
     });
 
-    // Listen for DOM changes that might influence the position of other elements
-    const observer = new MutationObserver(sirius.throttle(handleVisibleElements, 20));
+    const observeChildElements = function (_container) {
+        _container.querySelectorAll(selector).forEach(function (_element) {
+            intersectionObserver.observe(_element);
+        });
+    };
 
-    observer.observe(document, {
+    sirius.ready(function () {
+        observeChildElements(document);
+    });
+
+    // Listen for elements that are added after this method has been called.
+    const mutationObserver = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            mutation.addedNodes.forEach(function (addedNode) {
+                if (sirius.isElement(addedNode)) {
+                    if (addedNode.matches(selector)) {
+                        intersectionObserver.observe(addedNode);
+                    }
+
+                    observeChildElements(addedNode);
+                }
+            });
+        });
+    });
+
+    mutationObserver.observe(document, {
         childList: true,
-        subtree: true,
-        attributes: true,
-        characterData: true
+        subtree: true
     });
 }
 
