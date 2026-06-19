@@ -183,7 +183,7 @@ public class Page<E> {
      */
     public Page<E> withAttribute(String name, @Nullable Object value) {
         if (Strings.isEmpty(name)) {
-            return this;
+            throw new IllegalArgumentException("The attribute name must not be empty.");
         }
 
         attributes.put(name, value);
@@ -200,7 +200,7 @@ public class Page<E> {
     @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
     public Object getAttribute(String name) {
         if (Strings.isEmpty(name)) {
-            return null;
+            throw new IllegalArgumentException("The attribute name must not be empty.");
         }
 
         return attributes.get(name);
