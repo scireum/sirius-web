@@ -457,6 +457,8 @@ sirius.debounce = function (fn, delay) {
  * @param rootMargin the optional IntersectionObserver root margin, '200px' by default
  */
 sirius.addElementVisibleListener = function (selector, listener, rootMargin) {
+    const handledAttribute = 'data-sirius-element-visible-listener-handled';
+
     const intersectionObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             const _element = entry.target;
@@ -464,6 +466,11 @@ sirius.addElementVisibleListener = function (selector, listener, rootMargin) {
             if (entry.isIntersecting) {
                 intersectionObserver.unobserve(_element);
 
+                if (_element.hasAttribute(handledAttribute)) {
+                    return;
+                }
+
+                _element.setAttribute(handledAttribute, 'true');
                 listener(_element);
             }
         });
@@ -471,9 +478,15 @@ sirius.addElementVisibleListener = function (selector, listener, rootMargin) {
         rootMargin: rootMargin || '200px'
     });
 
+    const observeElement = function (_element) {
+        if (!_element.hasAttribute(handledAttribute)) {
+            intersectionObserver.observe(_element);
+        }
+    };
+
     const observeChildElements = function (_container) {
         _container.querySelectorAll(selector).forEach(function (_element) {
-            intersectionObserver.observe(_element);
+            observeElement(_element);
         });
     };
 
@@ -487,7 +500,7 @@ sirius.addElementVisibleListener = function (selector, listener, rootMargin) {
             mutation.addedNodes.forEach(function (addedNode) {
                 if (sirius.isElement(addedNode)) {
                     if (addedNode.matches(selector)) {
-                        intersectionObserver.observe(addedNode);
+                        observeElement(addedNode);
                     }
 
                     observeChildElements(addedNode);
