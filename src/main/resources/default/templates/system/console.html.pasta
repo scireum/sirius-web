@@ -51,7 +51,7 @@
                         clip.focus = function (options) {
                             try {
                                 return nativeFocus.call(this, Object.assign({}, options, {preventScroll: true}));
-                            } catch (e) {
+                            } catch {
                                 return nativeFocus.call(this);
                             }
                         };
