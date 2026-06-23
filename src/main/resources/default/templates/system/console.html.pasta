@@ -48,8 +48,12 @@
                     if (clip && !clip.noScrollPatched) {
                         clip.noScrollPatched = true;
                         const nativeFocus = clip.focus;
-                        clip.focus = function () {
-                            return nativeFocus.call(this, {preventScroll: true});
+                        clip.focus = function (options) {
+                            try {
+                                return nativeFocus.call(this, Object.assign({}, options, {preventScroll: true}));
+                            } catch (e) {
+                                return nativeFocus.call(this);
+                            }
                         };
                     }
                 };
