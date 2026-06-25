@@ -48,11 +48,12 @@ public class ClientSessionSecrets implements Startable {
     private List<String> effectiveSessionSecrets;
 
     /**
-     * Verifies the secret configuration as early as possible by resolving the primary secret on startup.
+     * Verifies the secret configuration as early as possible and resolves all secrets on startup, so they are
+     * initialised before any (concurrent) request is handled.
      */
     @Override
     public void started() {
-        requireSessionSecret();
+        getAllSessionSecrets();
     }
 
     /**
@@ -97,16 +98,13 @@ public class ClientSessionSecrets implements Startable {
      */
     public List<String> getAllSessionSecrets() {
         if (effectiveSessionSecrets == null) {
-            List<String> secrets = new ArrayList<>();
-            secrets.add(requireSessionSecret());
-            if (legacySessionSecrets != null) {
-                for (String legacySecret : legacySessionSecrets) {
-                    if (Strings.isFilled(legacySecret)) {
-                        secrets.add(legacySecret);
-                    }
+            effectiveSessionSecrets = new ArrayList<>();
+            effectiveSessionSecrets.add(requireSessionSecret());
+            for (String legacySecret : legacySessionSecrets) {
+                if (Strings.isFilled(legacySecret)) {
+                    effectiveSessionSecrets.add(legacySecret);
                 }
             }
-            effectiveSessionSecrets = secrets;
         }
 
         return Collections.unmodifiableList(effectiveSessionSecrets);
