@@ -144,4 +144,32 @@ class WebContextTest {
         assertFalse { body.contains("test2=test") }
 
     }
+
+    @Test
+    fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
+
+        // Build a legacy (unencrypted) session cookie in the "<sha512 hash>:<querystring>" format, signed with the
+        // test secret "TEST" (see component-test-web.conf).
+        val value = "?test1=test"
+        val hash = java.security.MessageDigest.getInstance("SHA-512")
+            .digest((value + "TEST").toByteArray())
+            .joinToString("") { "%02x".format(it) }
+        val legacyCookie = "SIRIUS_SESSION=$hash:$value"
+
+        val connection =
+            URI("http://localhost:9999/test/session-test-read").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.setRequestProperty(HttpHeaderNames.COOKIE.toString(), legacyCookie)
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+        // The legacy cookie is decoded correctly...
+        assertTrue { connection.inputStream.bufferedReader().readText().contains("test1=test") }
+        // ...and eagerly re-written in the encrypted format (marked with the "E1:" prefix).
+        val rewrittenCookie = connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+        assertTrue { rewrittenCookie.contains("SIRIUS_SESSION=E1:") }
+        assertFalse { rewrittenCookie.contains("test1=test") }
+
+    }
 }

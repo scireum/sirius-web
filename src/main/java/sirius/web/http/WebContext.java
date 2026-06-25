@@ -222,6 +222,12 @@ public class WebContext implements SubContext {
     private volatile boolean sessionModified;
 
     /**
+     * Determines if the client session was read from a legacy (unencrypted) cookie and should be re-written in the
+     * encrypted format, even if it was not otherwise modified during this request.
+     */
+    private volatile boolean sessionUpgradeRequired;
+
+    /**
      * Specifies the micro-timing key used for this request. If null, no micro-timing will be recorded.
      */
     protected String microtimingKey;
@@ -846,6 +852,11 @@ public class WebContext implements SubContext {
         if (Strings.isFilled(encodedSession)) {
             session = decodeSession(encodedSession);
             checkAndEnforceSessionPinning();
+            if (sessionCookieEncryption && !session.isEmpty() && !ClientSessionCrypto.isEncrypted(encodedSession)) {
+                // Eagerly upgrade a successfully decoded legacy (unencrypted) cookie to the encrypted format, so it
+                // does not stay in plain text until the session happens to be modified.
+                sessionUpgradeRequired = true;
+            }
         } else {
             session = new HashMap<>();
         }
@@ -1517,7 +1528,7 @@ public class WebContext implements SubContext {
     }
 
     private void buildClientSessionCookie() {
-        if (!sessionModified) {
+        if (!sessionModified && !sessionUpgradeRequired) {
             if (session != null && !session.isEmpty()) {
                 installSessionPinningCookieIfRequired();
             }
