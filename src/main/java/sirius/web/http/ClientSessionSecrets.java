@@ -45,6 +45,7 @@ public class ClientSessionSecrets implements Startable {
     private List<String> legacySessionSecrets;
 
     private String effectiveSessionSecret;
+    private List<String> effectiveSessionSecrets;
 
     /**
      * Verifies the secret configuration as early as possible by resolving the primary secret on startup.
@@ -95,15 +96,19 @@ public class ClientSessionSecrets implements Startable {
      * @return the list of accepted secrets, the primary one first
      */
     public List<String> getAllSessionSecrets() {
-        List<String> secrets = new ArrayList<>();
-        secrets.add(requireSessionSecret());
-        if (legacySessionSecrets != null) {
-            for (String legacySecret : legacySessionSecrets) {
-                if (Strings.isFilled(legacySecret)) {
-                    secrets.add(legacySecret);
+        if (effectiveSessionSecrets == null) {
+            List<String> secrets = new ArrayList<>();
+            secrets.add(requireSessionSecret());
+            if (legacySessionSecrets != null) {
+                for (String legacySecret : legacySessionSecrets) {
+                    if (Strings.isFilled(legacySecret)) {
+                        secrets.add(legacySecret);
+                    }
                 }
             }
+            effectiveSessionSecrets = secrets;
         }
-        return Collections.unmodifiableList(secrets);
+
+        return Collections.unmodifiableList(effectiveSessionSecrets);
     }
 }
