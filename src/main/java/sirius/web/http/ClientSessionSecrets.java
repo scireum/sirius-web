@@ -10,6 +10,7 @@ package sirius.web.http;
 
 import sirius.kernel.Startable;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Wait;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
@@ -45,15 +46,22 @@ public class ClientSessionSecrets implements Startable {
     private List<String> legacySessionSecrets;
 
     private String effectiveSessionSecret;
-    private List<String> effectiveSessionSecrets;
+    private final List<String> effectiveSessionSecrets = new ArrayList<>();
+    private volatile boolean initialized;
 
     /**
-     * Verifies the secret configuration as early as possible and resolves all secrets on startup, so they are
-     * initialised before any (concurrent) request is handled.
+     * Verifies the secret configuration as early as possible and resolves all accepted secrets on startup, so they
+     * are fully initialised before any (concurrent) request is handled.
      */
     @Override
     public void started() {
-        getAllSessionSecrets();
+        effectiveSessionSecrets.add(requireSessionSecret());
+        for (String legacySecret : legacySessionSecrets) {
+            if (Strings.isFilled(legacySecret)) {
+                effectiveSessionSecrets.add(legacySecret);
+            }
+        }
+        initialized = true;
     }
 
     /**
@@ -97,14 +105,10 @@ public class ClientSessionSecrets implements Startable {
      * @return the list of accepted secrets, the primary one first
      */
     public List<String> getAllSessionSecrets() {
-        if (effectiveSessionSecrets == null) {
-            effectiveSessionSecrets = new ArrayList<>();
-            effectiveSessionSecrets.add(requireSessionSecret());
-            for (String legacySecret : legacySessionSecrets) {
-                if (Strings.isFilled(legacySecret)) {
-                    effectiveSessionSecrets.add(legacySecret);
-                }
-            }
+        // The list is populated once in started(). Should a request arrive before startup finished, we wait for the
+        // initialization to complete instead of returning an incomplete list.
+        while (!initialized) {
+            Wait.millis(10);
         }
 
         return Collections.unmodifiableList(effectiveSessionSecrets);
