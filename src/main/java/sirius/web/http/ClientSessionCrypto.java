@@ -34,6 +34,8 @@ import java.util.Base64;
  * <p>
  * Encrypted values are marked with {@link #ENCRYPTION_PREFIX} so that the reading side can distinguish them from
  * legacy (unencrypted) cookies and transparently support both formats during a migration period.
+ *
+ * @see ClientSessionSecrets for the management of the secrets used here
  */
 class ClientSessionCrypto {
 

@@ -83,7 +83,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -367,20 +366,6 @@ public class WebContext implements SubContext {
     private static String cookieDomain;
 
     /**
-     * Shared secret used to protect the client session. If empty one will be created on startup.
-     */
-    @ConfigValue("http.sessionSecret")
-    private static String sessionSecret;
-
-    /**
-     * Previously used session secrets which are still accepted when reading (but never used for writing) client
-     * sessions. This permits to rotate {@link #sessionSecret} without invalidating sessions which were encrypted or
-     * signed using an older secret.
-     */
-    @ConfigValue("http.legacySessionSecrets")
-    private static List<String> legacySessionSecrets;
-
-    /**
      * Input size limit for structured data (as this is loaded into heap)
      */
     @ConfigValue("http.maxStructuredInputSize")
@@ -428,6 +413,9 @@ public class WebContext implements SubContext {
 
     @Part
     private static CSRFHelper csrfHelper;
+
+    @Part
+    private static ClientSessionSecrets sessionSecrets;
 
     /**
      * Provides access to the <tt>WebContext</tt> for the current thread.
@@ -964,7 +952,7 @@ public class WebContext implements SubContext {
             // and all legacy secrets so that rotating the secret does not invalidate sessions which are still
             // encrypted using a previous one. The secret which successfully decrypts is also the one used to verify
             // the (global) integrity hash.
-            for (String secret : getGlobalSessionSecrets()) {
+            for (String secret : sessionSecrets.getAllSessionSecrets()) {
                 String payload = ClientSessionCrypto.decrypt(encodedSession, secret);
                 if (payload != null) {
                     Map<String, String> decodedSession =
@@ -977,7 +965,7 @@ public class WebContext implements SubContext {
         } else {
             // A legacy plain text cookie has nothing to decrypt. We try each known secret when verifying the
             // integrity hash to support secret rotation for these cookies as well.
-            Map<String, String> decodedSession = parseSessionPayload(encodedSession, getGlobalSessionSecrets());
+            Map<String, String> decodedSession = parseSessionPayload(encodedSession, sessionSecrets.getAllSessionSecrets());
             if (decodedSession != null) {
                 return decodedSession;
             }
@@ -1588,7 +1576,7 @@ public class WebContext implements SubContext {
         if (!sessionCookieEncryption) {
             return payload;
         }
-        return ClientSessionCrypto.encrypt(payload, getGlobalSessionSecret());
+        return ClientSessionCrypto.encrypt(payload, sessionSecrets.requireSessionSecret());
     }
 
     private long determineSessionCookieTTL() {
@@ -1624,31 +1612,7 @@ public class WebContext implements SubContext {
             return sessionSecretComputer.computeSecret(currentSession);
         }
 
-        return getGlobalSessionSecret();
-    }
-
-    private static String getGlobalSessionSecret() {
-        if (Strings.isEmpty(sessionSecret)) {
-            sessionSecret = UUID.randomUUID().toString();
-        }
-        return sessionSecret;
-    }
-
-    /*
-     * Returns all global secrets which are accepted when reading a client session. The primary secret (used for
-     * writing) comes first, followed by all configured legacy secrets in the order given.
-     */
-    private static List<String> getGlobalSessionSecrets() {
-        List<String> secrets = new ArrayList<>();
-        secrets.add(getGlobalSessionSecret());
-        if (legacySessionSecrets != null) {
-            for (String legacySecret : legacySessionSecrets) {
-                if (Strings.isFilled(legacySecret)) {
-                    secrets.add(legacySecret);
-                }
-            }
-        }
-        return secrets;
+        return sessionSecrets.requireSessionSecret();
     }
 
     /**
