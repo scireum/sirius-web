@@ -19,7 +19,9 @@ import sirius.web.util.LinkBuilder;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -50,6 +52,7 @@ public class Page<E> {
     private Boolean hasFacets = null;
     private int pageSize = DEFAULT_PAGE_SIZE;
     private final List<String> emptyParameters = new ArrayList<>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     /**
      * Specifies the query used to compute the result list.
@@ -169,6 +172,38 @@ public class Page<E> {
     public Page<E> withEmptyParameter(String emptyParameter) {
         this.emptyParameters.add(emptyParameter);
         return this;
+    }
+
+    /**
+     * Adds a custom attribute to this page.
+     *
+     * @param name  the name of the attribute
+     * @param value the attribute value
+     * @return the page itself for fluent method calls
+     */
+    public Page<E> withAttribute(String name, @Nullable Object value) {
+        if (Strings.isEmpty(name)) {
+            throw new IllegalArgumentException("The attribute name must not be empty.");
+        }
+
+        attributes.put(name, value);
+        return this;
+    }
+
+    /**
+     * Retrieves a custom attribute stored on this page.
+     *
+     * @param name the name of the attribute
+     * @return the attribute value or <tt>null</tt> if no such attribute exists
+     */
+    @Nullable
+    @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
+    public Object getAttribute(String name) {
+        if (Strings.isEmpty(name)) {
+            throw new IllegalArgumentException("The attribute name must not be empty.");
+        }
+
+        return attributes.get(name);
     }
 
     /**
