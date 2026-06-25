@@ -119,13 +119,29 @@ class WebContextTest {
     @Test
     fun `setSessionValue works as expected`() {
 
-        val connection = URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
-        connection.setRequestMethod("GET")
-        connection.connect()
+        // The first request stores the session values and returns the (encrypted) session cookie.
+        val writeConnection =
+            URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
+        writeConnection.requestMethod = "GET"
+        writeConnection.connect()
 
-        assertEquals(200, connection.responseCode)
-        assertTrue { connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test1=test") }
-        assertFalse { connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test2=") }
+        assertEquals(200, writeConnection.responseCode)
+        val sessionCookie = writeConnection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+            .substringBefore(";")
+
+        // The second request reads the session back, proving that the value round-trips through the encrypted
+        // cookie and that a value set to null is not stored.
+        val readConnection =
+            URI("http://localhost:9999/test/session-test-read").toURL().openConnection() as HttpURLConnection
+        readConnection.requestMethod = "GET"
+        readConnection.setRequestProperty(HttpHeaderNames.COOKIE.toString(), sessionCookie)
+        readConnection.connect()
+
+        assertEquals(200, readConnection.responseCode)
+        val body = readConnection.inputStream.bufferedReader().readText()
+        assertTrue { body.contains("test1=test") }
+        assertFalse { body.contains("test2=test") }
 
     }
 }

@@ -321,6 +321,14 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
+    @Routed("/test/session-test-read")
+    public void sessionTestRead(WebContext webContext) {
+        webContext.respondWith()
+                  .direct(HttpResponseStatus.OK,
+                          "test1=" + webContext.getSessionValue("test1").asString("<none>") + "&test2="
+                          + webContext.getSessionValue("test2").asString("<none>"));
+    }
+
     @Routed("/test/redirect-to-get")
     public void redirect(WebContext webContext) {
         webContext.respondWith().redirectToGet("/test/redirect-target");
