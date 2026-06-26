@@ -65,21 +65,4 @@
             </t:datacard>
         </div>
     </i:if>
-
-    <i:if test="!webContext.getSessionKeys().isEmpty()">
-        <div class="row">
-            <t:datacard title="Client Session">
-                <table class="table">
-                    <i:for type="String" var="name" items="webContext.getSessionKeys()">
-                        <tr>
-                            <td>@name</td>
-                            <td class="text-end">
-                                <div class="text-break">@webContext.getSessionValue(name)</div>
-                            </td>
-                        </tr>
-                    </i:for>
-                </table>
-            </t:datacard>
-        </div>
-    </i:if>
 </t:page>

@@ -83,7 +83,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -223,6 +222,12 @@ public class WebContext implements SubContext {
     private volatile boolean sessionModified;
 
     /**
+     * Determines if the client session was read from a legacy (unencrypted) cookie and should be re-written in the
+     * encrypted format, even if it was not otherwise modified during this request.
+     */
+    private volatile boolean sessionUpgradeRequired;
+
+    /**
      * Specifies the micro-timing key used for this request. If null, no micro-timing will be recorded.
      */
     protected String microtimingKey;
@@ -348,6 +353,13 @@ public class WebContext implements SubContext {
     private static CookieSecurity sessionCookieSecurity;
 
     /**
+     * Determines if the client session payload should be encrypted within the cookie. If disabled, the payload is
+     * only protected against tampering (using an integrity hash) but is readable as plain text by the client.
+     */
+    @ConfigValue("http.sessionCookie.encrypt")
+    private static boolean sessionCookieEncryption;
+
+    /**
      * Determines the domain set for all cookies. If empty no domain will be set.
      * If a cookie's domain attribute is not set, the cookie is only applicable to the domain of the originating request, EXCLUDING all its subdomains.
      * (However in IE 9 and older versions, a cookie made for abc.com is also sent in requests to xyz.abc.com)
@@ -358,12 +370,6 @@ public class WebContext implements SubContext {
     @ConfigValue("http.cookieDomain")
     @Nullable
     private static String cookieDomain;
-
-    /**
-     * Shared secret used to protect the client session. If empty one will be created on startup.
-     */
-    @ConfigValue("http.sessionSecret")
-    private static String sessionSecret;
 
     /**
      * Input size limit for structured data (as this is loaded into heap)
@@ -413,6 +419,9 @@ public class WebContext implements SubContext {
 
     @Part
     private static CSRFHelper csrfHelper;
+
+    @Part
+    private static ClientSessionSecrets sessionSecrets;
 
     /**
      * Provides access to the <tt>WebContext</tt> for the current thread.
@@ -843,6 +852,11 @@ public class WebContext implements SubContext {
         if (Strings.isFilled(encodedSession)) {
             session = decodeSession(encodedSession);
             checkAndEnforceSessionPinning();
+            if (sessionCookieEncryption && !session.isEmpty() && !ClientSessionCrypto.isEncrypted(encodedSession)) {
+                // Eagerly upgrade a successfully decoded legacy (unencrypted) cookie to the encrypted format, so it
+                // does not stay in plain text until the session happens to be modified.
+                sessionUpgradeRequired = true;
+            }
         } else {
             session = new HashMap<>();
         }
@@ -944,10 +958,57 @@ public class WebContext implements SubContext {
     }
 
     private Map<String, String> decodeSession(String encodedSession) {
-        Tuple<String, String> sessionInfo = Strings.split(encodedSession, ":");
+        if (ClientSessionCrypto.isEncrypted(encodedSession)) {
+            // For an encrypted cookie only the matching secret is able to decrypt the payload. We try the primary
+            // and all legacy secrets so that rotating the secret does not invalidate sessions which are still
+            // encrypted using a previous one. The secret which successfully decrypts is also the one used to verify
+            // the (global) integrity hash.
+            for (String secret : sessionSecrets.getAllSessionSecrets()) {
+                String payload = ClientSessionCrypto.decrypt(encodedSession, secret);
+                if (payload != null) {
+                    Map<String, String> decodedSession =
+                            parseSessionPayload(payload, Collections.singletonList(secret));
+                    if (decodedSession != null) {
+                        return decodedSession;
+                    }
+                }
+            }
+        } else {
+            // A legacy plain text cookie has nothing to decrypt. We try each known secret when verifying the
+            // integrity hash to support secret rotation for these cookies as well.
+            Map<String, String> decodedSession = parseSessionPayload(encodedSession, sessionSecrets.getAllSessionSecrets());
+            if (decodedSession != null) {
+                return decodedSession;
+            }
+        }
+
+        if (SESSION_CHECK.isFINE()) {
+            SESSION_CHECK.FINE("Resetting client session as it could not be decoded: %s%n%s%nURI: %s%nIP: %s",
+                               encodedSession,
+                               this,
+                               getRequestedURL(),
+                               getRemoteIP());
+        }
+        return new HashMap<>();
+    }
+
+    /**
+     * Parses a decoded {@code hash:querystring} session payload and verifies its integrity.
+     * <p>
+     * As a side effect, the {@link #sessionCookieTTL} is updated if the payload contains a TTL and the integrity
+     * check succeeds.
+     *
+     * @param payload                the plain text {@code hash:querystring} payload
+     * @param candidateGlobalSecrets the global secrets to try when verifying the integrity hash. Only used if no
+     *                               {@link SessionSecretComputer} is configured.
+     * @return the decoded session or <tt>null</tt> if the integrity hash did not match any candidate secret
+     */
+    @Nullable
+    private Map<String, String> parseSessionPayload(String payload, List<String> candidateGlobalSecrets) {
+        Tuple<String, String> sessionInfo = Strings.split(payload, ":");
         Map<String, String> decodedSession = new HashMap<>();
         long decodedSessionTTL = -1;
-        QueryStringDecoder qsd = new QueryStringDecoder(encodedSession);
+        QueryStringDecoder qsd = new QueryStringDecoder(payload);
         for (Map.Entry<String, List<String>> entry : qsd.parameters().entrySet()) {
             if (TTL_SESSION_KEY.equals(entry.getKey())) {
                 decodedSessionTTL = Values.of(entry.getValue()).at(0).getLong();
@@ -955,28 +1016,32 @@ public class WebContext implements SubContext {
                 decodedSession.put(entry.getKey(), Values.of(entry.getValue()).at(0).getString());
             }
         }
-        if (checkSessionDataIntegrity(decodedSession, sessionInfo)) {
-            if (decodedSessionTTL >= 0) {
-                sessionCookieTTL = decodedSessionTTL;
-            }
-            return decodedSession;
-        } else {
-            if (SESSION_CHECK.isFINE()) {
-                SESSION_CHECK.FINE("Resetting client session due to inconsistent security hash: %s%n%s%nURI: %s%nIP: %s",
-                                   encodedSession,
-                                   this,
-                                   getRequestedURL(),
-                                   getRemoteIP());
-            }
-            return new HashMap<>();
+        if (!checkSessionDataIntegrity(decodedSession, sessionInfo, candidateGlobalSecrets)) {
+            return null;
         }
+        if (decodedSessionTTL >= 0) {
+            sessionCookieTTL = decodedSessionTTL;
+        }
+        return decodedSession;
     }
 
-    private boolean checkSessionDataIntegrity(Map<String, String> currentSession, Tuple<String, String> sessionInfo) {
+    private boolean checkSessionDataIntegrity(Map<String, String> currentSession,
+                                              Tuple<String, String> sessionInfo,
+                                              List<String> candidateGlobalSecrets) {
+        if (sessionSecretComputer != null) {
+            return matchesIntegrityHash(sessionInfo, sessionSecretComputer.computeSecret(currentSession));
+        }
+        for (String secret : candidateGlobalSecrets) {
+            if (matchesIntegrityHash(sessionInfo, secret)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesIntegrityHash(Tuple<String, String> sessionInfo, String secret) {
         return Strings.areEqual(sessionInfo.getFirst(),
-                                Hasher.sha512()
-                                      .hash(sessionInfo.getSecond() + getSessionSecret(currentSession))
-                                      .toHexString());
+                                Hasher.sha512().hash(sessionInfo.getSecond() + secret).toHexString());
     }
 
     /**
@@ -1463,7 +1528,7 @@ public class WebContext implements SubContext {
     }
 
     private void buildClientSessionCookie() {
-        if (!sessionModified) {
+        if (!sessionModified && !sessionUpgradeRequired) {
             if (session != null && !session.isEmpty()) {
                 installSessionPinningCookieIfRequired();
             }
@@ -1494,17 +1559,35 @@ public class WebContext implements SubContext {
 
         String value = encoder.toString();
         String protection = Hasher.sha512().hash(value + getSessionSecret(session)).toHexString();
+        String cookieValue = wrapSessionPayload(protection + ":" + value);
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
-            setHTTPSessionCookie(sessionCookieName, protection + ":" + value);
+            setHTTPSessionCookie(sessionCookieName, cookieValue);
         } else {
             setCookie(sessionCookieName,
-                      protection + ":" + value,
+                      cookieValue,
                       ttl,
                       determineSessionCookieSameSite(),
                       sessionCookieSecurity);
         }
+    }
+
+    /**
+     * Encrypts the given session payload if encryption is enabled.
+     * <p>
+     * The payload is encrypted using the global session secret which - unlike a per-session secret computed by a
+     * {@link SessionSecretComputer} - is available before the session has been decoded. The inner integrity hash
+     * (which may use a per-session secret) remains part of the encrypted payload and is verified after decryption.
+     *
+     * @param payload the {@code hash:querystring} payload to protect
+     * @return the encrypted payload if encryption is enabled, otherwise the unchanged plain text payload
+     */
+    private String wrapSessionPayload(String payload) {
+        if (!sessionCookieEncryption) {
+            return payload;
+        }
+        return ClientSessionCrypto.encrypt(payload, sessionSecrets.requireSessionSecret());
     }
 
     private long determineSessionCookieTTL() {
@@ -1540,14 +1623,7 @@ public class WebContext implements SubContext {
             return sessionSecretComputer.computeSecret(currentSession);
         }
 
-        return getGlobalSessionSecret();
-    }
-
-    private static String getGlobalSessionSecret() {
-        if (Strings.isEmpty(sessionSecret)) {
-            sessionSecret = UUID.randomUUID().toString();
-        }
-        return sessionSecret;
+        return sessionSecrets.requireSessionSecret();
     }
 
     /**
