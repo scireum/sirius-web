@@ -44,7 +44,7 @@ public class SessionCookieController extends BasicController {
      * @param webContext the current request
      */
     @Routed("/system/session-cookie")
-    @Permission("permission-system-console")
+    @Permission("flag-system-administrator")
     public void sessionCookie(WebContext webContext) {
         String cookieValue = webContext.get("cookieValue").asString();
         if (!webContext.isPostRequest() || Strings.isEmpty(cookieValue)) {
