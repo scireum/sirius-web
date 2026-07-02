@@ -4,7 +4,7 @@
 <i:arg type="boolean" name="integrityValid"/>
 <i:arg type="java.util.List" name="entries"/>
 
-<t:page title="Session Cookie">
+<i:invoke template="/templates/system/client-session.html.pasta" title="Session Cookie" page="session-cookie">
     <i:block name="breadcrumbs">
         <li>
             <a href="/system/session-cookie">Session Cookie</a>
@@ -77,4 +77,4 @@
             </i:else>
         </i:if>
     </i:if>
-</t:page>
+</i:invoke>

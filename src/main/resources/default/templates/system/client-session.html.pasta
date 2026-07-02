@@ -1,0 +1,35 @@
+<i:arg type="String" name="title"/>
+<i:arg type="String" name="page" default=""/>
+
+<i:pragma name="description"
+          value="Wrapper for the system session pages, rendering a shared navigation sidebar on the left."/>
+
+<t:page title="@title">
+    <i:block name="head">
+        <i:render name="head"/>
+    </i:block>
+
+    <i:block name="breadcrumbs">
+        <li>
+            <a href="/system/info">Session</a>
+        </li>
+        <i:render name="breadcrumbs"/>
+    </i:block>
+
+    <i:block name="page-header">
+        <i:render name="page-header"/>
+    </i:block>
+
+    <t:sidebar>
+        <i:block name="sidebar">
+            <t:navbox label="Session">
+                <t:navboxLink label="Client Info" icon="fa-solid fa-circle-info" url="/system/info"
+                              active="@page == 'info'"/>
+                <t:navboxLink label="Session Cookie" icon="fa-solid fa-cookie-bite" url="/system/session-cookie"
+                              active="@page == 'session-cookie'" permission="flag-system-administrator"/>
+            </t:navbox>
+        </i:block>
+
+        <i:render name="body"/>
+    </t:sidebar>
+</t:page>
