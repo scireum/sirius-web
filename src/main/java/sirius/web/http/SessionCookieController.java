@@ -35,6 +35,11 @@ public class SessionCookieController extends BasicController {
 
     private static final String TEMPLATE = "/templates/system/session-cookie.html.pasta";
 
+    /**
+     * Describes the permission required to decode a client session cookie.
+     */
+    public static final String PERMISSION_SYSTEM_SESSION_COOKIE = "permission-system-session-cookie";
+
     @Part
     private ClientSessionSecrets sessionSecrets;
 
@@ -44,7 +49,7 @@ public class SessionCookieController extends BasicController {
      * @param webContext the current request
      */
     @Routed("/system/session-cookie")
-    @Permission("flag-system-administrator")
+    @Permission(PERMISSION_SYSTEM_SESSION_COOKIE)
     public void sessionCookie(WebContext webContext) {
         String cookieValue = webContext.get("cookieValue").asString();
         if (!webContext.isPostRequest() || Strings.isEmpty(cookieValue)) {

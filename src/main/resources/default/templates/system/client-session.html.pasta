@@ -26,7 +26,7 @@
                 <t:navboxLink label="Client Info" icon="fa-solid fa-circle-info" url="/system/info"
                               active="@page == 'info'"/>
                 <t:navboxLink label="Session Cookie" icon="fa-solid fa-cookie-bite" url="/system/session-cookie"
-                              active="@page == 'session-cookie'" permission="flag-system-administrator"/>
+                              active="@page == 'session-cookie'" permission="permission-system-session-cookie"/>
             </t:navbox>
         </i:block>
 
