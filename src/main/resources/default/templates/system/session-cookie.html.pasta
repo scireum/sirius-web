@@ -1,8 +1,8 @@
-<i:arg type="String" name="cookieValue" default=""/>
-<i:arg type="boolean" name="submitted" default="false"/>
-<i:arg type="boolean" name="encrypted" default="false"/>
-<i:arg type="boolean" name="integrityValid" default="false"/>
-<i:arg type="java.util.List" name="entries" default="null"/>
+<i:arg type="String" name="cookieValue"/>
+<i:arg type="boolean" name="submitted"/>
+<i:arg type="boolean" name="encrypted"/>
+<i:arg type="boolean" name="integrityValid"/>
+<i:arg type="java.util.List" name="entries"/>
 
 <t:page title="Session Cookie">
     <i:block name="breadcrumbs">
