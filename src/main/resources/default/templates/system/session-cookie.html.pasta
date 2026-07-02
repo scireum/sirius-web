@@ -1,0 +1,80 @@
+<i:arg type="String" name="cookieValue"/>
+<i:arg type="boolean" name="submitted"/>
+<i:arg type="boolean" name="encrypted"/>
+<i:arg type="boolean" name="integrityValid"/>
+<i:arg type="java.util.List" name="entries"/>
+
+<i:invoke template="/templates/system/client-session.html.pasta" title="Session Cookie" page="session-cookie">
+    <i:block name="breadcrumbs">
+        <li>
+            <a href="/system/session-cookie">Session Cookie</a>
+        </li>
+    </i:block>
+
+    <i:block name="page-header">
+        <t:pageHeader title="Session Cookie"/>
+    </i:block>
+
+    <t:editForm url="/system/session-cookie">
+        <t:textarea name="cookieValue"
+                    value="@cookieValue"
+                    rows="6"
+                    label="Encrypted session cookie"
+                    class="font-monospace"/>
+        <t:formBar btnLabel="" backButton="false">
+            <button type="submit" class="btn btn-primary">Decode</button>
+        </t:formBar>
+    </t:editForm>
+
+    <i:if test="submitted">
+        <i:if test="entries != null">
+            <i:if test="!integrityValid">
+                <div class="alert alert-warning">
+                    The integrity check failed. The contents could be read, but they may have been created with a
+                    different (e.g. rotated) secret or been tampered with.
+                </div>
+            </i:if>
+
+            <t:heading label="Metadata"/>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Encrypted</dt>
+                        <dd class="col-sm-9">@(encrypted ? 'Yes' : 'No')</dd>
+                        <dt class="col-sm-3">Integrity valid</dt>
+                        <dd class="col-sm-9">@(integrityValid ? 'Yes' : 'No')</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <t:heading label="Contents"/>
+            <t:emptyCheck data="@entries">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <table class="table" style="table-layout: fixed">
+                            <thead>
+                            <tr>
+                                <th style="width: 30%">Key</th>
+                                <th>Value</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <i:for type="sirius.kernel.commons.Tuple" var="entry" items="entries">
+                                <tr>
+                                    <td class="font-monospace text-break">@entry.getFirst()</td>
+                                    <td class="font-monospace text-break">@entry.getSecond()</td>
+                                </tr>
+                            </i:for>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </t:emptyCheck>
+            <i:else>
+                <div class="alert alert-danger">
+                    The cookie could not be decrypted with any of the configured session secrets.
+                </div>
+            </i:else>
+        </i:if>
+    </i:if>
+</i:invoke>
