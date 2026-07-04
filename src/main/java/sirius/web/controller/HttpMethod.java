@@ -36,14 +36,20 @@ public enum HttpMethod {
 
     /**
      * Determines if the given array of methods contains all possible HTTP methods.
+     * <p>
+     * As OPTIONS is handled centrally by the framework and is not part of a route's declared methods, it is
+     * treated as always present here. A route enumerating all remaining methods therefore still counts as
+     * complete.
      *
      * @param methods the list of methods to check
      * @return <tt>true</tt> if all HTTP methods are contained, <tt>false</tt> otherwise
      */
     public static boolean isCompleteList(HttpMethod... methods) {
-        if (methods == null || methods.length == 0 || methods.length < ALL_METHODS.size()) {
+        if (methods == null || methods.length == 0) {
             return false;
         }
-        return EnumSet.of(methods[0], methods).containsAll(ALL_METHODS);
+        EnumSet<HttpMethod> declaredMethods = EnumSet.of(methods[0], methods);
+        declaredMethods.add(OPTIONS);
+        return declaredMethods.containsAll(ALL_METHODS);
     }
 }
