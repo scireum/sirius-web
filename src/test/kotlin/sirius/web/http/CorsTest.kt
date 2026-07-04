@@ -57,6 +57,21 @@ class CorsTest {
     }
 
     @Test
+    fun `preflight 'Access-Control-Allow-Methods' is derived from the registered routes`() {
+        // '/test/another-restricted-method' only declares GET, so the preflight must advertise exactly GET and the
+        // centrally handled OPTIONS - and not the previously hard-coded "GET,PUT,POST,DELETE".
+        val connection =
+            URI("http://localhost:9999/test/another-restricted-method").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod(HttpMethod.OPTIONS.name())
+        connection.addRequestProperty("Origin", "TEST")
+        connection.addRequestProperty("Access-Control-Request-Method", "GET")
+
+        connection.getInputStream().close()
+        val allowedMethods = connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString())
+        assertEquals("GET, OPTIONS", allowedMethods)
+    }
+
+    @Test
     fun `configured scope disables automatic cors even if global setting is enabled`() {
         UserContext.get().setCurrentScope(configuredScope("corsDisabled", false))
         assertFalse(WebContext.isCorsAllowAll())
