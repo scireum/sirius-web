@@ -302,9 +302,10 @@ public class ControllerDispatcher implements WebDispatcher {
     @Explain("We actually can use object identity here as this is a marker object.")
     private Set<HttpMethod> collectSupportedMethods(WebContext webContext, String uri) {
         return collectSupportedMethods(getRoutes().stream()
-                                                  .filter(route -> route.matches(webContext, uri, false) != Route.NO_MATCH
-                                                                   || route.matches(webContext, uri, true)
-                                                                      != Route.NO_MATCH)
+                                                  .filter(route -> route.matches(webContext,
+                                                                                 uri,
+                                                                                 route.isPreDispatchable())
+                                                                   != Route.NO_MATCH)
                                                   .toList());
     }
 
