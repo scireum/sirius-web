@@ -997,6 +997,16 @@ class WebServerTest {
     }
 
     @Test
+    fun `CORS preflight requests without a matching route fall through to 404`() {
+        val connection =
+            URI("http://localhost:9999/test/no-such-route").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("OPTIONS")
+        connection.addRequestProperty("Access-Control-Request-Method", "GET")
+
+        assertEquals(404, connection.responseCode)
+    }
+
+    @Test
     fun `Method-restricted routes no longer implicitly support OPTIONS`() {
         val dispatcher = Injector.context().getPart(ControllerDispatcher::class.java)!!
         val methods = dispatcher.routes

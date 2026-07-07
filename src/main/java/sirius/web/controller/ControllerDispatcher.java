@@ -226,7 +226,11 @@ public class ControllerDispatcher implements WebDispatcher {
         // routes registered for this path. It must never reach any business logic - not even a controller which
         // explicitly handles OPTIONS - so we intercept it before matching the routes below.
         if (isCorsPreflightRequest(webContext)) {
-            return answerOptionsRequest(webContext, collectSupportedMethods(webContext, uri));
+            Set<HttpMethod> supportedMethods = collectSupportedMethods(webContext, uri);
+            if (!supportedMethods.isEmpty()) {
+                return answerOptionsRequest(webContext, supportedMethods);
+            }
+            // No route matches this path - fall through to the regular 404 / next-dispatcher handling.
         }
 
         List<Route> routesWithDifferentMethod = new ArrayList<>();
