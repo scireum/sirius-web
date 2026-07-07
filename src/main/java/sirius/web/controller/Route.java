@@ -124,7 +124,7 @@ public class Route {
 
     private static Optional<String> stringifyMethods(sirius.web.controller.HttpMethod[] methods) {
         // if a route supports all methods, we don't list them explicitly
-        if (sirius.web.controller.HttpMethod.isCompleteList(methods)) {
+        if (sirius.web.controller.HttpMethod.coversAllMethodsExceptOptions(methods)) {
             return Optional.empty();
         }
         return Optional.of(Stream.of(methods)

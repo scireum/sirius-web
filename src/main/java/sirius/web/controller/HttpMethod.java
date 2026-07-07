@@ -21,9 +21,13 @@ public enum HttpMethod {
     CONNECT, DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE;
 
     /**
-     * Holds all possible HTTP methods for quick reference.
+     * Holds all HTTP methods except OPTIONS.
+     * <p>
+     * OPTIONS is not part of a route's default methods and is answered centrally by the framework whether or not
+     * a route opts into it (see {@link Routed#methods()}). It is therefore irrelevant to whether a route restricts
+     * its HTTP methods, and is excluded from {@link #coversAllMethodsExceptOptions(HttpMethod...)}.
      */
-    private static final Set<HttpMethod> ALL_METHODS = EnumSet.allOf(HttpMethod.class);
+    private static final Set<HttpMethod> METHODS_WITHOUT_OPTIONS = EnumSet.complementOf(EnumSet.of(OPTIONS));
 
     /**
      * Converts this enum to the corresponding Netty {@link io.netty.handler.codec.http.HttpMethod HttpMethod}.
@@ -35,21 +39,16 @@ public enum HttpMethod {
     }
 
     /**
-     * Determines if the given array of methods contains all possible HTTP methods.
-     * <p>
-     * As OPTIONS is handled centrally by the framework and is not part of a route's declared methods, it is
-     * treated as always present here. A route enumerating all remaining methods therefore still counts as
-     * complete.
+     * Determines whether the given methods cover every HTTP method except the centrally handled OPTIONS, i.e. the
+     * route places no meaningful restriction on the HTTP method.
      *
      * @param methods the list of methods to check
-     * @return <tt>true</tt> if all HTTP methods are contained, <tt>false</tt> otherwise
+     * @return <tt>true</tt> if all methods except OPTIONS are contained, <tt>false</tt> otherwise
      */
-    public static boolean isCompleteList(HttpMethod... methods) {
-        if (methods == null || methods.length == 0) {
+    public static boolean coversAllMethodsExceptOptions(HttpMethod... methods) {
+        if (methods == null || methods.length < METHODS_WITHOUT_OPTIONS.size()) {
             return false;
         }
-        EnumSet<HttpMethod> declaredMethods = EnumSet.of(methods[0], methods);
-        declaredMethods.add(OPTIONS);
-        return declaredMethods.containsAll(ALL_METHODS);
+        return EnumSet.of(methods[0], methods).containsAll(METHODS_WITHOUT_OPTIONS);
     }
 }
