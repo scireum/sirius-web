@@ -882,13 +882,13 @@ public class WebContext implements SubContext {
         if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin) && !isLegacyCookieValid(
                 sessionPin)) {
             if (SESSION_CHECK.isFINE()) {
-                SESSION_CHECK.FINE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
+                SESSION_CHECK.FINE("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
                                                  givenSessionPin,
                                                  effectiveSessionPin,
                                                  sessionPin,
                                                  session,
                                                  this,
-                                                 getRemoteIP()));
+                                                 getRemoteIP());
             }
             clearSession();
         } else if (Strings.isEmpty(sessionPin) && Strings.isFilled(givenSessionPin)) {
