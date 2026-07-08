@@ -308,7 +308,7 @@ public class ControllerDispatcher implements WebDispatcher {
         out.property("error", false);
         Object result = route.invoke(params);
         if (result instanceof Promise<?> promise) {
-            promise.onSuccess(ignored -> {
+            promise.onSuccess(_ -> {
                 // Increase robustness against clients aborting the connection mid-stream with
                 // multiple success handlers.
                 if (!promise.isFailed()) {
