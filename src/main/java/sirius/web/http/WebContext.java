@@ -978,7 +978,8 @@ public class WebContext implements SubContext {
         } else {
             // A legacy plain text cookie has nothing to decrypt. We try each known secret when verifying the
             // integrity hash to support secret rotation for these cookies as well.
-            Map<String, String> decodedSession = parseSessionPayload(encodedSession, sessionSecrets.getAllSessionSecrets());
+            Map<String, String> decodedSession =
+                    parseSessionPayload(encodedSession, sessionSecrets.getAllSessionSecrets());
             if (decodedSession != null) {
                 return decodedSession;
             }
@@ -1567,11 +1568,7 @@ public class WebContext implements SubContext {
         if (ttl == 0) {
             setHTTPSessionCookie(sessionCookieName, cookieValue);
         } else {
-            setCookie(sessionCookieName,
-                      cookieValue,
-                      ttl,
-                      determineSessionCookieSameSite(),
-                      sessionCookieSecurity);
+            setCookie(sessionCookieName, cookieValue, ttl, determineSessionCookieSameSite(), sessionCookieSecurity);
         }
     }
 
