@@ -307,9 +307,14 @@ public class ControllerDispatcher implements WebDispatcher {
         out.property("success", true);
         out.property("error", false);
         Object result = route.invoke(params);
-        if (result instanceof Promise) {
-            ((Promise<?>) result).onSuccess(ignored -> out.endResult())
-                                 .onFailure(throwable -> handleFailure(webContext, route, throwable));
+        if (result instanceof Promise<?> promise) {
+            promise.onSuccess(_ -> {
+                // Increase robustness against clients aborting the connection mid-stream with
+                // multiple success handlers.
+                if (!promise.isFailed()) {
+                    out.endResult();
+                }
+            }).onFailure(throwable -> handleFailure(webContext, route, throwable));
         } else {
             out.endResult();
         }
