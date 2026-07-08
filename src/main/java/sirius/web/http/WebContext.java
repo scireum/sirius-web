@@ -881,13 +881,15 @@ public class WebContext implements SubContext {
 
         if (Strings.isFilled(sessionPin) && !Strings.areEqual(sessionPin, effectiveSessionPin) && !isLegacyCookieValid(
                 sessionPin)) {
-            SESSION_CHECK.SEVERE(Strings.apply("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
-                                               givenSessionPin,
-                                               effectiveSessionPin,
-                                               sessionPin,
-                                               session,
-                                               this,
-                                               getRemoteIP()));
+            if (SESSION_CHECK.isFINE()) {
+                SESSION_CHECK.FINE("Session pin mismatch: %s (%s) vs. %s%n%s%n%s%nIP: %s",
+                                                 givenSessionPin,
+                                                 effectiveSessionPin,
+                                                 sessionPin,
+                                                 session,
+                                                 this,
+                                                 getRemoteIP());
+            }
             clearSession();
         } else if (Strings.isEmpty(sessionPin) && Strings.isFilled(givenSessionPin)) {
             if (SESSION_CHECK.isFINE()) {
@@ -976,7 +978,8 @@ public class WebContext implements SubContext {
         } else {
             // A legacy plain text cookie has nothing to decrypt. We try each known secret when verifying the
             // integrity hash to support secret rotation for these cookies as well.
-            Map<String, String> decodedSession = parseSessionPayload(encodedSession, sessionSecrets.getAllSessionSecrets());
+            Map<String, String> decodedSession =
+                    parseSessionPayload(encodedSession, sessionSecrets.getAllSessionSecrets());
             if (decodedSession != null) {
                 return decodedSession;
             }
@@ -1565,11 +1568,7 @@ public class WebContext implements SubContext {
         if (ttl == 0) {
             setHTTPSessionCookie(sessionCookieName, cookieValue);
         } else {
-            setCookie(sessionCookieName,
-                      cookieValue,
-                      ttl,
-                      determineSessionCookieSameSite(),
-                      sessionCookieSecurity);
+            setCookie(sessionCookieName, cookieValue, ttl, determineSessionCookieSameSite(), sessionCookieSecurity);
         }
     }
 
