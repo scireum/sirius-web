@@ -218,7 +218,7 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
 
-        webContext.hidePost();
+        webContext.hidePostRequest();
         UserInfo result = findUserByName(webContext, user);
         if (result == null) {
             UserContext.message(Message.error().withTextMessage(NLS.get("GenericUserManager.invalidSSO")));
@@ -368,7 +368,7 @@ public abstract class GenericUserManager implements UserManager {
             return null;
         }
 
-        webContext.hidePost();
+        webContext.hidePostRequest();
 
         String user = webContext.get(PARAM_USER).trim();
         String passwordOrToken = webContext.getFirstFilled(PARAM_PASSWORD, PARAM_TOKEN).trim();

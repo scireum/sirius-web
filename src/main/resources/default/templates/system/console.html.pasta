@@ -18,26 +18,50 @@
                     }
                 }
 
-                $('#term').terminal(function (command, term) {
+                const term = $('#term').terminal(function (command, term) {
                     if (!command || !command.trim()) {
                         return;
                     }
 
                     term.pause();
-                    $.post('/system/console/api', {command: command})
-                        .done(function (response) {
-                            term.echo(response.result, {exec: false}).resume();
-                        })
-                        .fail(function (call) {
-                            term.echo("\n", {exec: false}).error(call.responseJSON.message).echo("\n\n", {exec: false}).resume();
-                        });
+                    $.post('/system/console/api', {
+                        command: command,
+                        CSRFToken: '@part(sirius.web.http.CSRFHelper.class).getCSRFToken()'
+                    }).done(function (response) {
+                        term.echo(response.result, {exec: false}).resume();
+                    }).fail(function (call) {
+                        term.echo("\n", {exec: false}).error(call.responseJSON.message).echo("\n\n", {exec: false}).resume();
+                    });
                 }, {
+                    scrollOnEcho: false,
+                    onResume: function () {
+                        return false;
+                    },
                     prompt: function (output) {
                         const now = new Date();
                         output(padZeros(now.getHours(), 2) + ':' + padZeros(now.getMinutes(), 2) + ':' + padZeros(now.getSeconds(), 2) + ' - @(CallContext.getNodeName())> ');
                     },
                     greetings: '@sirius.kernel.info.Product.getProduct().getName() (@sirius.kernel.info.Product.getProduct().getDetails()) - Type "help" for a list of available commands.'
                 });
+                const patchClipboardFocus = function () {
+                    const clip = term.find('.cmd-clipboard')[0];
+                    if (clip && !clip.noScrollPatched) {
+                        clip.noScrollPatched = true;
+                        const nativeFocus = clip.focus;
+                        clip.focus = function (options) {
+                            try {
+                                return nativeFocus.call(this, Object.assign({}, options, {preventScroll: true}));
+                            } catch {
+                                return nativeFocus.call(this);
+                            }
+                        };
+                    }
+                };
+                patchClipboardFocus();
+                setTimeout(patchClipboardFocus, 500);
+
+                handleResize();
+                $(window).on('resize', handleResize);
             });
 
             function handleResize() {
@@ -78,8 +102,7 @@
             }
 
             #term {
-                overflow-x: hidden;
-                overflow-y: auto;
+                overflow: hidden;
                 min-height: 100%;
             }
 

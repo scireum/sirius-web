@@ -1,10 +1,6 @@
 <i:arg type="sirius.web.http.WebContext" name="webContext"/>
 
-<t:page title="Client Info">
-    <i:block name="breadcrumbs">
-        <li><a href="/system/info">Client Info</a></li>
-    </i:block>
-
+<i:invoke template="/templates/system/client-session.html.pasta" title="Client Info" page="info">
     <i:block name="page-header">
         <t:pageHeader title="Client Info">
             <t:inlineInfo class="d-none d-md-block">
@@ -24,11 +20,11 @@
 
     <div class="row">
         <t:datacard title="Headers">
-            <table class="table">
+            <table class="table" style="table-layout: fixed">
                 <i:for type="String" var="name" items="webContext.getRequest().headers().names()">
                     <tr>
                         <td><b>@name</b></td>
-                        <td class="text-end">
+                        <td>
                             <i:for type="String" var="value" items="webContext.getRequest().headers().getAll(name)">
                                 <div class="text-break">@value</div>
                             </i:for>
@@ -44,7 +40,7 @@
                 <table class="table">
                     <tr>
                         <th>Name</th>
-                        <th class="text-end">
+                        <th>
                             Value
                         </th>
                         <th class="text-center">Secure</th>
@@ -65,21 +61,4 @@
             </t:datacard>
         </div>
     </i:if>
-
-    <i:if test="!webContext.getSessionKeys().isEmpty()">
-        <div class="row">
-            <t:datacard title="Client Session">
-                <table class="table">
-                    <i:for type="String" var="name" items="webContext.getSessionKeys()">
-                        <tr>
-                            <td>@name</td>
-                            <td class="text-end">
-                                <div class="text-break">@webContext.getSessionValue(name)</div>
-                            </td>
-                        </tr>
-                    </i:for>
-                </table>
-            </t:datacard>
-        </div>
-    </i:if>
-</t:page>
+</i:invoke>

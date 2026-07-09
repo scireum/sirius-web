@@ -17,6 +17,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.console.Command;
 import sirius.web.controller.BasicController;
+import sirius.web.controller.HttpMethod;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
@@ -58,7 +59,7 @@ public class ConsoleController extends BasicController {
      * @param out        the output to write the command result to
      * @throws Exception in case of an error when handling a command
      */
-    @Routed("/system/console/api")
+    @Routed(value = "/system/console/api", methods = HttpMethod.POST)
     @Permission(PERMISSION_SYSTEM_CONSOLE)
     @InternalService
     public void consoleApi(WebContext webContext, JSONStructuredOutput out) throws Exception {

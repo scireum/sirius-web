@@ -11,7 +11,7 @@
         $('.@name').each(function (index) {
             fileUpload('@uploadUrl',
                 this,
-                undefined,
+                {CSRFToken: '@part(sirius.web.http.CSRFHelper.class).getCSRFToken()'},
                 <i:raw>@allowedExtensions</i:raw>,
                 @maxParallelConnections);
         });

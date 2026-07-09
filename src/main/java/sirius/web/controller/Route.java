@@ -74,6 +74,7 @@ public class Route {
     private Set<String> permissions = null;
     private String subScope;
     private boolean deprecated;
+    private boolean skipCsrfValidation;
 
     /**
      * Compiles a method defined by a {@link Controller}
@@ -91,11 +92,14 @@ public class Route {
         result.preDispatchable = routed.preDispatchable();
         result.permissions = Permissions.computePermissionsFromAnnotations(method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
+        result.skipCsrfValidation = controller.isSkipCsrfValidation() || routed.skipCsrfValidation();
 
         result.httpMethods.addAll(Arrays.stream(routed.methods())
                                         .map(sirius.web.controller.HttpMethod::toHttpMethod)
                                         .toList());
         failForInvalidMethods(result.httpMethods);
+        // We auto include OPTIONS for all routes, mostly to support preflight CORS checks without having to explicitly add the method to the annotation.
+        result.httpMethods.add(HttpMethod.OPTIONS);
 
         result.label = String.format("%s%s -> %s#%s",
                                      result.uri,
@@ -511,6 +515,15 @@ public class Route {
      */
     public boolean isDeprecated() {
         return deprecated;
+    }
+
+    /**
+     * Determines if CSRF token validation is skipped for this route.
+     *
+     * @return <tt>true</tt> if CSRF validation is skipped, <tt>false</tt> otherwise
+     */
+    public boolean isSkipCsrfValidation() {
+        return skipCsrfValidation;
     }
 
     /**

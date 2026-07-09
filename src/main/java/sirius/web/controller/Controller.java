@@ -107,4 +107,13 @@ public interface Controller {
      * @param format     the expected response format
      */
     void onApiError(WebContext webContext, HandledException error, Format format);
+
+    /**
+     * Determines if the CSRF token validation should be skipped for all routes handled by this controller.
+     *
+     * @return <tt>true</tt> if the CSRF token validation should be skipped, <tt>false</tt> otherwise
+     */
+    default boolean isSkipCsrfValidation() {
+        return false;
+    }
 }

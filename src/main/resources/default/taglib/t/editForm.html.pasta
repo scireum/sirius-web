@@ -6,5 +6,5 @@
 
 <form id="@id" action="@url" method="post" class="edit-form @class">
     <i:render name="body"/>
-    <input name="CSRFToken" value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()" type="hidden"/>
+    <input name="CSRFToken" value="@part(CSRFHelper.class).getCSRFToken()" type="hidden"/>
 </form>

@@ -45,6 +45,7 @@
     <script type="text/javascript">
         // This cannot be moved into tycho.js as it has to be re-evaluated for each call and must not be cached...
         const tycho_current_locale = '@NLS.getCurrentLanguage()';
+        const tycho_csrf_token = '@escapeJS(part(CSRFHelper.class).getCSRFToken())';
 
         if (randomizeCharts) {
             randomizeCharts('@sirius.kernel.commons.Hasher.md5().hash(currentRenderContext().getRootContext().getTemplate().getName()).toString()')

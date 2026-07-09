@@ -23,37 +23,15 @@ import kotlin.test.assertEquals
 class CSRFTokenTest {
 
     @Test
-    fun `safePOST() fails if token is missing via GET`() {
-
-        val result = TestRequest.GET("/test/fake-delete-data").execute()
-
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
-    }
-
-    @Test
-    fun `safePOST() works if the token is present via GET`() {
-
-        val connection =
-                URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connect()
-        val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
-
-        val result = TestRequest.GET("/test/fake-delete-data?CSRFToken=$token").execute()
-
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
-    }
-
-    @Test
-    fun `safePOST() fails if token is missing via POST`() {
+    fun `Routed POST fails if token is missing via POST`() {
 
         val result = TestRequest.POST("/test/fake-delete-data").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
+        assertEquals(HttpResponseStatus.FORBIDDEN, result.status)
     }
 
     @Test
-    fun `safePOST() works on SAFEPOST if correct token is provided`() {
+    fun `Routed POST works on SAFEPOST if correct token is provided`() {
 
         val result = TestRequest.SAFEPOST("/test/fake-delete-data").execute()
 
@@ -61,22 +39,22 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works if correct token is present via POST`() {
+    fun `Routed POST works if correct token is present via POST`() {
 
         val connection =
-                URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
+            URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connect()
         val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
 
 
         val connection2 = URI(
-                "http://localhost:9999/test/fake-delete-data?CSRFToken=$token"
+            "http://localhost:9999/test/fake-delete-data?CSRFToken=$token"
         ).toURL().openConnection() as HttpURLConnection
         connection2.requestMethod = "POST"
         connection2.setRequestProperty(
-                HttpHeaderNames.COOKIE.toString(),
-                connection.headerFields["set-cookie"]?.get(0)
+            HttpHeaderNames.COOKIE.toString(),
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
@@ -84,22 +62,22 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() success on POST if expired token is provided`() {
+    fun `Routed POST accepts previous token after token rotation`() {
 
         val connection =
-                URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
+            URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connect()
         val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
         TestRequest.GET("/test/expire-security-token").execute()
 
         val connection2 = URI(
-                "http://localhost:9999/test/fake-delete-data?CSRFToken=$token"
+            "http://localhost:9999/test/fake-delete-data?CSRFToken=$token"
         ).toURL().openConnection() as HttpURLConnection
         connection2.requestMethod = "POST"
         connection2.setRequestProperty(
-                HttpHeaderNames.COOKIE.toString(),
-                connection.headerFields["set-cookie"]?.get(0)
+            HttpHeaderNames.COOKIE.toString(),
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
@@ -107,24 +85,24 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `safePOST() works if false token is given via POST`() {
+    fun `Routed POST fails if false token is given via POST`() {
 
         val connection =
-                URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
+            URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.connect()
 
         val connection2 =
-                URI("http://localhost:9999/test/fake-delete-data?CSRFToken=w-r-o-n-g-t-o-k-e-n").toURL()
-                        .openConnection() as HttpURLConnection
+            URI("http://localhost:9999/test/fake-delete-data?CSRFToken=w-r-o-n-g-t-o-k-e-n").toURL()
+                .openConnection() as HttpURLConnection
         connection2.requestMethod = "POST"
         connection2.setRequestProperty(
-                HttpHeaderNames.COOKIE.toString(),
-                connection.headerFields["set-cookie"]?.get(0)
+            HttpHeaderNames.COOKIE.toString(),
+            connection.headerFields["set-cookie"]?.get(0)
         )
         connection2.connect()
 
-        assertEquals(500, connection2.responseCode)
+        assertEquals(403, connection2.responseCode)
     }
 
     @Test
@@ -144,44 +122,87 @@ class CSRFTokenTest {
     }
 
     @Test
-    fun `ensureSafePOST() fails if token is missing via GET`() {
+    fun `Routed POST fails without CSRF token by default`() {
 
-        val result = TestRequest.GET("/test/fake-delete-data-ensure-safe").execute()
+        val result = TestRequest.POST("/test/routed-ensure-safe-post").execute()
 
-        assertEquals(HttpResponseStatus.INTERNAL_SERVER_ERROR, result.status)
+        assertEquals(HttpResponseStatus.FORBIDDEN, result.status)
     }
 
     @Test
-    fun `ensureSafePOST() goes wrong on POST if false token is given`() {
+    fun `Routed POST works on SAFEPOST by default`() {
 
-        val connection = URI(
-                "http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=w-r-o-n-g-t-o-k-e-n"
-        ).toURL().openConnection() as HttpURLConnection
-        connection.requestMethod = "POST"
-        connection.connect()
+        val result = TestRequest.SAFEPOST("/test/routed-ensure-safe-post").execute()
 
-        assertEquals(401, connection.responseCode)
+        assertEquals(HttpResponseStatus.OK, result.status)
     }
 
     @Test
-    fun `ensureSafePOST() works as intended if correct token is given via POST`() {
+    fun `Routed GET allows request without CSRF token`() {
 
-        val connection =
-                URI("http://localhost:9999/test/provide-security-token").toURL().openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        connection.connect()
-        val token = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
+        val result = TestRequest.GET("/test/routed-split").execute()
 
-        val connection2 =
-                URI("http://localhost:9999/test/fake-delete-data-ensure-safe?CSRFToken=$token").toURL()
-                        .openConnection() as HttpURLConnection
-        connection2.requestMethod = "POST"
-        connection2.setRequestProperty(
-                HttpHeaderNames.COOKIE.toString(),
-                connection.headerFields["set-cookie"]?.get(0)
-        )
-        connection2.connect()
+        assertEquals(HttpResponseStatus.OK, result.status)
+        assertEquals("GET", result.contentAsString)
+    }
 
-        assertEquals(200, connection2.getResponseCode())
+    @Test
+    fun `Routed POST rejects request without CSRF token on split route`() {
+
+        val result = TestRequest.POST("/test/routed-split").execute()
+
+        assertEquals(HttpResponseStatus.FORBIDDEN, result.status)
+    }
+
+    @Test
+    fun `Routed POST accepts request with CSRF token on split route`() {
+
+        val result = TestRequest.SAFEPOST("/test/routed-split").execute()
+
+        assertEquals(HttpResponseStatus.OK, result.status)
+        assertEquals("POST", result.contentAsString)
+    }
+
+    @Test
+    fun `Routed skipCsrfValidation allows POST without CSRF token`() {
+
+        val result = TestRequest.POST("/test/routed-skip-csrf").execute()
+
+        assertEquals(HttpResponseStatus.OK, result.status)
+    }
+
+    @Test
+    fun `Controller isSkipCsrfValidation allows POST without CSRF token`() {
+
+        val result = TestRequest.POST("/test/controller-skip-csrf").execute()
+
+        assertEquals(HttpResponseStatus.OK, result.status)
+    }
+
+    @Test
+    fun `Controller isSkipCsrfValidation allows POST even with invalid token`() {
+
+        val result = TestRequest.POST("/test/controller-skip-csrf?CSRFToken=invalid").execute()
+
+        assertEquals(HttpResponseStatus.OK, result.status)
+    }
+
+    @Test
+    fun `Controller isSkipCsrfValidation does not skip CSRF validation on other controllers`() {
+
+        val result = TestRequest.POST("/test/fake-delete-data").execute()
+
+        assertEquals(HttpResponseStatus.FORBIDDEN, result.status)
+    }
+
+    @Test
+    fun `Controller isSkipCsrfValidation skips all routes of the controller`() {
+
+        val withoutToken = TestRequest.POST("/test/controller-skip-csrf/explicit-route-skip").execute()
+        val withInvalidToken =
+            TestRequest.POST("/test/controller-skip-csrf/explicit-route-skip?CSRFToken=invalid").execute()
+
+        assertEquals(HttpResponseStatus.OK, withoutToken.status)
+        assertEquals(HttpResponseStatus.OK, withInvalidToken.status)
     }
 }

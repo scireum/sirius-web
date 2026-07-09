@@ -119,13 +119,57 @@ class WebContextTest {
     @Test
     fun `setSessionValue works as expected`() {
 
-        val connection = URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
-        connection.setRequestMethod("GET")
+        // The first request stores the session values and returns the (encrypted) session cookie.
+        val writeConnection =
+            URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
+        writeConnection.requestMethod = "GET"
+        writeConnection.connect()
+
+        assertEquals(200, writeConnection.responseCode)
+        val sessionCookie = writeConnection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+            .substringBefore(";")
+
+        // The second request reads the session back, proving that the value round-trips through the encrypted
+        // cookie and that a value set to null is not stored.
+        val readConnection =
+            URI("http://localhost:9999/test/session-test-read").toURL().openConnection() as HttpURLConnection
+        readConnection.requestMethod = "GET"
+        readConnection.setRequestProperty(HttpHeaderNames.COOKIE.toString(), sessionCookie)
+        readConnection.connect()
+
+        assertEquals(200, readConnection.responseCode)
+        val body = readConnection.inputStream.bufferedReader().readText()
+        assertTrue { body.contains("test1=test") }
+        assertFalse { body.contains("test2=test") }
+
+    }
+
+    @Test
+    fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
+
+        // Build a legacy (unencrypted) session cookie in the "<sha512 hash>:<querystring>" format, signed with the
+        // test secret "TEST" (see component-test-web.conf).
+        val value = "?test1=test"
+        val hash = java.security.MessageDigest.getInstance("SHA-512")
+            .digest((value + "TEST").toByteArray())
+            .joinToString("") { "%02x".format(it) }
+        val legacyCookie = "SIRIUS_SESSION=$hash:$value"
+
+        val connection =
+            URI("http://localhost:9999/test/session-test-read").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.setRequestProperty(HttpHeaderNames.COOKIE.toString(), legacyCookie)
         connection.connect()
 
         assertEquals(200, connection.responseCode)
-        assertTrue { connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test1=test") }
-        assertFalse { connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!![0].contains("test2=") }
+        // The legacy cookie is decoded correctly...
+        assertTrue { connection.inputStream.bufferedReader().readText().contains("test1=test") }
+        // ...and eagerly re-written in the encrypted format (marked with the "E1:" prefix).
+        val rewrittenCookie = connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+        assertTrue { rewrittenCookie.contains("SIRIUS_SESSION=E1:") }
+        assertFalse { rewrittenCookie.contains("test1=test") }
 
     }
 }

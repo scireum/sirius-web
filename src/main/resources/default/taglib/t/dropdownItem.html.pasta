@@ -5,12 +5,18 @@
 <i:arg type="String" name="framework" default=""/>
 <i:arg type="String" name="class" default=""/>
 <i:arg type="String" name="url"/>
-<i:arg type="boolean" name="sendPostRequest" default="false"/>
+<i:arg type="boolean" name="sendPostRequest" default="false"
+       description="Whether to send a POST request (including a CSRF token) instead of a GET request when the dropdown item is clicked"/>
 <i:arg type="boolean" name="adminOnly" default="false"/>
 <i:arg type="String" name="linkTarget" default="_self"/>
 <i:arg type="java.util.Map" name="data" default="java.util.Collections.emptyMap()"/>
 
 <i:pragma name="description" value="Renders menu entry within a tycho template"/>
+
+<!--@
+Note: Do not declare both the 'confirm-link-js' class and 'sendPostRequest=true' at the same time as they clash with
+each other. TODO SIRI-1223: Fix this.
+-->
 
 <i:local name="dataSerialized"
          value="@data.entrySet()
@@ -22,9 +28,7 @@
     <t:permission permission="@permission">
         <i:if test="sendPostRequest">
             <form method="POST" action="@url" target="@linkTarget" <i:raw>@dataSerialized</i:raw>>
-                <input name="CSRFToken"
-                       value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken(WebContext.getCurrent())"
-                       type="hidden"/>
+                <input name="CSRFToken" value="@part(CSRFHelper.class).getCSRFToken()" type="hidden"/>
                 <button type="submit" class="dropdown-item @if (adminOnly) { admin-link } @class">
                     <i:if test="isFilled(icon)">
                         <i class="@icon fa-fw"></i>
