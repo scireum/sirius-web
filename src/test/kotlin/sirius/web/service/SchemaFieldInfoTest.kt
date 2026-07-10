@@ -10,6 +10,7 @@
 
 package sirius.web.service
 
+import io.swagger.v3.oas.annotations.media.Schema
 import sirius.web.controller.GreetInput
 import sirius.web.controller.GreetResult
 import sirius.web.services.SchemaFieldInfo
@@ -50,4 +51,42 @@ class SchemaFieldInfoTest {
         assertTrue(SchemaFieldInfo.forType(null).isEmpty())
         assertTrue(SchemaFieldInfo.forType(String::class.java).isEmpty())
     }
+
+    @Test
+    fun `recursively documents annotated nested fields and collection elements`() {
+        val fields = SchemaFieldInfo.forType(NestedResponse::class.java)
+
+        assertEquals(listOf("items", "items[].code", "itemsById", "itemsById[].code", "page"), fields.map { it.name })
+        assertEquals("List<NestedItem>", fields[0].type)
+        assertEquals("String", fields[1].type)
+        assertEquals("Map<String, NestedItem>", fields[2].type)
+    }
+
+    @Test
+    fun `stops recursion for self-referential types`() {
+        val fields = SchemaFieldInfo.forType(RecursiveResponse::class.java)
+
+        assertEquals(listOf("name", "child"), fields.map { it.name })
+    }
+
+    private class NestedResponse(
+        @field:Schema(description = "Result items")
+        val items: List<NestedItem>,
+        @field:Schema(description = "Result items by identifier")
+        val itemsById: Map<String, NestedItem>,
+        @field:Schema(description = "Current page")
+        val page: Int
+    )
+
+    private class NestedItem(
+        @field:Schema(description = "Item code")
+        val code: String
+    )
+
+    private class RecursiveResponse(
+        @field:Schema(description = "Display name")
+        val name: String,
+        @field:Schema(description = "Child response")
+        val child: RecursiveResponse?
+    )
 }
