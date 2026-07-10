@@ -415,6 +415,11 @@ public class TestController extends BasicController {
         output.property("status", "GET OK");
     }
 
+    @Routed(value = "/test/explicit-options", methods = {HttpMethod.GET, HttpMethod.OPTIONS})
+    public void explicitOptionsTest(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, webContext.getRequest().method().name() + " OK");
+    }
+
     @Routed(value = "/test/without-method", methods = {})
     public void inaccessibleTest(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "NOPE");

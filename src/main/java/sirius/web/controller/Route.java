@@ -96,8 +96,6 @@ public class Route {
                                         .map(sirius.web.controller.HttpMethod::toHttpMethod)
                                         .toList());
         failForInvalidMethods(result.httpMethods);
-        // We auto include OPTIONS for all routes, mostly to support preflight CORS checks without having to explicitly add the method to the annotation.
-        result.httpMethods.add(HttpMethod.OPTIONS);
 
         result.label = String.format("%s%s -> %s#%s",
                                      result.uri,
@@ -126,7 +124,7 @@ public class Route {
 
     private static Optional<String> stringifyMethods(sirius.web.controller.HttpMethod[] methods) {
         // if a route supports all methods, we don't list them explicitly
-        if (sirius.web.controller.HttpMethod.isCompleteList(methods)) {
+        if (sirius.web.controller.HttpMethod.coversAllMethodsExceptOptions(methods)) {
             return Optional.empty();
         }
         return Optional.of(Stream.of(methods)
