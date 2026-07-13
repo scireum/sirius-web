@@ -8,9 +8,9 @@
 
 package sirius.web.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Outcall;
@@ -174,7 +174,7 @@ public class JSONCall {
 
         try {
             return Json.writePretty(Json.MAPPER.readTree(response));
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             Exceptions.ignore(exception);
             return response;
         }

@@ -8,7 +8,7 @@
 
 package sirius.web.security.oauth;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import sirius.kernel.commons.Context;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.URLBuilder;
@@ -128,8 +128,8 @@ public class OAuthAuthentication {
      * @param response the JSON response when requesting an OAuth token
      */
     public void assertNoErrorResponse(ObjectNode response) {
-        String error = response.path(OAuth.ERROR).asText(null);
-        String errorDescription = response.path(OAuth.ERROR_DESCRIPTION).asText("Unknown error");
+        String error = response.path(OAuth.ERROR).asString(null);
+        String errorDescription = response.path(OAuth.ERROR_DESCRIPTION).asString("Unknown error");
         assertNoError(error, errorDescription);
     }
 

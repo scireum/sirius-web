@@ -8,7 +8,7 @@
 
 package sirius.pasta.noodle.macros;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import sirius.kernel.commons.Json;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.tokenizer.Position;
