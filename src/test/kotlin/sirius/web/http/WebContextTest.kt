@@ -146,6 +146,24 @@ class WebContextTest {
     }
 
     @Test
+    fun `the session cookie is not partitioned by default`() {
+
+        // Guards http.sessionCookie.partitioned defaulting to false: without opting in, the session cookie must not
+        // carry the Partitioned (CHIPS) attribute, so behaviour is unchanged for existing products.
+        val connection =
+            URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+        val sessionCookieLine = connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+
+        assertFalse { sessionCookieLine.contains("Partitioned", ignoreCase = true) }
+
+    }
+
+    @Test
     fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
 
         // Build a legacy (unencrypted) session cookie in the "<sha512 hash>:<querystring>" format, signed with the
