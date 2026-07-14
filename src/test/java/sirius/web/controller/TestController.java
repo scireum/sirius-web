@@ -229,7 +229,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed(value = "/upload-test", preDispatchable = true)
+    @Routed(value = "/upload-test", preDispatchable = true, skipCsrfValidation = true)
     public void uploadTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
             throws IOException {
         try (upload) {
@@ -239,7 +239,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed(value = "/upload-gzip", preDispatchable = true)
+    @Routed(value = "/upload-gzip", preDispatchable = true, skipCsrfValidation = true)
     public void uploadGzipTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
             throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(upload)))) {
