@@ -15,9 +15,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Explain;
-import sirius.kernel.commons.MultiMap;
 import sirius.kernel.commons.Strings;
-import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.PartCollection;
 import sirius.kernel.di.std.ConfigValue;
@@ -31,12 +29,12 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
-import sirius.web.controller.Page;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
 import sirius.web.services.Format;
+import sirius.web.services.JSONStructuredOutput;
 import sirius.web.services.PublicService;
 
 import java.io.OutputStream;
@@ -44,10 +42,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * Contains the default admin GUI.
@@ -128,8 +123,7 @@ public class SystemController extends BasicController {
     @ApiResponse(responseCode = "417",
             description = "Failing metrics",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("""
-                    ERROR
-                                
+                    ERROR                 
                     Failing Metrics on this node:
                     sirius_node_state 0.0
                     """)))
@@ -144,11 +138,11 @@ public class SystemController extends BasicController {
             writer.println();
             writer.println("Failing Metrics on this node:");
             metrics.getMetrics()
-                   .stream()
-                   .filter(metric -> metric.getState() == MetricState.RED)
-                   .forEach(metric -> writer.println(Strings.apply("%-30s %15s",
-                                                                   metric.getLabel().toLowerCase(),
-                                                                   metric.getValueAsString().toLowerCase())));
+                    .stream()
+                    .filter(metric -> metric.getState() == MetricState.RED)
+                    .forEach(metric -> writer.println(Strings.apply("%-30s %15s",
+                            metric.getLabel().toLowerCase(),
+                            metric.getValueAsString().toLowerCase())));
             writer.println();
         }
     }
@@ -205,9 +199,9 @@ public class SystemController extends BasicController {
         }
 
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(webContext.respondWith()
-                                                                                   .outputStream(HttpResponseStatus.OK,
-                                                                                                 "text/plain; version=0.0.4"),
-                                                                         StandardCharsets.UTF_8))) {
+                .outputStream(HttpResponseStatus.OK,
+                        "text/plain; version=0.0.4"),
+                StandardCharsets.UTF_8))) {
             outputNodeStateAsMetric(writer);
 
             for (Metric metric : metrics.getMetrics()) {
@@ -224,10 +218,10 @@ public class SystemController extends BasicController {
 
     private Metric transformLoadIntoToMetric(LoadInfoProvider provider, LoadInfo info) {
         return new Metric(LOAD_INFO_METRIC_PREFIX + info.getCode(),
-                          provider.getLabel() + ": " + info.getLabel(),
-                          info.getValue(),
-                          MetricState.GREEN,
-                          info.getUnit());
+                provider.getLabel() + ": " + info.getLabel(),
+                info.getValue(),
+                MetricState.GREEN,
+                info.getUnit());
     }
 
     /**
@@ -239,11 +233,11 @@ public class SystemController extends BasicController {
     @Explain("We're only doing calculations with simple operations and small numbers.")
     private void outputNodeStateAsMetric(PrintWriter writer) {
         outputMetric(writer,
-                     new Metric("node_state",
-                                "Node State",
-                                cluster.getNodeState().ordinal() - 1,
-                                cluster.getNodeState(),
-                                null));
+                new Metric("node_state",
+                        "Node State",
+                        cluster.getNodeState().ordinal() - 1,
+                        cluster.getNodeState(),
+                        null));
     }
 
     private void outputMetric(PrintWriter writer, Metric metric) {
@@ -312,11 +306,11 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext webContext) {
         webContext.respondWith()
-                  .template("/templates/system/state.html.pasta",
-                            cluster,
-                            metrics,
-                            webContext.get("all").asBoolean(false),
-                            NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
+                .template("/templates/system/state.html.pasta",
+                        cluster,
+                        metrics,
+                        webContext.get("all").asBoolean(false),
+                        NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
     }
 
     /**
@@ -328,12 +322,12 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_LOAD)
     public void load(WebContext webContext) {
         webContext.respondWith()
-                  .template("/templates/system/load.html.pasta",
-                            loadInfoProviders.getParts()
-                                             .stream()
-                                             .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
-                                             .toList(),
-                            webContext.get("all").asBoolean(false));
+                .template("/templates/system/load.html.pasta",
+                        loadInfoProviders.getParts()
+                                .stream()
+                                .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
+                                .toList(),
+                        webContext.get("all").asBoolean(false));
     }
 
     /**
@@ -353,48 +347,30 @@ public class SystemController extends BasicController {
 
         String periodSinceReset =
                 NLS.convertDuration(Duration.ofMillis(System.currentTimeMillis() - Microtiming.getLastReset()),
-                                    true,
-                                    false);
-
-        Page<String> page = new Page<>();
-        page.bindToRequest(webContext);
-
-        List<Tuple<String, Collection<Tuple<String, String>>>> timings = computeTimingInfos(page);
+                        true,
+                        false);
 
         webContext.respondWith()
-                  .template("/templates/system/timing.html.pasta",
-                            Microtiming.isEnabled(),
-                            timings,
-                            page,
-                            periodSinceReset);
+                .template("/templates/system/timing.html.pasta",
+                        Microtiming.isEnabled(),
+                        periodSinceReset);
     }
 
-    private List<Tuple<String, Collection<Tuple<String, String>>>> computeTimingInfos(Page<String> page) {
-        MultiMap<String, Tuple<String, String>> timingMap = MultiMap.createOrdered();
-        String query = Strings.isFilled(page.getQuery()) ? page.getQuery().toLowerCase() : null;
-        List<Microtiming.Timing> timings = new ArrayList<>(Microtiming.getTimings());
-        timings.sort(Comparator.comparingDouble(timing -> timing.getAvg().getCount() * timing.getAvg().getAvg() * -1d));
-        for (Microtiming.Timing timing : timings) {
-            if (matchesQuery(query, timing)) {
-                timingMap.put(timing.getCategory(),
-                              Tuple.create(timing.getKey(),
-                                           NLS.toUserString(timing.getAvg().getCount())
-                                           + " ("
-                                           + NLS.toUserString(timing.getAvg().getAvg() / 1000)
-                                           + " ms)"));
-            }
+    @Routed("/system/timing/api")
+    @Permission(PERMISSION_SYSTEM_TIMING)
+    public void timingApi(WebContext webContext) {
+        JSONStructuredOutput out = webContext.respondWith().json();
+        out.beginResult();
+        out.beginArray("timings");
+        for (Microtiming.Timing timing : Microtiming.getTimings()) {
+            out.beginObject("timing");
+            out.property("category", timing.getCategory());
+            out.property("key", timing.getKey());
+            out.property("count", timing.getAvg().getCount());
+            out.property("avgMs", timing.getAvg().getAvg() / 1000);
+            out.endObject();
         }
-
-        return timingMap.getUnderlyingMap()
-                        .entrySet()
-                        .stream()
-                        .map(e -> Tuple.create(e.getKey(), e.getValue()))
-                        .toList();
-    }
-
-    private boolean matchesQuery(String query, Microtiming.Timing timing) {
-        return query == null || timing.getKey().toLowerCase().contains(query) || timing.getCategory()
-                                                                                       .toLowerCase()
-                                                                                       .contains(query);
+        out.endArray();
+        out.endResult();
     }
 }
