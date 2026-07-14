@@ -356,6 +356,11 @@ public class SystemController extends BasicController {
                         periodSinceReset);
     }
 
+    /**
+     * Provides the recorded micro timings as JSON.
+     *
+     * @param webContext the current request
+     */
     @Routed("/system/timing/api")
     @Permission(PERMISSION_SYSTEM_TIMING)
     public void timingApi(WebContext webContext) {
