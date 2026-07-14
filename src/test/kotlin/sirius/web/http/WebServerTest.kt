@@ -35,12 +35,14 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import sirius.kernel.SiriusExtension
+import sirius.kernel.di.Injector
 import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
 import sirius.kernel.commons.Strings
 import sirius.kernel.commons.Wait
 import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
+import sirius.web.controller.ControllerDispatcher
 import sirius.web.dispatch.TestDispatcher
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -953,6 +955,67 @@ class WebServerTest {
         val result = Json.parseObject(String(Streams.toByteArray(connection.errorStream), StandardCharsets.UTF_8))
         assertTrue(result.get("error").asBoolean())
         assertFalse(result.get("success").asBoolean())
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        delimiter = '|', useHeadersInDisplayName = true, textBlock = // language=CSV
+            """uri                          | allow
+            /test/restricted-method         | GET, OPTIONS, POST
+            /test/another-restricted-method | GET, OPTIONS"""
+    )
+    fun `Plain OPTIONS requests are answered centrally with the derived Allow header`(uri: String, allow: String) {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("OPTIONS")
+
+        assertEquals(200, connection.responseCode)
+        assertEquals(allow, connection.getHeaderField("Allow"))
+        // No controller method must have been invoked, so the body stays empty.
+        assertEquals("", String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8))
+    }
+
+    @Test
+    fun `Routes explicitly declaring OPTIONS handle plain OPTIONS requests themselves`() {
+        assertEquals("GET OK", callAndRead("/test/explicit-options", null, null, "GET"))
+        // The controller opted into OPTIONS, so a plain (non-preflight) OPTIONS reaches its business logic.
+        assertEquals("OPTIONS OK", callAndRead("/test/explicit-options", null, null, "OPTIONS"))
+    }
+
+    @Test
+    fun `CORS preflight requests never reach a route explicitly declaring OPTIONS`() {
+        val connection =
+            URI("http://localhost:9999/test/explicit-options").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("OPTIONS")
+        connection.addRequestProperty("Access-Control-Request-Method", "GET")
+
+        assertEquals(200, connection.responseCode)
+        // The preflight is answered centrally, so the opted-in controller method is not invoked.
+        assertEquals("", String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8))
+        val allowedMethods = connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS.toString())
+        assertTrue { allowedMethods.contains("GET") }
+        assertTrue { allowedMethods.contains("OPTIONS") }
+    }
+
+    @Test
+    fun `CORS preflight requests without a matching route fall through to 404`() {
+        val connection =
+            URI("http://localhost:9999/test/no-such-route").toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("OPTIONS")
+        connection.addRequestProperty("Access-Control-Request-Method", "GET")
+
+        assertEquals(404, connection.responseCode)
+    }
+
+    @Test
+    fun `Method-restricted routes no longer implicitly support OPTIONS`() {
+        val dispatcher = Injector.context().getPart(ControllerDispatcher::class.java)!!
+        val methods = dispatcher.routes
+            .filter { it.uri == "/test/restricted-method" }
+            .flatMap { it.httpMethods }
+            .toSet()
+        // Two routes (GET and POST) share this path. Without an implicit OPTIONS their method sets are disjoint,
+        // so the route collision detection no longer warns about them.
+        assertEquals(setOf(HttpMethod.GET, HttpMethod.POST), methods)
     }
 
     @ParameterizedTest

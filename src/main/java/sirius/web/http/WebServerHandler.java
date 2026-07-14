@@ -335,34 +335,14 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         if (currentRequest != null && currentCall != null) {
             CallContext.setCurrent(currentCall);
             if (!preDispatched) {
-                if (WebContext.isCorsAllowAll() && isPreflightRequest()) {
-                    handlePreflightRequest();
-                } else {
-                    dispatch();
-                }
+                // OPTIONS requests, including CORS preflight checks, are answered centrally by the
+                // ControllerDispatcher based on the routes registered for the requested path.
+                dispatch();
             }
         } else if (!preDispatched) {
             WebServer.LOG.FINE("Terminating a channel for a last http content without a request: " + message);
             channelHandlerContext.channel().close();
         }
-    }
-
-    private void handlePreflightRequest() {
-        String requestHeaders = currentRequest.headers().get(HttpHeaderNames.ACCESS_CONTROL_REQUEST_HEADERS);
-        currentContext.respondWith()
-                      .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, "GET,PUT,POST,DELETE")
-                      .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
-                      .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS,
-                                 requestHeaders == null ? "" : requestHeaders)
-                      .status(HttpResponseStatus.OK);
-    }
-
-    private boolean isPreflightRequest() {
-        if (currentRequest == null || !HttpMethod.OPTIONS.equals(currentRequest.method())) {
-            return false;
-        }
-
-        return currentRequest.headers().contains(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD);
     }
 
     private void channelReadRequest(ChannelHandlerContext channelHandlerContext, HttpRequest message) {
