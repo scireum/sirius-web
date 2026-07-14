@@ -146,10 +146,11 @@ class WebContextTest {
     }
 
     @Test
-    fun `the session cookie is not partitioned by default`() {
+    fun `the session cookie keeps its attributes and is not partitioned by default`() {
 
-        // Guards http.sessionCookie.partitioned defaulting to false: without opting in, the session cookie must not
-        // carry the Partitioned (CHIPS) attribute, so behaviour is unchanged for existing products.
+        // Guards the setSessionScopedCookie refactor: the session cookie must still be marked HttpOnly (the attribute
+        // moved into the new helper), and - since http.sessionCookie.partitioned defaults to false - must NOT carry the
+        // Partitioned (CHIPS) attribute, so behaviour is unchanged for existing products.
         val connection =
             URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
@@ -159,6 +160,7 @@ class WebContextTest {
         val sessionCookieLine = connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
             .first { it.startsWith("SIRIUS_SESSION=") }
 
+        assertTrue { sessionCookieLine.contains("HTTPOnly", ignoreCase = true) }
         assertFalse { sessionCookieLine.contains("Partitioned", ignoreCase = true) }
 
     }
