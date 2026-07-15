@@ -85,15 +85,6 @@
             let rows = [];
             const sortState = {};
 
-            function escapeHtml(value) {
-                return String(value)
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
-            }
-
             function groupByCategory(list) {
                 const groups = {};
                 list.forEach(function (row) {
@@ -113,12 +104,26 @@
                 return state.asc ? 'fa-sort-up' : 'fa-sort-down';
             }
 
-            const buildRows = (entries) => entries.map(row => `
-                <tr>
-                    <td class="text-truncate" title="${escapeHtml(row.key)}">${escapeHtml(row.key)}</td>
-                    <td class="text-end">${row.count}</td>
-                    <td class="text-end">${row.avgMs.toFixed(4)} ms</td>
-                </tr>`).join('');
+            const buildRow = (row) => {
+                    const tr = document.createElement('tr');
+                    const tdKey = document.createElement('td');
+                    tdKey.className = 'text-truncate';
+                    tdKey.title = row.key;
+                    tdKey.textContent = row.key;
+                    tr.appendChild(tdKey);
+
+                    const tdCount = document.createElement('td');
+                    tdCount.className = 'text-end';
+                    tdCount.textContent = row.count;
+                    tr.appendChild(tdCount);
+
+                    const tdAvgMs = document.createElement('td');
+                    tdAvgMs.className = 'text-end';
+                    tdAvgMs.textContent = row.avgMs.toFixed(4) + '  ms';
+                    tr.appendChild(tdAvgMs);
+
+                    return tr;
+            }
 
             const render = () => {
                 const search = searchInput.value.toLowerCase();
@@ -143,7 +148,8 @@
                         th.dataset.category = category;
                         th.querySelector('i').className = 'fa-solid ' + sortIcon(category, th.dataset.sort);
                     });
-                    card.querySelector('tbody').innerHTML = buildRows(sorted);
+                    const tbody = card.querySelector('tbody');
+                    sorted.forEach(row => tbody.appendChild(buildRow(row)));
 
                     container.appendChild(card);
                 });
