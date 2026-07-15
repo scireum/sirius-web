@@ -26,7 +26,9 @@
                     <div class="input-group">
                         <input type="text" id="timing-filter" class="form-control"
                                placeholder="@i18n('NLS.searchkey')"/>
-                        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <span class="input-group-text" id="timing-search" role="button" style="cursor: pointer;">
+                             <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
                     </div>
                 </div>
                 <div class="col flex-grow-0 d-flex justify-content-end text-nowrap">
@@ -81,10 +83,56 @@
             const container = document.getElementById('timing-container');
             const cardTemplate = document.getElementById('category-card-template');
             const searchInput = document.getElementById('timing-filter');
+            const searchButton = document.getElementById('timing-search');
             const reloadButton = document.getElementById('timing-reload');
-            let rows = [];
-            const sortState = {};
 
+            let rows = [];
+
+            const sorting = {
+                state: {},
+
+                // Toggles the order if the same key is clicked again, otherwise starts
+                // sorting by the newly selected key.
+                toggle: function (category, key) {
+                    const current = this.state[category];
+                    if (current && current.key === key) {
+                        current.asc = !current.asc;
+                    } else {
+                        this.state[category] = {key: key, asc: false};
+                    }
+                },
+
+                // Returns a sorted copy of the rows for the category (or the input if unsorted).
+                apply: function (category, entries) {
+                    const state = this.state[category];
+                    if (!state) {
+                        return entries;
+                    }
+                    return [...entries].sort(function (a, b) {
+                        const cmp = a[state.key] - b[state.key];
+                        return state.asc ? cmp : -cmp;
+                    });
+                },
+
+                // Determines which sort icon a column header should show for its current state.
+                icon: function (category, key) {
+                    const state = this.state[category];
+                    if (!state || state.key !== key) {
+                        return 'fa-sort text-muted';
+                    }
+                    return state.asc ? 'fa-sort-up' : 'fa-sort-down';
+                }
+            };
+
+            // Keeps only the rows matching the current search term (by key or category).
+            function filterRows(list, search) {
+                return list.filter(function (row) {
+                    return row.key.toLowerCase().includes(search)
+                        || row.category.toLowerCase().includes(search);
+                });
+            }
+
+            // Groups the given rows by their category into { category: [rows] }.
             function groupByCategory(list) {
                 const groups = {};
                 list.forEach(function (row) {
@@ -96,93 +144,81 @@
                 return groups;
             }
 
-            function sortIcon(category, key) {
-                const state = sortState[category];
-                if (!state || state.key !== key) {
-                    return 'fa-sort text-muted';
-                }
-                return state.asc ? 'fa-sort-up' : 'fa-sort-down';
+            // Builds a single table row for the given data row.
+            function buildRow(row) {
+                const tr = document.createElement('tr');
+
+                const tdKey = document.createElement('td');
+                tdKey.className = 'text-truncate';
+                tdKey.title = row.key;
+                tdKey.textContent = row.key;
+                tr.appendChild(tdKey);
+
+                const tdCount = document.createElement('td');
+                tdCount.className = 'text-end';
+                tdCount.textContent = row.count;
+                tr.appendChild(tdCount);
+
+                const tdAvgMs = document.createElement('td');
+                tdAvgMs.className = 'text-end';
+                tdAvgMs.textContent = row.avgMs.toFixed(4);
+                tr.appendChild(tdAvgMs);
+
+                return tr;
             }
 
-            const buildRow = (row) => {
-                    const tr = document.createElement('tr');
-                    const tdKey = document.createElement('td');
-                    tdKey.className = 'text-truncate';
-                    tdKey.title = row.key;
-                    tdKey.textContent = row.key;
-                    tr.appendChild(tdKey);
-
-                    const tdCount = document.createElement('td');
-                    tdCount.className = 'text-end';
-                    tdCount.textContent = row.count;
-                    tr.appendChild(tdCount);
-
-                    const tdAvgMs = document.createElement('td');
-                    tdAvgMs.className = 'text-end';
-                    tdAvgMs.textContent = row.avgMs.toFixed(4) + '  ms';
-                    tr.appendChild(tdAvgMs);
-
-                    return tr;
-            }
-
-            const render = () => {
+            // Renders one card (with a sortable table) per category into the container.
+            function render() {
                 const search = searchInput.value.toLowerCase();
-                const filtered = rows.filter(row =>
-                    row.key.toLowerCase().includes(search) ||
-                    row.category.toLowerCase().includes(search));
-                const groups = groupByCategory(filtered);
+                const groups = groupByCategory(filterRows(rows, search));
 
                 container.innerHTML = '';
-                Object.entries(groups).forEach(([category, entries]) => {
-                    const state = sortState[category];
-                    const sorted = state
-                        ? [...entries].sort((a, b) => {
-                            const cmp = a[state.key] - b[state.key];
-                            return state.asc ? cmp : -cmp;
-                        })
-                        : entries;
+                Object.entries(groups).forEach(function ([category, entries]) {
+                    const sorted = sorting.apply(category, entries);
 
                     const card = cardTemplate.content.cloneNode(true);
                     card.querySelector('.card-title').textContent = category;
-                    card.querySelectorAll('th[data-sort]').forEach(th => {
+                    card.querySelectorAll('th[data-sort]').forEach(function (th) {
                         th.dataset.category = category;
-                        th.querySelector('i').className = 'fa-solid ' + sortIcon(category, th.dataset.sort);
+                        th.querySelector('i').className = 'fa-solid ' + sorting.icon(category, th.dataset.sort);
                     });
+
                     const tbody = card.querySelector('tbody');
-                    sorted.forEach(row => tbody.appendChild(buildRow(row)));
+                    sorted.forEach(function (row) {
+                        tbody.appendChild(buildRow(row));
+                    });
 
                     container.appendChild(card);
                 });
-            };
+            }
 
-            searchInput.addEventListener('input', render);
+            // Fetches the timing data from the server and renders it.
+            function loadData() {
+                sirius.getJSON('/system/timing/api', {})
+                    .then(function (data) {
+                        rows = data.timings || [];
+                        render();
+                    })
+                    .catch(function (error) {
+                        console.error('Could not load timing data:', error);
+                    });
+            }
 
-            container.addEventListener('click', event => {
+            // Sorting: clicking a sortable column header toggles the sort order for its category.
+            container.addEventListener('click', function (event) {
                 const th = event.target.closest('th[data-sort]');
                 if (!th) {
                     return;
                 }
-                const category = th.dataset.category;
-                const key = th.dataset.sort;
-                const current = sortState[category];
-                if (current && current.key === key) {
-                    current.asc = !current.asc;
-                } else {
-                    sortState[category] = {key: key, asc: false};
-                }
+                sorting.toggle(th.dataset.category, th.dataset.sort);
                 render();
             });
 
-            const loadData = () => {
-                sirius.getJSON('/system/timing/api', {})
-                    .then(data => {
-                        rows = data.timings || [];
-                        render();
-                    })
-                    .catch(error => console.error('Could not load timing data:', error));
-            };
+            // Search is triggered explicitly via the Enter key or the search icon (no live search).
+            sirius.addEnterListener(searchInput, render);
+            sirius.addClickOrEnterListener(searchButton, render);
 
-            reloadButton.addEventListener('click', loadData);
+            sirius.addClickOrEnterListener(reloadButton, loadData);
 
             loadData();
         });
