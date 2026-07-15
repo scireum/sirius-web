@@ -26,7 +26,7 @@
                     <div class="input-group">
                         <input type="text" id="timing-filter" class="form-control"
                                placeholder="@i18n('NLS.searchkey')"/>
-                        <span class="input-group-text" id="timing-search" role="button" style="cursor: pointer;">
+                        <span class="input-group-text" id="timing-search" role="button" tabindex="0" aria-label="Search" style="cursor: pointer;">
                              <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
                     </div>
@@ -44,7 +44,7 @@
                             </a>
                         </i:else>
                     </i:if>
-                    <a role="button" id="timing-reload" class="ms-2 btn btn-outline-secondary" title="Reload">
+                    <a href="#" role="button" id="timing-reload" class="ms-2 btn btn-outline-secondary" title="Reload">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </a>
                 </div>
@@ -66,7 +66,7 @@
                         </th>
                         <th class="text-end text-nowrap" style="width: 130px; cursor: pointer;" role="button"
                             data-sort="avgMs">
-                            Ø Dauer (ms) <i class="fa-solid fa-sort text-muted"></i>
+                            Ø Duration<i class="fa-solid fa-sort text-muted"></i>
                         </th>
                     </tr>
                     </thead>
@@ -135,6 +135,7 @@
             // Groups the given rows by their category into { category: [rows] }.
             function groupByCategory(list) {
                 const groups = {};
+                Object.create(null);
                 list.forEach(function (row) {
                     if (!groups[row.category]) {
                         groups[row.category] = [];
@@ -149,19 +150,18 @@
                 const tr = document.createElement('tr');
 
                 const tdKey = document.createElement('td');
-                tdKey.className = 'text-truncate';
-                tdKey.title = row.key;
+                tdKey.className = 'text-break align-top';
                 tdKey.textContent = row.key;
                 tr.appendChild(tdKey);
 
                 const tdCount = document.createElement('td');
-                tdCount.className = 'text-end';
+                tdCount.className = 'text-end text-nowrap align-top';
                 tdCount.textContent = row.count;
                 tr.appendChild(tdCount);
 
                 const tdAvgMs = document.createElement('td');
-                tdAvgMs.className = 'text-end';
-                tdAvgMs.textContent = row.avgMs.toFixed(4);
+                tdAvgMs.className = 'text-end text-nowrap align-top';
+                tdAvgMs.textContent = row.avgMs.toFixed(2) + " (ms)";
                 tr.appendChild(tdAvgMs);
 
                 return tr;
