@@ -137,12 +137,13 @@ public class SystemController extends BasicController {
             writer.println("ERROR");
             writer.println();
             writer.println("Failing Metrics on this node:");
+
             metrics.getMetrics()
-                    .stream()
-                    .filter(metric -> metric.getState() == MetricState.RED)
-                    .forEach(metric -> writer.println(Strings.apply("%-30s %15s",
-                            metric.getLabel().toLowerCase(),
-                            metric.getValueAsString().toLowerCase())));
+                   .stream()
+                   .filter(metric -> metric.getState() == MetricState.RED)
+                   .forEach(metric -> writer.println(Strings.apply("%-30s %15s",
+                                                                   metric.getLabel().toLowerCase(),
+                                                                   metric.getValueAsString().toLowerCase())));
             writer.println();
         }
     }
@@ -199,9 +200,9 @@ public class SystemController extends BasicController {
         }
 
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(webContext.respondWith()
-                .outputStream(HttpResponseStatus.OK,
-                        "text/plain; version=0.0.4"),
-                StandardCharsets.UTF_8))) {
+                                                                                   .outputStream(HttpResponseStatus.OK,
+                                                                                                 "text/plain; version=0.0.4"),
+                                                                         StandardCharsets.UTF_8))) {
             outputNodeStateAsMetric(writer);
 
             for (Metric metric : metrics.getMetrics()) {
@@ -218,10 +219,10 @@ public class SystemController extends BasicController {
 
     private Metric transformLoadIntoToMetric(LoadInfoProvider provider, LoadInfo info) {
         return new Metric(LOAD_INFO_METRIC_PREFIX + info.getCode(),
-                provider.getLabel() + ": " + info.getLabel(),
-                info.getValue(),
-                MetricState.GREEN,
-                info.getUnit());
+                          provider.getLabel() + ": " + info.getLabel(),
+                          info.getValue(),
+                          MetricState.GREEN,
+                          info.getUnit());
     }
 
     /**
@@ -233,11 +234,11 @@ public class SystemController extends BasicController {
     @Explain("We're only doing calculations with simple operations and small numbers.")
     private void outputNodeStateAsMetric(PrintWriter writer) {
         outputMetric(writer,
-                new Metric("node_state",
-                        "Node State",
-                        cluster.getNodeState().ordinal() - 1,
-                        cluster.getNodeState(),
-                        null));
+                     new Metric("node_state",
+                                "Node State",
+                                cluster.getNodeState().ordinal() - 1,
+                                cluster.getNodeState(),
+                                null));
     }
 
     private void outputMetric(PrintWriter writer, Metric metric) {
@@ -306,11 +307,11 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_STATE)
     public void state(WebContext webContext) {
         webContext.respondWith()
-                .template("/templates/system/state.html.pasta",
-                        cluster,
-                        metrics,
-                        webContext.get("all").asBoolean(false),
-                        NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
+                  .template("/templates/system/state.html.pasta",
+                            cluster,
+                            metrics,
+                            webContext.get("all").asBoolean(false),
+                            NLS.convertDuration(Duration.ofMillis(Sirius.getUptimeInMilliseconds()), true, false));
     }
 
     /**
@@ -322,12 +323,12 @@ public class SystemController extends BasicController {
     @Permission(PERMISSION_SYSTEM_LOAD)
     public void load(WebContext webContext) {
         webContext.respondWith()
-                .template("/templates/system/load.html.pasta",
-                        loadInfoProviders.getParts()
-                                .stream()
-                                .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
-                                .toList(),
-                        webContext.get("all").asBoolean(false));
+                  .template("/templates/system/load.html.pasta",
+                            loadInfoProviders.getParts()
+                                             .stream()
+                                             .sorted(Comparator.comparing(LoadInfoProvider::getLabel))
+                                             .toList(),
+                            webContext.get("all").asBoolean(false));
     }
 
     /**
@@ -347,13 +348,11 @@ public class SystemController extends BasicController {
 
         String periodSinceReset =
                 NLS.convertDuration(Duration.ofMillis(System.currentTimeMillis() - Microtiming.getLastReset()),
-                        true,
-                        false);
+                                    true,
+                                    false);
 
         webContext.respondWith()
-                .template("/templates/system/timing.html.pasta",
-                        Microtiming.isEnabled(),
-                        periodSinceReset);
+                  .template("/templates/system/timing.html.pasta", Microtiming.isEnabled(), periodSinceReset);
     }
 
     /**

@@ -26,7 +26,8 @@
                     <div class="input-group">
                         <input type="text" id="timing-filter" class="form-control"
                                placeholder="@i18n('NLS.searchkey')"/>
-                        <span class="input-group-text" id="timing-search" role="button" tabindex="0" aria-label="Search" style="cursor: pointer;">
+                        <span class="input-group-text" id="timing-search" role="button" tabindex="0" aria-label="Search"
+                              style="cursor: pointer;">
                              <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
                     </div>
@@ -61,11 +62,11 @@
                     <tr>
                         <th>Key</th>
                         <th class="text-end text-nowrap" style="width: 100px; cursor: pointer;" role="button"
-                            data-sort="count">
+                            tabindex="0" data-sort="count">
                             Calls <i class="fa-solid fa-sort text-muted"></i>
                         </th>
                         <th class="text-end text-nowrap" style="width: 130px; cursor: pointer;" role="button"
-                            data-sort="avgMs">
+                            tabindex="0" data-sort="avgMs">
                             Ø Duration<i class="fa-solid fa-sort text-muted"></i>
                         </th>
                     </tr>
@@ -80,11 +81,11 @@
 
     <script type="text/javascript">
         sirius.ready(function () {
-            const container = document.getElementById('timing-container');
-            const cardTemplate = document.getElementById('category-card-template');
-            const searchInput = document.getElementById('timing-filter');
-            const searchButton = document.getElementById('timing-search');
-            const reloadButton = document.getElementById('timing-reload');
+            const _container = document.getElementById('timing-container');
+            const _cardTemplate = document.getElementById('category-card-template');
+            const _searchInput = document.getElementById('timing-filter');
+            const _searchButton = document.getElementById('timing-search');
+            const _reloadButton = document.getElementById('timing-reload');
 
             let rows = [];
 
@@ -132,63 +133,62 @@
                 });
             }
 
-            // Groups the given rows by their category into { category: [rows] }.
+            // Groups the given rows by their category into a Map of category -> [rows].
             function groupByCategory(list) {
-                const groups = {};
-                Object.create(null);
+                const groups = new Map();
                 list.forEach(function (row) {
-                    if (!groups[row.category]) {
-                        groups[row.category] = [];
+                    if (!groups.has(row.category)) {
+                        groups.set(row.category, []);
                     }
-                    groups[row.category].push(row);
+                    groups.get(row.category).push(row);
                 });
                 return groups;
             }
 
             // Builds a single table row for the given data row.
             function buildRow(row) {
-                const tr = document.createElement('tr');
+                const _row = document.createElement('tr');
 
-                const tdKey = document.createElement('td');
-                tdKey.className = 'text-break align-top';
-                tdKey.textContent = row.key;
-                tr.appendChild(tdKey);
+                const _tdKey = document.createElement('td');
+                _tdKey.className = 'text-break align-top';
+                _tdKey.textContent = row.key;
+                _row.appendChild(_tdKey);
 
-                const tdCount = document.createElement('td');
-                tdCount.className = 'text-end text-nowrap align-top';
-                tdCount.textContent = row.count;
-                tr.appendChild(tdCount);
+                const _tdCount = document.createElement('td');
+                _tdCount.className = 'text-end text-nowrap align-top';
+                _tdCount.textContent = row.count;
+                _row.appendChild(_tdCount);
 
-                const tdAvgMs = document.createElement('td');
-                tdAvgMs.className = 'text-end text-nowrap align-top';
-                tdAvgMs.textContent = row.avgMs.toFixed(2) + " (ms)";
-                tr.appendChild(tdAvgMs);
+                const _tdAvgMs = document.createElement('td');
+                _tdAvgMs.className = 'text-end text-nowrap align-top';
+                _tdAvgMs.textContent = row.avgMs.toFixed(2) + " (ms)";
+                _row.appendChild(_tdAvgMs);
 
-                return tr;
+                return _row;
             }
 
             // Renders one card (with a sortable table) per category into the container.
             function render() {
-                const search = searchInput.value.toLowerCase();
+                const search = _searchInput.value.toLowerCase();
                 const groups = groupByCategory(filterRows(rows, search));
 
-                container.innerHTML = '';
-                Object.entries(groups).forEach(function ([category, entries]) {
+                _container.innerHTML = '';
+                groups.forEach(function (entries, category) {
                     const sorted = sorting.apply(category, entries);
 
-                    const card = cardTemplate.content.cloneNode(true);
-                    card.querySelector('.card-title').textContent = category;
-                    card.querySelectorAll('th[data-sort]').forEach(function (th) {
-                        th.dataset.category = category;
-                        th.querySelector('i').className = 'fa-solid ' + sorting.icon(category, th.dataset.sort);
+                    const _card = _cardTemplate.content.cloneNode(true);
+                    _card.querySelector('.card-title').textContent = category;
+                    _card.querySelectorAll('th[data-sort]').forEach(function (_header) {
+                        _header.dataset.category = category;
+                        _header.querySelector('i').className = 'fa-solid ' + sorting.icon(category, _header.dataset.sort);
                     });
 
-                    const tbody = card.querySelector('tbody');
+                    const _tbody = _card.querySelector('tbody');
                     sorted.forEach(function (row) {
-                        tbody.appendChild(buildRow(row));
+                        _tbody.appendChild(buildRow(row));
                     });
 
-                    container.appendChild(card);
+                    _container.appendChild(_card);
                 });
             }
 
@@ -204,21 +204,37 @@
                     });
             }
 
-            // Sorting: clicking a sortable column header toggles the sort order for its category.
-            container.addEventListener('click', function (event) {
-                const th = event.target.closest('th[data-sort]');
-                if (!th) {
+            // Sorting: clicking or pressing Enter/Space on a sortable column header toggles the sort order for its category.
+            function toggleSortFor(_header) {
+                sorting.toggle(_header.dataset.category, _header.dataset.sort);
+                render();
+            }
+
+            _container.addEventListener('click', function (event) {
+                const _header = event.target.closest('th[data-sort]');
+                if (!_header) {
                     return;
                 }
-                sorting.toggle(th.dataset.category, th.dataset.sort);
-                render();
+                toggleSortFor(_header);
+            });
+
+            _container.addEventListener('keydown', function (event) {
+                if (event.key !== 'Enter' && event.key !== ' ') {
+                    return;
+                }
+                const _header = event.target.closest('th[data-sort]');
+                if (!_header) {
+                    return;
+                }
+                event.preventDefault();
+                toggleSortFor(_header);
             });
 
             // Search is triggered explicitly via the Enter key or the search icon (no live search).
-            sirius.addEnterListener(searchInput, render);
-            sirius.addClickOrEnterListener(searchButton, render);
+            sirius.addEnterListener(_searchInput, render);
+            sirius.addClickOrEnterListener(_searchButton, render);
 
-            sirius.addClickOrEnterListener(reloadButton, loadData);
+            sirius.addClickOrEnterListener(_reloadButton, loadData);
 
             loadData();
         });
