@@ -18,6 +18,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import java.lang.reflect.Type
 
 /**
  * Tests the introspection of [SchemaFieldInfo] used to auto-document mapped services.
@@ -69,6 +70,16 @@ class SchemaFieldInfoTest {
         assertEquals(listOf("name", "child"), fields.map { it.name })
     }
 
+    @Test
+    fun `documents elements of top-level collections`() {
+        val fields = SchemaFieldInfo.forType(topLevelItemsType())
+
+        assertEquals(listOf("code"), fields.map { it.name })
+        assertEquals("String", fields.first().type)
+    }
+
+    private fun topLevelItemsType(): Type = TopLevelCollection::class.java.getDeclaredField("items").genericType
+
     private class NestedResponse(
         @field:Schema(description = "Result items")
         val items: List<NestedItem>,
@@ -89,4 +100,9 @@ class SchemaFieldInfoTest {
         @field:Schema(description = "Child response")
         val child: RecursiveResponse?
     )
+
+    private class TopLevelCollection {
+        @Suppress("unused")
+        lateinit var items: List<NestedItem>
+    }
 }

@@ -52,6 +52,8 @@ public class PublicServiceInfo {
     private final List<ApiResponse> responses = new ArrayList<>();
     private final List<SchemaFieldInfo> inputSchema = new ArrayList<>();
     private final List<SchemaFieldInfo> outputSchema = new ArrayList<>();
+    private final Class<?> inputType;
+    private final java.lang.reflect.Type outputType;
     private final String anchor;
 
     private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
@@ -67,6 +69,8 @@ public class PublicServiceInfo {
                                 java.lang.reflect.Type outputType) {
         this.info = info;
         this.routed = routed;
+        this.inputType = inputType;
+        this.outputType = outputType;
         this.uri = Strings.isFilled(info.path()) ? info.path() : routed.value();
         this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
@@ -225,6 +229,33 @@ public class PublicServiceInfo {
      */
     public List<SchemaFieldInfo> getOutputSchema() {
         return Collections.unmodifiableList(outputSchema);
+    }
+
+    /**
+     * Returns the Java type of the mapped request body, if any.
+     * <p>
+     * This is the POJO which is bound from the request payload of a
+     * {@linkplain sirius.web.controller.Route#isMappedPayload() mapped service} and is used to generate a machine
+     * readable schema (e.g. OpenAPI).
+     *
+     * @return the input type of a mapped service, or <tt>null</tt> if this service has no mapped request body
+     */
+    @Nullable
+    public Class<?> getInputType() {
+        return inputType;
+    }
+
+    /**
+     * Returns the Java type which is effectively serialized as response of a mapped service.
+     * <p>
+     * For methods returning a {@link sirius.kernel.async.Promise} this is the contained type argument. This is used to
+     * generate a machine readable schema (e.g. OpenAPI).
+     *
+     * @return the output type of a mapped service, or <tt>null</tt> if this service has no mapped response body
+     */
+    @Nullable
+    public java.lang.reflect.Type getOutputType() {
+        return outputType;
     }
 
     public String getLabel() {

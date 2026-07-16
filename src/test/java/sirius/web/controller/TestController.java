@@ -316,7 +316,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed("/test/mapped/greet")
+    @Routed(value = "/test/mapped/greet", skipCsrfValidation = true)
     public GreetResult mappedGreet(WebContext webContext, GreetInput input) {
         return new GreetResult("Hello " + input.getName());
     }
@@ -328,7 +328,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed("/test/mapped/async")
+    @Routed(value = "/test/mapped/async", skipCsrfValidation = true)
     public Promise<GreetResult> mappedAsyncGreet(WebContext webContext, GreetInput input) {
         Promise<GreetResult> promise = new Promise<>();
         tasks.defaultExecutor().start(() -> {
@@ -339,7 +339,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed("/test/mapped/fail")
+    @Routed(value = "/test/mapped/fail", skipCsrfValidation = true)
     public GreetResult mappedFail(WebContext webContext, GreetInput input) {
         throw Exceptions.createHandled().withDirectMessage("Intentional failure for " + input.getName()).handle();
     }

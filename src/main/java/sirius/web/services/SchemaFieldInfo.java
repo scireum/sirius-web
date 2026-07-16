@@ -1,9 +1,9 @@
 /*
  * Made with all the love in the world
- * by scireum in Remshalden, Germany
+ * by scireum in Stuttgart, Germany
  *
  * Copyright by scireum GmbH
- * http://www.scireum.de - info@scireum.de
+ * https://www.scireum.de - info@scireum.de
  */
 
 package sirius.web.services;
@@ -18,14 +18,15 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Describes a single field of an input or output POJO of a {@linkplain PublicService mapped service}.
@@ -74,20 +75,36 @@ public class SchemaFieldInfo {
                                       Map<TypeVariable<?>, Type> typeVariables,
                                       Set<Class<?>> typesOnPath,
                                       List<SchemaFieldInfo> fields) {
-        Type resolvedType = resolveType(type, typeVariables);
-        Class<?> rawType = determineRawType(resolvedType);
-        if (rawType == null || isLeafType(rawType) || !typesOnPath.add(rawType)) {
+        Type resolvedType = SchemaReflection.resolveType(type, typeVariables);
+        Class<?> rawType = SchemaReflection.determineRawType(resolvedType);
+        if (rawType == null) {
+            return;
+        }
+        if (rawType.isArray() || Collection.class.isAssignableFrom(rawType)) {
+            collectFields(SchemaReflection.determineCollectionElementType(resolvedType),
+                          prefix,
+                          typeVariables,
+                          typesOnPath,
+                          fields);
+            return;
+        }
+        if (Map.class.isAssignableFrom(rawType)) {
+            collectFields(SchemaReflection.determineMapValueType(resolvedType),
+                          prefix,
+                          typeVariables,
+                          typesOnPath,
+                          fields);
+            return;
+        }
+        if (SchemaReflection.isLeafType(rawType)) {
+            return;
+        }
+        if (!typesOnPath.add(rawType)) {
             return;
         }
 
-        Map<TypeVariable<?>, Type> nestedTypeVariables = new HashMap<>(typeVariables);
-        if (resolvedType instanceof ParameterizedType parameterizedType) {
-            TypeVariable<?>[] variables = rawType.getTypeParameters();
-            Type[] arguments = parameterizedType.getActualTypeArguments();
-            for (int index = 0; index < Math.min(variables.length, arguments.length); index++) {
-                nestedTypeVariables.put(variables[index], resolveType(arguments[index], typeVariables));
-            }
-        }
+        Map<TypeVariable<?>, Type> nestedTypeVariables =
+                SchemaReflection.resolveTypeVariables(resolvedType, rawType, typeVariables);
 
         collectFields(rawType.getSuperclass(), prefix, nestedTypeVariables, typesOnPath, fields);
         for (Field field : rawType.getDeclaredFields()) {
@@ -96,7 +113,7 @@ public class SchemaFieldInfo {
                 continue;
             }
 
-            Type fieldType = resolveType(field.getGenericType(), nestedTypeVariables);
+            Type fieldType = SchemaReflection.resolveType(field.getGenericType(), nestedTypeVariables);
             String fieldName = prefix + (Strings.isFilled(schema.name()) ? schema.name() : field.getName());
             fields.add(describeField(fieldName, fieldType, schema));
             collectNestedFields(fieldType, fieldName, nestedTypeVariables, typesOnPath, fields);
@@ -109,15 +126,23 @@ public class SchemaFieldInfo {
                                             Map<TypeVariable<?>, Type> typeVariables,
                                             Set<Class<?>> typesOnPath,
                                             List<SchemaFieldInfo> fields) {
-        Class<?> rawType = determineRawType(type);
+        Class<?> rawType = SchemaReflection.determineRawType(type);
         if (rawType == null) {
             return;
         }
         if (rawType.isArray() || Collection.class.isAssignableFrom(rawType)) {
-            collectFields(determineCollectionElementType(type), fieldName + "[].", typeVariables, typesOnPath, fields);
+            collectFields(SchemaReflection.determineCollectionElementType(type),
+                          fieldName + "[].",
+                          typeVariables,
+                          typesOnPath,
+                          fields);
         } else if (Map.class.isAssignableFrom(rawType)) {
-            collectFields(determineMapValueType(type), fieldName + "[].", typeVariables, typesOnPath, fields);
-        } else if (!isLeafType(rawType)) {
+            collectFields(SchemaReflection.determineMapValueType(type),
+                          fieldName + "[].",
+                          typeVariables,
+                          typesOnPath,
+                          fields);
+        } else if (!SchemaReflection.isLeafType(rawType)) {
             collectFields(type, fieldName + ".", typeVariables, typesOnPath, fields);
         }
     }
@@ -131,72 +156,14 @@ public class SchemaFieldInfo {
                                    schema.example());
     }
 
-    private static Type determineCollectionElementType(Type type) {
-        if (type instanceof GenericArrayType arrayType) {
-            return arrayType.getGenericComponentType();
-        }
-        Class<?> rawType = determineRawType(type);
-        if (rawType != null && rawType.isArray()) {
-            return rawType.getComponentType();
-        }
-        return determineTypeArgument(type, 0);
-    }
-
-    private static Type determineMapValueType(Type type) {
-        return determineTypeArgument(type, 1);
-    }
-
-    private static Type determineTypeArgument(Type type, int index) {
-        if (type instanceof ParameterizedType parameterizedType
-            && parameterizedType.getActualTypeArguments().length > index) {
-            return parameterizedType.getActualTypeArguments()[index];
-        }
-        return Object.class;
-    }
-
-    private static boolean isLeafType(Class<?> type) {
-        return type.isPrimitive()
-               || type.isEnum()
-               || type.isArray() && isLeafType(type.getComponentType())
-               || Number.class.isAssignableFrom(type)
-               || CharSequence.class.isAssignableFrom(type)
-               || Boolean.class.equals(type)
-               || Character.class.equals(type)
-               || type.getPackageName().startsWith("java.");
-    }
-
-    private static Type resolveType(Type type, Map<TypeVariable<?>, Type> typeVariables) {
-        if (type instanceof TypeVariable<?> typeVariable) {
-            return typeVariables.getOrDefault(typeVariable, Object.class);
-        }
-        if (type instanceof WildcardType wildcardType) {
-            Type[] upperBounds = wildcardType.getUpperBounds();
-            return upperBounds.length == 1 ? resolveType(upperBounds[0], typeVariables) : Object.class;
-        }
-        return type;
-    }
-
-    @Nullable
-    private static Class<?> determineRawType(Type type) {
-        if (type instanceof Class<?> clazz) {
-            return clazz;
-        }
-        if (type instanceof ParameterizedType parameterizedType
-            && parameterizedType.getRawType() instanceof Class<?> rawType) {
-            return rawType;
-        }
-        return null;
-    }
-
     private static String determineTypeName(Type type) {
         if (type instanceof GenericArrayType arrayType) {
             return determineTypeName(arrayType.getGenericComponentType()) + "[]";
         }
         if (type instanceof ParameterizedType parameterizedType) {
-            String typeArguments = List.of(parameterizedType.getActualTypeArguments())
-                                       .stream()
-                                       .map(SchemaFieldInfo::determineTypeName)
-                                       .collect(java.util.stream.Collectors.joining(", "));
+            String typeArguments = Arrays.stream(parameterizedType.getActualTypeArguments())
+                                         .map(SchemaFieldInfo::determineTypeName)
+                                         .collect(Collectors.joining(", "));
             return determineTypeName(parameterizedType.getRawType()) + "<" + typeArguments + ">";
         }
         if (type instanceof Class<?> clazz) {
