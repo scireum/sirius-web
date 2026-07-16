@@ -157,7 +157,9 @@ public class Route {
             if (isLegacyStructuredOutput(XMLStructuredOutput.class, parameterTypes)) {
                 parameterTypes.removeFirst();
             } else {
-                result.mappedPayload = true;
+                throw new IllegalArgumentException(Strings.apply(
+                        "Mapped service method '%s' cannot use XML until an XML ApiPayloadCodec is available",
+                        result.label));
             }
         }
         if (result.preDispatchable) {
