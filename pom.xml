@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.simplejavamail</groupId>
             <artifactId>utils-mail-dkim</artifactId>
-            <version>3.2.2</version>
+            <version>3.3.0</version>
         </dependency>
         <!-- Required, as the version provided by org.simplemail utils-mail-dkim 3.2.2 has security issues -->
         <!-- Changelog: https://www.bouncycastle.org/download/bouncy-castle-java/#release-notes -->
@@ -175,7 +175,7 @@
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>4.5.2</version>
+            <version>4.6.0</version>
         </dependency>
 
         <!-- Changelog: https://github.com/altcha-org/altcha-lib-java/releases -->
@@ -193,7 +193,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-bom</artifactId>
-                <version>4.2.15.Final</version>
+                <version>4.2.16.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

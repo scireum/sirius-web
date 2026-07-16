@@ -313,7 +313,7 @@ public class PublicServiceInfo {
     }
 
     private String determineAnchor() {
-        if (sirius.web.controller.HttpMethod.isCompleteList(routed.methods())) {
+        if (sirius.web.controller.HttpMethod.coversAllMethodsExceptOptions(routed.methods())) {
             return this.uri;
         }
         return getHttpMethod().name() + "_" + this.uri;

@@ -34,6 +34,7 @@ import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
+import sirius.web.http.Response;
 import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -226,6 +227,18 @@ public class ControllerDispatcher implements WebDispatcher {
     @Explain("We actually can use object identity here as this is a marker object.")
     public DispatchDecision dispatch(WebContext webContext) throws Exception {
         String uri = determineEffectiveURI(webContext);
+
+        // A genuine CORS preflight request must always be answered centrally with a method list derived from the
+        // routes registered for this path. It must never reach any business logic - not even a controller which
+        // explicitly handles OPTIONS - so we intercept it before matching the routes below.
+        if (isCorsPreflightRequest(webContext)) {
+            Set<HttpMethod> supportedMethods = collectSupportedMethods(webContext, uri);
+            if (!supportedMethods.isEmpty()) {
+                return answerOptionsRequest(webContext, supportedMethods);
+            }
+            // No route matches this path - fall through to the regular 404 / next-dispatcher handling.
+        }
+
         List<Route> routesWithDifferentMethod = new ArrayList<>();
 
         for (Route route : getRoutes()) {
@@ -246,12 +259,16 @@ public class ControllerDispatcher implements WebDispatcher {
         }
 
         if (!routesWithDifferentMethod.isEmpty()) {
-            String allowedMethods = routesWithDifferentMethod.stream()
-                                                             .flatMap(route -> route.getHttpMethods().stream())
-                                                             .map(HttpMethod::toString)
-                                                             .distinct()
-                                                             .sorted()
-                                                             .collect(Collectors.joining(", "));
+            Set<HttpMethod> supportedMethods = collectSupportedMethods(routesWithDifferentMethod);
+
+            // A plain (non-preflight) OPTIONS request is not handled by any controller unless one explicitly
+            // opts in via 'methods = OPTIONS' (which would have matched above). We therefore answer it centrally
+            // with the methods supported for this path, instead of the 405 which any other method would receive.
+            if (HttpMethod.OPTIONS.equals(webContext.getRequest().method())) {
+                return answerOptionsRequest(webContext, supportedMethods);
+            }
+
+            String allowedMethods = formatMethods(supportedMethods);
             handleFailure(webContext,
                           routesWithDifferentMethod.getFirst(),
                           Exceptions.createHandled()
@@ -263,6 +280,95 @@ public class ControllerDispatcher implements WebDispatcher {
         }
 
         return DispatchDecision.CONTINUE;
+    }
+
+    /**
+     * Determines whether the given request is a genuine CORS preflight request.
+     * <p>
+     * Such a request uses the {@link HttpMethod#OPTIONS} method and carries the
+     * {@link HttpHeaderNames#ACCESS_CONTROL_REQUEST_METHOD} header. It is always answered centrally and must never
+     * be dispatched to a controller method.
+     *
+     * @param webContext the current request
+     * @return <tt>true</tt> if the request is a CORS preflight request, <tt>false</tt> otherwise
+     */
+    private boolean isCorsPreflightRequest(WebContext webContext) {
+        return HttpMethod.OPTIONS.equals(webContext.getRequest().method())
+               && Strings.isFilled(webContext.getHeader(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD));
+    }
+
+    /**
+     * Collects all HTTP methods supported for the given URI across every route matching it.
+     *
+     * @param webContext the current request
+     * @param uri        the effective request URI
+     * @return the set of supported HTTP methods, or an empty set if no route matches the URI
+     */
+    @SuppressWarnings("squid:S1698")
+    @Explain("We actually can use object identity here as this is a marker object.")
+    private Set<HttpMethod> collectSupportedMethods(WebContext webContext, String uri) {
+        return collectSupportedMethods(getRoutes().stream()
+                                                  .filter(route -> route.matches(webContext,
+                                                                                 uri,
+                                                                                 route.isPreDispatchable())
+                                                                   != Route.NO_MATCH)
+                                                  .toList());
+    }
+
+    /**
+     * Collects the union of all HTTP methods supported by the given routes.
+     * <p>
+     * As OPTIONS is answered centrally by this dispatcher, it is always added unless the given list is empty.
+     *
+     * @param routes the routes to collect the supported methods from
+     * @return the set of supported HTTP methods, including OPTIONS unless the list is empty
+     */
+    private Set<HttpMethod> collectSupportedMethods(List<Route> routes) {
+        Set<HttpMethod> methods = routes.stream()
+                                        .flatMap(route -> route.getHttpMethods().stream())
+                                        .collect(Collectors.toCollection(HashSet::new));
+        if (!methods.isEmpty()) {
+            methods.add(HttpMethod.OPTIONS);
+        }
+        return methods;
+    }
+
+    /**
+     * Formats the given HTTP methods as a sorted, comma-separated string suitable for the {@code Allow} and
+     * {@code Access-Control-Allow-Methods} headers.
+     *
+     * @param methods the methods to format
+     * @return the formatted method list
+     */
+    private String formatMethods(Set<HttpMethod> methods) {
+        return methods.stream().map(HttpMethod::toString).sorted().collect(Collectors.joining(", "));
+    }
+
+    /**
+     * Answers an OPTIONS request centrally with the given supported methods.
+     * <p>
+     * The {@code Allow} header is always set. For CORS preflight requests, the
+     * {@link HttpHeaderNames#ACCESS_CONTROL_ALLOW_METHODS} and {@link HttpHeaderNames#ACCESS_CONTROL_ALLOW_HEADERS}
+     * headers are added as well. The origin related CORS headers are attached centrally by
+     * {@link sirius.web.http.Response}.
+     *
+     * @param webContext       the current request
+     * @param supportedMethods the HTTP methods supported for the requested URI
+     * @return always {@link DispatchDecision#DONE} as the request has been handled
+     */
+    private DispatchDecision answerOptionsRequest(WebContext webContext, Set<HttpMethod> supportedMethods) {
+        String allowedMethods = formatMethods(supportedMethods);
+        Response response = webContext.respondWith().setHeader(HttpHeaderNames.ALLOW, allowedMethods);
+
+        if (isCorsPreflightRequest(webContext)) {
+            String requestedHeaders = webContext.getHeader(HttpHeaderNames.ACCESS_CONTROL_REQUEST_HEADERS);
+            response.setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, allowedMethods)
+                    .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS,
+                               requestedHeaders == null ? "" : requestedHeaders);
+        }
+
+        response.status(HttpResponseStatus.OK);
+        return DispatchDecision.DONE;
     }
 
     private void performRoute(WebContext webContext, Route route, List<Object> params, int interceptorIndex) {

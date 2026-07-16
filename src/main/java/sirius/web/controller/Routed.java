@@ -100,6 +100,10 @@ public @interface Routed {
 
     /**
      * Determines the HTTP methods supported by the route. By default, all methods are supported.
+     * <p>
+     * Note that OPTIONS is intentionally not part of the default list: it is handled centrally by the
+     * {@link ControllerDispatcher} (for CORS preflight checks and to advertise the allowed methods) and only
+     * reaches a controller method if it is listed here explicitly (opt-in).
      *
      * @return the supported HTTP methods
      */
@@ -109,7 +113,6 @@ public @interface Routed {
                                     HttpMethod.POST,
                                     HttpMethod.CONNECT,
                                     HttpMethod.DELETE,
-                                    HttpMethod.OPTIONS,
                                     HttpMethod.PATCH,
                                     HttpMethod.TRACE};
 
