@@ -97,9 +97,9 @@
                 toggle: function (category, key) {
                     const current = this.state[category];
                     if (current && current.key === key) {
-                        current.asc = !current.asc;
+                        current.ascending = !current.ascending;
                     } else {
-                        this.state[category] = {key: key, asc: false};
+                        this.state[category] = {key: key, ascending: false};
                     }
                 },
 
@@ -110,8 +110,8 @@
                         return entries;
                     }
                     return [...entries].sort(function (a, b) {
-                        const cmp = a[state.key] - b[state.key];
-                        return state.asc ? cmp : -cmp;
+                        const comparison = a[state.key] - b[state.key];
+                        return state.ascending ? comparison : -comparison;
                     });
                 },
 
@@ -121,7 +121,7 @@
                     if (!state || state.key !== key) {
                         return 'fa-sort text-muted';
                     }
-                    return state.asc ? 'fa-sort-up' : 'fa-sort-down';
+                    return state.ascending ? 'fa-sort-up' : 'fa-sort-down';
                 }
             };
 
