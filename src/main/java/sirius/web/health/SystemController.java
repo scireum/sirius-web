@@ -123,7 +123,7 @@ public class SystemController extends BasicController {
     @ApiResponse(responseCode = "417",
             description = "Failing metrics",
             content = @Content(mediaType = "text/plain", examples = @ExampleObject("""
-                    ERROR                 
+                    ERROR
                     Failing Metrics on this node:
                     sirius_node_state 0.0
                     """)))
@@ -363,18 +363,18 @@ public class SystemController extends BasicController {
     @Routed("/system/timing/api")
     @Permission(PERMISSION_SYSTEM_TIMING)
     public void timingApi(WebContext webContext) {
-        JSONStructuredOutput out = webContext.respondWith().json();
-        out.beginResult();
-        out.beginArray("timings");
+        JSONStructuredOutput output = webContext.respondWith().json();
+        output.beginResult();
+        output.beginArray("timings");
         for (Microtiming.Timing timing : Microtiming.getTimings()) {
-            out.beginObject("timing");
-            out.property("category", timing.getCategory());
-            out.property("key", timing.getKey());
-            out.property("count", timing.getAvg().getCount());
-            out.property("avgMs", timing.getAvg().getAvg() / 1000);
-            out.endObject();
+            output.beginObject("timing");
+            output.property("category", timing.getCategory());
+            output.property("key", timing.getKey());
+            output.property("count", timing.getAvg().getCount());
+            output.property("averageMillis", timing.getAvg().getAvg() / 1000);
+            output.endObject();
         }
-        out.endArray();
-        out.endResult();
+        output.endArray();
+        output.endResult();
     }
 }
