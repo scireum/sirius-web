@@ -187,7 +187,17 @@ public class Route {
                                                int pathParameters) {
         failForInvalidMappedMethod(method);
         if (parameterTypes.size() == pathParameters + 1) {
+            failForPreDispatchableMappedBody(result);
             result.inputType = parameterTypes.removeFirst();
+        }
+    }
+
+    private static void failForPreDispatchableMappedBody(Route result) {
+        if (result.preDispatchable) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' cannot bind a request body POJO, as the body of a pre-dispatchable"
+                    + " route is streamed into the InputStreamHandler and thus cannot be parsed",
+                    result.label));
         }
     }
 
