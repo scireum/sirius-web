@@ -106,7 +106,7 @@ public class SchemaFieldInfo {
         Map<TypeVariable<?>, Type> nestedTypeVariables =
                 SchemaReflection.resolveTypeVariables(resolvedType, rawType, typeVariables);
 
-        collectFields(rawType.getSuperclass(), prefix, nestedTypeVariables, typesOnPath, fields);
+        collectFields(rawType.getGenericSuperclass(), prefix, nestedTypeVariables, typesOnPath, fields);
         for (Field field : rawType.getDeclaredFields()) {
             Schema schema = field.getAnnotation(Schema.class);
             if (schema == null) {
@@ -115,7 +115,7 @@ public class SchemaFieldInfo {
 
             Type fieldType = SchemaReflection.resolveType(field.getGenericType(), nestedTypeVariables);
             String fieldName = prefix + (Strings.isFilled(schema.name()) ? schema.name() : field.getName());
-            fields.add(describeField(fieldName, fieldType, schema));
+            fields.add(describeField(fieldName, fieldType, schema, nestedTypeVariables));
             collectNestedFields(fieldType, fieldName, nestedTypeVariables, typesOnPath, fields);
         }
         typesOnPath.remove(rawType);
@@ -147,8 +147,11 @@ public class SchemaFieldInfo {
         }
     }
 
-    private static SchemaFieldInfo describeField(String fieldName, Type fieldType, Schema schema) {
-        String typeName = Strings.isFilled(schema.type()) ? schema.type() : determineTypeName(fieldType);
+    private static SchemaFieldInfo describeField(String fieldName,
+                                                 Type fieldType,
+                                                 Schema schema,
+                                                 Map<TypeVariable<?>, Type> typeVariables) {
+        String typeName = Strings.isFilled(schema.type()) ? schema.type() : determineTypeName(fieldType, typeVariables);
         return new SchemaFieldInfo(fieldName,
                                    typeName,
                                    isRequired(schema),
@@ -156,23 +159,26 @@ public class SchemaFieldInfo {
                                    schema.example());
     }
 
-    private static String determineTypeName(Type type) {
-        if (type instanceof GenericArrayType arrayType) {
-            return determineTypeName(arrayType.getGenericComponentType()) + "[]";
+    private static String determineTypeName(Type type, Map<TypeVariable<?>, Type> typeVariables) {
+        // Resolve on every recursion level, so type variables nested in type arguments (e.g. the T in List<T>)
+        // are bound as well.
+        Type resolvedType = SchemaReflection.resolveType(type, typeVariables);
+        if (resolvedType instanceof GenericArrayType arrayType) {
+            return determineTypeName(arrayType.getGenericComponentType(), typeVariables) + "[]";
         }
-        if (type instanceof ParameterizedType parameterizedType) {
+        if (resolvedType instanceof ParameterizedType parameterizedType) {
             String typeArguments = Arrays.stream(parameterizedType.getActualTypeArguments())
-                                         .map(SchemaFieldInfo::determineTypeName)
+                                         .map(argument -> determineTypeName(argument, typeVariables))
                                          .collect(Collectors.joining(", "));
-            return determineTypeName(parameterizedType.getRawType()) + "<" + typeArguments + ">";
+            return determineTypeName(parameterizedType.getRawType(), typeVariables) + "<" + typeArguments + ">";
         }
-        if (type instanceof Class<?> clazz) {
+        if (resolvedType instanceof Class<?> clazz) {
             if (clazz.isArray()) {
-                return determineTypeName(clazz.getComponentType()) + "[]";
+                return determineTypeName(clazz.getComponentType(), typeVariables) + "[]";
             }
             return clazz.getSimpleName();
         }
-        return type.getTypeName();
+        return resolvedType.getTypeName();
     }
 
     @SuppressWarnings("deprecation")

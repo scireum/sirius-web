@@ -71,6 +71,14 @@ class SchemaFieldInfoTest {
     }
 
     @Test
+    fun `binds type variables declared by a generic superclass`() {
+        val fields = SchemaFieldInfo.forType(TypedListResponse::class.java)
+
+        assertEquals(listOf("items", "items[].code"), fields.map { it.name })
+        assertEquals("List<NestedItem>", fields.first().type)
+    }
+
+    @Test
     fun `documents elements of top-level collections`() {
         val fields = SchemaFieldInfo.forType(topLevelItemsType())
 
@@ -105,4 +113,12 @@ class SchemaFieldInfoTest {
         @Suppress("unused")
         lateinit var items: List<NestedItem>
     }
+
+    private open class GenericBaseResponse<T>(
+        @Suppress("unused")
+        @field:Schema(description = "Result items")
+        val items: List<T>
+    )
+
+    private class TypedListResponse(items: List<NestedItem>) : GenericBaseResponse<NestedItem>(items)
 }
