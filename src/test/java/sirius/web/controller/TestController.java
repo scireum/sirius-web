@@ -356,7 +356,9 @@ public class TestController extends BasicController {
     public void sessionTestRead(WebContext webContext) {
         webContext.respondWith()
                   .direct(HttpResponseStatus.OK,
-                          "test1=" + webContext.getSessionValue("test1").asString("<none>") + "&test2="
+                          "test1="
+                          + webContext.getSessionValue("test1").asString("<none>")
+                          + "&test2="
                           + webContext.getSessionValue("test2").asString("<none>"));
     }
 
@@ -380,7 +382,8 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, "POST OK");
     }
 
-    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
+    @Routed(value = "/test/restricted-methods",
+            methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
             skipCsrfValidation = true)
     public void getAndPostOnlyTest(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "GET/POST OK");
@@ -403,9 +406,8 @@ public class TestController extends BasicController {
             preDispatchable = true,
             skipCsrfValidation = true)
     @InternalService
-    public void postOnlyPredispatchTest(WebContext webContext,
-                                        JSONStructuredOutput output,
-                                        InputStreamHandler upload) throws IOException {
+    public void postOnlyPredispatchTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
+            throws IOException {
         try (upload) {
             Streams.exhaust(upload);
             output.property("status", "POST OK");
@@ -428,7 +430,8 @@ public class TestController extends BasicController {
         }
     }
 
-    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
+    @Routed(value = "/test/restricted-methods-api",
+            methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
             skipCsrfValidation = true)
     @InternalService
     public void getAndPostOnlyTest(WebContext webContext, JSONStructuredOutput output) {

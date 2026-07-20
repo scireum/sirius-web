@@ -293,8 +293,8 @@ public class ControllerDispatcher implements WebDispatcher {
      * @return <tt>true</tt> if the request is a CORS preflight request, <tt>false</tt> otherwise
      */
     private boolean isCorsPreflightRequest(WebContext webContext) {
-        return HttpMethod.OPTIONS.equals(webContext.getRequest().method())
-               && Strings.isFilled(webContext.getHeader(HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD));
+        return HttpMethod.OPTIONS.equals(webContext.getRequest().method()) && Strings.isFilled(webContext.getHeader(
+                HttpHeaderNames.ACCESS_CONTROL_REQUEST_METHOD));
     }
 
     /**

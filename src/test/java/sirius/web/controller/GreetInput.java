@@ -15,7 +15,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public class GreetInput {
 
-    @Schema(description = "The name of the person to greet", example = "World", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "The name of the person to greet",
+            example = "World",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
     public String getName() {

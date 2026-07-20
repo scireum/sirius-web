@@ -65,7 +65,9 @@ public class JsonApiPayloadCodec implements ApiPayloadCodec {
 
         try (OutputStream out = webContext.respondWith()
                                           .outputStream(HttpResponseStatus.OK,
-                                                        MimeHelper.APPLICATION_JSON + ";charset=" + StandardCharsets.UTF_8.name())) {
+                                                        MimeHelper.APPLICATION_JSON
+                                                        + ";charset="
+                                                        + StandardCharsets.UTF_8.name())) {
             out.write(json);
         } catch (Exception exception) {
             throw Exceptions.handle()

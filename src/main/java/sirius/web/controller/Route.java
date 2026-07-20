@@ -355,7 +355,7 @@ public class Route {
     }
 
     /*
-     * Compiles a routed URI (which is already split into its path parts.
+     * Compiles a routed URI, which is already split into its path parts.
      * See Route.value() for a description
      */
     private static int compileRouteURI(Route result, String[] elements, StringBuilder finalPattern) {
@@ -507,7 +507,7 @@ public class Route {
     }
 
     /**
-     * Returns the method which is to be invoked if an URI can be successfully routed using this route
+     * Returns the method which is to be invoked if a URI can be successfully routed using this route
      * (all parameters match).
      *
      * @return the method to be invoked in order to route a request using this route

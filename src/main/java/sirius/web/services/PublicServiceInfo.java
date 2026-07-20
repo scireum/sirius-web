@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
@@ -58,6 +59,8 @@ public class PublicServiceInfo {
 
     private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
+    @SuppressWarnings("squid:S00107")
+    @Explain("The service metadata is naturally wide and only assembled internally by PublicServices")
     protected PublicServiceInfo(PublicService info,
                                 Routed routed,
                                 boolean deprecated,

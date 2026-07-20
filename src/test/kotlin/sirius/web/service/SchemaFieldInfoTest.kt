@@ -88,6 +88,9 @@ class SchemaFieldInfoTest {
 
     private fun topLevelItemsType(): Type = TopLevelCollection::class.java.getDeclaredField("items").genericType
 
+    // The fixture properties are only read via reflection by SchemaFieldInfo, hence the unused suppression.
+
+    @Suppress("unused")
     private class NestedResponse(
         @field:Schema(description = "Result items")
         val items: List<NestedItem>,
@@ -97,11 +100,13 @@ class SchemaFieldInfoTest {
         val page: Int
     )
 
+    @Suppress("unused")
     private class NestedItem(
         @field:Schema(description = "Item code")
         val code: String
     )
 
+    @Suppress("unused")
     private class RecursiveResponse(
         @field:Schema(description = "Display name")
         val name: String,
@@ -114,8 +119,8 @@ class SchemaFieldInfoTest {
         lateinit var items: List<NestedItem>
     }
 
+    @Suppress("unused")
     private open class GenericBaseResponse<T>(
-        @Suppress("unused")
         @field:Schema(description = "Result items")
         val items: List<T>
     )
