@@ -13,6 +13,7 @@ import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
 import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -37,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -185,7 +187,8 @@ public class Route {
      * <p>
      * As this rule is purely count-based, the parameter types are validated to detect miswired signatures at route
      * compile time: a simple value type (String, number, enum, ...) cannot serve as request body and a POJO cannot
-     * serve as path parameter.
+     * serve as path parameter. Collections and arrays are rejected as request body as well, as the body must always
+     * be a JSON object.
      */
     private static void extractMappedInputType(Method method,
                                                Route result,
@@ -195,9 +198,20 @@ public class Route {
         if (parameterTypes.size() == pathParameters + 1) {
             failForPreDispatchableMappedBody(result);
             failForSimpleValueBody(result, parameterTypes.getFirst());
+            failForCollectionBody(result, parameterTypes.getFirst());
             result.inputType = parameterTypes.removeFirst();
         }
         failForPojoAsPathParameter(result, parameterTypes);
+    }
+
+    private static void failForCollectionBody(Route result, Class<?> bodyType) {
+        if (bodyType.isArray() || Collection.class.isAssignableFrom(bodyType)) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' declares '%s' as request body which can never be parsed, as the"
+                    + " request body must be a JSON object. Wrap the elements in a dedicated input object instead",
+                    result.label,
+                    bodyType.getName()));
+        }
     }
 
     private static void failForSimpleValueBody(Route result, Class<?> bodyType) {
@@ -226,6 +240,8 @@ public class Route {
         }
     }
 
+    @SuppressWarnings("java:S1067")
+    @Explain("The check is not very complex, It is best to handle all cases in one place.")
     private static boolean isSimpleValueType(Class<?> type) {
         return type.isPrimitive()
                || type.isEnum()
