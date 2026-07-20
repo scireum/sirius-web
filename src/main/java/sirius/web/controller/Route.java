@@ -194,7 +194,7 @@ public class Route {
                                                Route result,
                                                List<Class<?>> parameterTypes,
                                                int pathParameters) {
-        failForInvalidMappedMethod(method);
+        failForInvalidMappedMethod(method, result);
         if (parameterTypes.size() == pathParameters + 1) {
             failForPreDispatchableMappedBody(result);
             failForSimpleValueBody(result, parameterTypes.getFirst());
@@ -262,11 +262,14 @@ public class Route {
         }
     }
 
-    private static void failForInvalidMappedMethod(Method method) {
+    private static void failForInvalidMappedMethod(Method method, Route result) {
         if (void.class.equals(method.getReturnType())) {
             throw new IllegalArgumentException(Strings.apply(
-                    "Mapped service method '%s' must return a result object (or Promise/Future) instead of void",
-                    method.getName()));
+                    "Service method '%s' returns void. Either declare '%s' as second parameter to stream the"
+                    + " response (legacy service) or return a result object (or Promise/Future) to have it"
+                    + " serialized as response body (mapped service)",
+                    result.label,
+                    JSONStructuredOutput.class.getName()));
         }
     }
 
