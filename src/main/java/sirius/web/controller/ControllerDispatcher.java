@@ -446,8 +446,15 @@ public class ControllerDispatcher implements WebDispatcher {
 
         Object result = route.invoke(params);
         if (result instanceof Promise<?> promise) {
-            promise.onSuccess(value -> codec.writeResult(webContext, value))
-                   .onFailure(throwable -> handleFailure(webContext, route, throwable));
+            promise.onSuccess(value -> {
+                // Route serialization errors to handleFailure ourselves - exceptions thrown by a
+                // completion handler are only logged by the Promise and would never reach the client.
+                try {
+                    codec.writeResult(webContext, value);
+                } catch (Exception exception) {
+                    handleFailure(webContext, route, exception);
+                }
+            }).onFailure(throwable -> handleFailure(webContext, route, throwable));
         } else {
             codec.writeResult(webContext, result);
         }
