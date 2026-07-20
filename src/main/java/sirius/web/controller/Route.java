@@ -12,6 +12,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
+import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -33,6 +34,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -180,6 +182,10 @@ public class Route {
      * such a parameter via the body-only binding rule: after removing the {@link WebContext}, the method declares
      * exactly one parameter more than the route has path parameters. In that case the leading parameter is the input
      * POJO. Otherwise (the parameter count matches the path parameters), the method has no request body.
+     * <p>
+     * As this rule is purely count-based, the parameter types are validated to detect miswired signatures at route
+     * compile time: a simple value type (String, number, enum, ...) cannot serve as request body and a POJO cannot
+     * serve as path parameter.
      */
     private static void extractMappedInputType(Method method,
                                                Route result,
@@ -188,8 +194,47 @@ public class Route {
         failForInvalidMappedMethod(method);
         if (parameterTypes.size() == pathParameters + 1) {
             failForPreDispatchableMappedBody(result);
+            failForSimpleValueBody(result, parameterTypes.getFirst());
             result.inputType = parameterTypes.removeFirst();
         }
+        failForPojoAsPathParameter(result, parameterTypes);
+    }
+
+    private static void failForSimpleValueBody(Route result, Class<?> bodyType) {
+        if (isSimpleValueType(bodyType)) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' would bind '%s' as request body POJO. Either declare a proper POJO"
+                    + " directly after the WebContext parameter, declare a matching path parameter in the route or"
+                    + " use the legacy signature with '%s' as second parameter",
+                    result.label,
+                    bodyType.getName(),
+                    JSONStructuredOutput.class.getName()));
+        }
+    }
+
+    private static void failForPojoAsPathParameter(Route result, List<Class<?>> parameterTypes) {
+        for (Class<?> parameterType : parameterTypes) {
+            if (!isSimpleValueType(parameterType) && !List.class.equals(parameterType)) {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Mapped service method '%s' declares '%s' as path parameter which cannot be bound from a"
+                        + " path element. A request body POJO must be declared directly after the WebContext"
+                        + " parameter and requires exactly one method parameter more than the route has path"
+                        + " parameters",
+                        result.label,
+                        parameterType.getName()));
+            }
+        }
+    }
+
+    private static boolean isSimpleValueType(Class<?> type) {
+        return type.isPrimitive()
+               || type.isEnum()
+               || String.class.equals(type)
+               || Boolean.class.equals(type)
+               || Character.class.equals(type)
+               || Number.class.isAssignableFrom(type)
+               || Amount.class.equals(type)
+               || TemporalAccessor.class.isAssignableFrom(type);
     }
 
     private static void failForPreDispatchableMappedBody(Route result) {
