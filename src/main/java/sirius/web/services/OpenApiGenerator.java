@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.temporal.Temporal;
 import java.util.Collection;
@@ -36,6 +37,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Generates an <a href="https://spec.openapis.org/oas/v3.1.0">OpenAPI 3.1</a> document for a {@link PublicApiInfo}.
@@ -68,6 +72,11 @@ public class OpenApiGenerator {
     private static final String FIELD_DESCRIPTION = "description";
     private static final String FIELD_EXAMPLE = "example";
     private static final String FIELD_ADDITIONAL_PROPERTIES = "additionalProperties";
+
+    private static final Pattern PATH_PARAMETER_PATTERN = Pattern.compile(":(\\d+)");
+
+    private static final Set<Class<?>> INTEGER_TYPES =
+            Set.of(int.class, Integer.class, long.class, Long.class, short.class, Short.class, byte.class, Byte.class);
 
     private static final String TYPE_OBJECT = "object";
     private static final String TYPE_ARRAY = "array";
@@ -191,8 +200,8 @@ public class OpenApiGenerator {
     }
 
     private String buildOperationId(PublicServiceInfo service) {
-        return service.getHttpMethod().name().toLowerCase()
-               + determineOpenApiPath(service).replaceAll("[^a-zA-Z0-9]+", "-");
+        return service.getHttpMethod().name().toLowerCase() + determineOpenApiPath(service).replaceAll("[^a-zA-Z0-9]+",
+                                                                                                       "-");
     }
 
     private ArrayNode buildParameters(PublicServiceInfo service) {
@@ -204,11 +213,11 @@ public class OpenApiGenerator {
     }
 
     private String determineOpenApiPath(PublicServiceInfo service) {
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(":([0-9]+)").matcher(service.getUri());
-        StringBuffer path = new StringBuffer();
+        Matcher matcher = PATH_PARAMETER_PATTERN.matcher(service.getUri());
+        StringBuilder path = new StringBuilder();
         while (matcher.find()) {
             String name = pathParameterName(service, matcher.group(1));
-            matcher.appendReplacement(path, "{" + name + "}");
+            matcher.appendReplacement(path, Matcher.quoteReplacement("{" + name + "}"));
         }
         matcher.appendTail(path);
         return path.toString();
@@ -216,18 +225,17 @@ public class OpenApiGenerator {
 
     private String pathParameterName(PublicServiceInfo service, String index) {
         int parameterIndex = Integer.parseInt(index) - 1;
-        return parameterIndex < service.getPathComponents().size()
-               ? service.getPathComponents().get(parameterIndex).name()
-               : "parameter" + index;
+        return parameterIndex < service.getPathComponents().size() ?
+               service.getPathComponents().get(parameterIndex).name() :
+               "parameter" + index;
     }
 
     private void collectImplicitPathParameters(PublicServiceInfo service, ArrayNode parameters) {
-        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(":([0-9]+)").matcher(service.getUri());
+        Matcher matcher = PATH_PARAMETER_PATTERN.matcher(service.getUri());
         while (matcher.find()) {
             String name = pathParameterName(service, matcher.group(1));
-            boolean alreadyDocumented = service.getPathComponents()
-                                               .stream()
-                                               .anyMatch(parameter -> name.equals(parameter.name()));
+            boolean alreadyDocumented =
+                    service.getPathComponents().stream().anyMatch(parameter -> name.equals(parameter.name()));
             if (!alreadyDocumented) {
                 ObjectNode parameter = Json.createObject();
                 parameter.put("name", name);
@@ -429,21 +437,10 @@ public class OpenApiGenerator {
             return null;
         }
 
-        ObjectNode schema = annotation.implementation() == Void.class
-                            ? Json.createObject()
-                            : schemaFor(annotation.implementation(), new HashMap<>());
-        if (Strings.isFilled(annotation.type()) && !schema.has("$ref")) {
-            schema.put(FIELD_TYPE, annotation.type());
-        }
-        if (Strings.isFilled(annotation.format()) && !schema.has("$ref")) {
-            schema.put(FIELD_FORMAT, annotation.format());
-        }
-        if (Strings.isFilled(annotation.description())) {
-            schema.put(FIELD_DESCRIPTION, NLS.smartGet(annotation.description()));
-        }
-        if (Strings.isFilled(annotation.example())) {
-            putExample(schema, annotation.example());
-        }
+        ObjectNode schema = annotation.implementation() == Void.class ?
+                            Json.createObject() :
+                            schemaFor(annotation.implementation(), new HashMap<>());
+        applySchemaAnnotation(schema, annotation);
         return schema;
     }
 
@@ -456,7 +453,7 @@ public class OpenApiGenerator {
         ObjectNode examples = Json.createObject();
         for (int index = 0; index < exampleObjects.length; index++) {
             ExampleObject example = exampleObjects[index];
-            String name = Strings.isFilled(example.name()) ? example.name() : "example" + (index + 1);
+            String name = Strings.isFilled(example.name()) ? example.name() : FIELD_EXAMPLE + (index + 1);
             ObjectNode exampleNode = Json.createObject();
             if (Strings.isFilled(example.summary())) {
                 exampleNode.put("summary", example.summary());
@@ -477,7 +474,7 @@ public class OpenApiGenerator {
     private JsonNode parseExampleValue(String value) {
         try {
             return Json.MAPPER.readTree(value);
-        } catch (Exception ignored) {
+        } catch (Exception _) {
             return Json.MAPPER.getNodeFactory().textNode(value);
         }
     }
@@ -528,10 +525,13 @@ public class OpenApiGenerator {
                                            Class<?> rawType,
                                            Map<TypeVariable<?>, Type> typeVariables) {
         String schemaName = determineSchemaName(resolvedType, rawType);
-        if (componentSchemas.containsKey(schemaName)) {
-            return schemaName;
+        if (!componentSchemas.containsKey(schemaName)) {
+            buildComponentSchema(schemaName, resolvedType, typeVariables);
         }
+        return schemaName;
+    }
 
+    private void buildComponentSchema(String schemaName, Type resolvedType, Map<TypeVariable<?>, Type> typeVariables) {
         // Reserve the entry before recursing into the fields, so self-referential types terminate.
         ObjectNode schema = Json.createObject();
         componentSchemas.put(schemaName, schema);
@@ -548,7 +548,6 @@ public class OpenApiGenerator {
         if (!required.isEmpty()) {
             schema.set(FIELD_REQUIRED, required);
         }
-        return schemaName;
     }
 
     private String determineSchemaName(Type resolvedType, Class<?> rawType) {
@@ -586,7 +585,7 @@ public class OpenApiGenerator {
             String fieldName = Strings.isFilled(fieldSchema.name()) ? fieldSchema.name() : field.getName();
             Type fieldType = SchemaReflection.resolveType(field.getGenericType(), nestedTypeVariables);
             ObjectNode propertySchema = schemaFor(fieldType, nestedTypeVariables);
-            applyFieldAnnotation(propertySchema, fieldSchema);
+            applySchemaAnnotation(propertySchema, fieldSchema);
             properties.set(fieldName, propertySchema);
             if (isRequired(fieldSchema)) {
                 required.add(fieldName);
@@ -594,19 +593,19 @@ public class OpenApiGenerator {
         }
     }
 
-    private void applyFieldAnnotation(ObjectNode propertySchema, Schema fieldSchema) {
+    private void applySchemaAnnotation(ObjectNode schema, Schema annotation) {
         // OpenAPI 3.1 allows annotation keywords next to a $ref, so descriptions on referenced schemas are kept.
-        if (Strings.isFilled(fieldSchema.type()) && !propertySchema.has("$ref")) {
-            propertySchema.put(FIELD_TYPE, fieldSchema.type());
+        if (Strings.isFilled(annotation.type()) && !schema.has("$ref")) {
+            schema.put(FIELD_TYPE, annotation.type());
         }
-        if (Strings.isFilled(fieldSchema.format()) && !propertySchema.has("$ref")) {
-            propertySchema.put(FIELD_FORMAT, fieldSchema.format());
+        if (Strings.isFilled(annotation.format()) && !schema.has("$ref")) {
+            schema.put(FIELD_FORMAT, annotation.format());
         }
-        if (Strings.isFilled(fieldSchema.description())) {
-            propertySchema.put(FIELD_DESCRIPTION, NLS.smartGet(fieldSchema.description()));
+        if (Strings.isFilled(annotation.description())) {
+            schema.put(FIELD_DESCRIPTION, NLS.smartGet(annotation.description()));
         }
-        if (Strings.isFilled(fieldSchema.example())) {
-            putExample(propertySchema, fieldSchema.example());
+        if (Strings.isFilled(annotation.example())) {
+            putExample(schema, annotation.example());
         }
     }
 
@@ -619,14 +618,14 @@ public class OpenApiGenerator {
             case TYPE_INTEGER -> {
                 try {
                     yield Json.MAPPER.getNodeFactory().numberNode(Long.parseLong(example));
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException _) {
                     yield Json.MAPPER.getNodeFactory().textNode(example);
                 }
             }
             case TYPE_NUMBER -> {
                 try {
                     yield Json.MAPPER.getNodeFactory().numberNode(Double.parseDouble(example));
-                } catch (NumberFormatException ignored) {
+                } catch (NumberFormatException _) {
                     yield Json.MAPPER.getNodeFactory().textNode(example);
                 }
             }
@@ -636,27 +635,16 @@ public class OpenApiGenerator {
     }
 
     private ObjectNode leafSchema(Class<?> rawType) {
-        ObjectNode schema = Json.createObject();
         if (rawType.isEnum()) {
-            schema.put(FIELD_TYPE, TYPE_STRING);
-            ArrayNode enumValues = Json.createArray();
-            for (Object constant : rawType.getEnumConstants()) {
-                enumValues.add(((Enum<?>) constant).name());
-            }
-            schema.set("enum", enumValues);
-            return schema;
-        }
-        if (rawType == boolean.class || rawType == Boolean.class) {
-            schema.put(FIELD_TYPE, TYPE_BOOLEAN);
-            return schema;
+            return enumSchema(rawType);
         }
         if (isIntegerType(rawType)) {
-            schema.put(FIELD_TYPE, TYPE_INTEGER);
-            if (rawType == long.class || rawType == Long.class) {
-                schema.put(FIELD_FORMAT, "int64");
-            } else if (rawType == int.class || rawType == Integer.class) {
-                schema.put(FIELD_FORMAT, "int32");
-            }
+            return integerSchema(rawType);
+        }
+
+        ObjectNode schema = Json.createObject();
+        if (rawType == boolean.class || rawType == Boolean.class) {
+            schema.put(FIELD_TYPE, TYPE_BOOLEAN);
             return schema;
         }
         if (Number.class.isAssignableFrom(rawType) || rawType.isPrimitive() && rawType != char.class) {
@@ -672,16 +660,30 @@ public class OpenApiGenerator {
         return schema;
     }
 
+    private ObjectNode enumSchema(Class<?> rawType) {
+        ObjectNode schema = Json.createObject();
+        schema.put(FIELD_TYPE, TYPE_STRING);
+        ArrayNode enumValues = Json.createArray();
+        for (Object constant : rawType.getEnumConstants()) {
+            enumValues.add(((Enum<?>) constant).name());
+        }
+        schema.set("enum", enumValues);
+        return schema;
+    }
+
+    private ObjectNode integerSchema(Class<?> rawType) {
+        ObjectNode schema = Json.createObject();
+        schema.put(FIELD_TYPE, TYPE_INTEGER);
+        if (rawType == long.class || rawType == Long.class) {
+            schema.put(FIELD_FORMAT, "int64");
+        } else if (rawType == int.class || rawType == Integer.class) {
+            schema.put(FIELD_FORMAT, "int32");
+        }
+        return schema;
+    }
+
     private boolean isIntegerType(Class<?> rawType) {
-        return rawType == int.class
-               || rawType == Integer.class
-               || rawType == long.class
-               || rawType == Long.class
-               || rawType == short.class
-               || rawType == Short.class
-               || rawType == byte.class
-               || rawType == Byte.class
-               || java.math.BigInteger.class.isAssignableFrom(rawType);
+        return INTEGER_TYPES.contains(rawType) || BigInteger.class.isAssignableFrom(rawType);
     }
 
     private ObjectNode objectSchema() {
