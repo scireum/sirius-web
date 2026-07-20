@@ -105,7 +105,7 @@ public class PublicServices {
                                                                             apiResponse.responseCode())))
                                                                     .toList(),
                                                               compiledRoute.getInputType(),
-                                                              determineOutputType(route));
+                                                              determineOutputType(compiledRoute));
         PublicApiInfo apiInfo = modifiableApis.stream()
                                               .filter(api -> Strings.areEqual(api.getApiName(),
                                                                               publicService.apiName()))
@@ -124,12 +124,14 @@ public class PublicServices {
      * Determines the type which is effectively serialized as response of a mapped service.
      * <p>
      * For methods which return a {@link Promise} the contained type argument is used, otherwise the plain return type
-     * is used. Methods returning <tt>void</tt> are not mapped services and yield <tt>null</tt>.
+     * is used. Legacy (non-mapped) services stream their response via a StructuredOutput, so their return type does
+     * not describe the response and <tt>null</tt> is returned.
      */
-    private Type determineOutputType(Method route) {
-        if (void.class.equals(route.getReturnType())) {
+    private Type determineOutputType(Route compiledRoute) {
+        if (!compiledRoute.isMappedPayload()) {
             return null;
         }
+        Method route = compiledRoute.getMethod();
         Type genericReturnType = route.getGenericReturnType();
         if (genericReturnType instanceof ParameterizedType parameterizedType
             && Promise.class.isAssignableFrom(route.getReturnType())) {
