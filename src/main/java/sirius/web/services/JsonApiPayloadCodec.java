@@ -50,15 +50,28 @@ public class JsonApiPayloadCodec implements ApiPayloadCodec {
 
     @Override
     public void writeResult(WebContext webContext, @Nullable Object result) {
-        try (OutputStream out = webContext.respondWith()
-                                          .outputStream(HttpResponseStatus.OK,
-                                                        MimeHelper.APPLICATION_JSON + ";charset=" + StandardCharsets.UTF_8.name())) {
-            out.write(Json.MAPPER.writeValueAsBytes(result));
+        // Serialize before opening the response stream - once the stream is opened, the 200 OK status is
+        // committed and a serialization failure could no longer be reported as a proper error response.
+        byte[] json;
+        try {
+            json = Json.MAPPER.writeValueAsBytes(result);
         } catch (Exception exception) {
             throw Exceptions.handle()
                             .to(WebServer.LOG)
                             .error(exception)
                             .withSystemErrorMessage("Cannot serialize the result as JSON: %s (%s)")
+                            .handle();
+        }
+
+        try (OutputStream out = webContext.respondWith()
+                                          .outputStream(HttpResponseStatus.OK,
+                                                        MimeHelper.APPLICATION_JSON + ";charset=" + StandardCharsets.UTF_8.name())) {
+            out.write(json);
+        } catch (Exception exception) {
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .error(exception)
+                            .withSystemErrorMessage("Cannot write the JSON response: %s (%s)")
                             .handle();
         }
     }
