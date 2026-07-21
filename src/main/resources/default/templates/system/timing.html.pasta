@@ -2,7 +2,11 @@
 <i:arg type="String" name="periodSinceReset"/>
 
 <t:page title="Microtiming">
-
+    <i:block name="head">
+        <script type="text/javascript">
+            @inlineResource("/assets/tycho/scripts/timing.js")
+        </script>
+    </i:block>
     <i:block name="breadcrumbs">
         <li><a href="/system/timing">Microtiming</a></li>
     </i:block>
@@ -78,8 +82,4 @@
     </template>
 
     <div id="timing-container"></div>
-
-    <script type="text/javascript">
-        @inlineResource("/assets/tycho/scripts/timing.js")
-    </script>
 </t:page>

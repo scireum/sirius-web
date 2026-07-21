@@ -34,6 +34,7 @@ import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
 import sirius.web.security.Permission;
 import sirius.web.services.Format;
+import sirius.web.services.InternalService;
 import sirius.web.services.JSONStructuredOutput;
 import sirius.web.services.PublicService;
 
@@ -359,12 +360,12 @@ public class SystemController extends BasicController {
      * Provides the recorded micro timings as JSON.
      *
      * @param webContext the current request
+     * @param output     the JSON output the timings are written to
      */
     @Routed("/system/timing/api")
     @Permission(PERMISSION_SYSTEM_TIMING)
-    public void timingApi(WebContext webContext) {
-        JSONStructuredOutput output = webContext.respondWith().json();
-        output.beginResult();
+    @InternalService
+    public void timingApi(WebContext webContext, JSONStructuredOutput output) {
         output.beginArray("timings");
         for (Microtiming.Timing timing : Microtiming.getTimings()) {
             output.beginObject("timing");
@@ -375,6 +376,5 @@ public class SystemController extends BasicController {
             output.endObject();
         }
         output.endArray();
-        output.endResult();
     }
 }
