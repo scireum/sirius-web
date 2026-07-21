@@ -73,32 +73,6 @@ public @interface Routed {
     boolean preDispatchable() default false;
 
     /**
-     * Determines if the annotated method is used to generate a JSON response.
-     * <p>
-     * This can be used to handle AJAX requests directly within a controller. In such simple cases if is often
-     * feasible to keep the logic in one place (controller) instead for creating a {@link
-     * sirius.web.services.StructuredService}.
-     * <p>
-     * A method having <tt>jsonCall</tt> set to <tt>true</tt> has to accept
-     * {@link sirius.web.services.JSONStructuredOutput} as 2nd parameter. This parameter is filled with a
-     * pre-initialized output writer, which has {@link JSONStructuredOutput#beginResult()} and {@link
-     * JSONStructuredOutput#endResult()} automatically called.
-     * <p>
-     * Also the properties <tt>success</tt> and <tt>error</tt> are automatically filled. In case on an exception
-     * within the controller method, a result with <tt>success</tt>, <tt>errro</tt> and <tt>message</tt> is
-     * automatically created.
-     * <p>
-     * <b>Note:</b> If implementing method does fork a new thread and pass the given output along,
-     * the method must return a {@link sirius.kernel.async.Promise} or {@link sirius.kernel.async.Future}
-     * so that the dispatcher knowns when the generated output is complete.
-     * </p>
-     *
-     * @return <tt>true</tt> if the method is used to create a JSON response for an AJAX call, <tt>false</tt> otherwise
-     * @deprecated Use {@link InternalService} or {@link PublicService}
-     */
-    @Deprecated(since = "2021/07/01") boolean jsonCall() default false;
-
-    /**
      * Determines the HTTP methods supported by the route. By default, all methods are supported.
      * <p>
      * Note that OPTIONS is intentionally not part of the default list: it is handled centrally by the
