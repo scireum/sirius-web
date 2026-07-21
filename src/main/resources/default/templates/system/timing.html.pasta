@@ -1,6 +1,4 @@
 <i:arg type="boolean" name="enabled"/>
-<i:arg type="List" name="timings"/>
-<i:arg type="Page" name="page"/>
 <i:arg type="String" name="periodSinceReset"/>
 
 <t:page title="Microtiming">
@@ -13,9 +11,7 @@
         <t:pageHeader title="Microtiming">
             <i:if test="enabled">
                 <t:dot color="green">Active</t:dot>
-                <t:inlineInfo label="Collecting for">
-                    @periodSinceReset
-                </t:inlineInfo>
+                <t:inlineInfo label="Collecting for">@periodSinceReset</t:inlineInfo>
                 <i:else>
                     <t:dot color="gray">Inactive</t:dot>
                 </i:else>
@@ -23,49 +19,67 @@
         </t:pageHeader>
     </i:block>
 
-    <t:searchHeader baseUrl="/system/timing" page="page">
-        <i:if test="enabled">
-            <a href="/system/timing?disable=true"
-               class="btn btn-outline-primary">
-                <i class="fa-solid fa-minus"></i>
-                <span class="d-none d-md-inline-block">Disable</span>
-            </a>
-            <i:else>
-                <a href="/system/timing?enable=true"
-                   class="btn btn-outline-primary">
-                    <i class="fa-solid fa-plus"></i>
-                    <span class="d-none d-md-inline-block">Enable</span>
-                </a>
-            </i:else>
-        </i:if>
-    </t:searchHeader>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col flex-grow-1">
+                    <div class="input-group">
+                        <input type="text" id="timing-filter" class="form-control"
+                               placeholder="@i18n('NLS.searchkey')"/>
+                        <span class="input-group-text" id="timing-search" role="button" tabindex="0" aria-label="Search"
+                              style="cursor: pointer;">
+                             <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col flex-grow-0 d-flex justify-content-end text-nowrap">
+                    <i:if test="enabled">
+                        <a href="/system/timing?disable=true" class="btn btn-outline-primary">
+                            <i class="fa-solid fa-minus"></i>
+                            <span class="d-none d-md-inline-block">Disable</span>
+                        </a>
+                        <i:else>
+                            <a href="/system/timing?enable=true" class="btn btn-outline-primary">
+                                <i class="fa-solid fa-plus"></i>
+                                <span class="d-none d-md-inline-block">Enable</span>
+                            </a>
+                        </i:else>
+                    </i:if>
+                    <a href="#" role="button" id="timing-reload" class="ms-2 btn btn-outline-secondary" title="Reload">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <i:for type="Tuple" var="category" items="timings">
+    <template id="category-card-template">
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title">@category.getFirst().toString()</h5>
-                <table class="table mt-4">
+                <h5 class="card-title"></h5>
+                <table class="table table-hover" style="table-layout: fixed;">
+                    <thead>
                     <tr>
-                        <th>
-                            Key
+                        <th>Key</th>
+                        <th class="text-end text-nowrap" style="width: 100px; cursor: pointer;" role="button"
+                            tabindex="0" data-sort="count">
+                            Calls <i class="fa-solid fa-sort text-muted"></i>
                         </th>
-                        <th class="text-end">
-                            Calls (Duration)
+                        <th class="text-end text-nowrap" style="width: 130px; cursor: pointer;" role="button"
+                            tabindex="0" data-sort="averageMillis">
+                            Ø Duration<i class="fa-solid fa-sort text-muted"></i>
                         </th>
                     </tr>
-
-                    <i:for type="Tuple" var="timing" items="category.getSecond().as(java.util.Collection.class)">
-                        <tr>
-                            <td>
-                                @timing.getFirst()
-                            </td>
-                            <td class="text-end">
-                                @timing.getSecond()
-                            </td>
-                        </tr>
-                    </i:for>
+                    </thead>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
-    </i:for>
+    </template>
+
+    <div id="timing-container"></div>
+
+    <script type="text/javascript">
+        @inlineResource("/assets/tycho/scripts/timing.js")
+    </script>
 </t:page>
