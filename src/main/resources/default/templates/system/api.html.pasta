@@ -18,6 +18,11 @@
                     <t:dot color="green">Active</t:dot>
                 </i:else>
             </i:if>
+            <i:block name="additionalActions">
+                <t:dropdownItem icon="fa-solid fa-file-arrow-down fa-fw"
+                                label="Download OpenAPI json"
+                                url="@apply('/system/api/%s/openapi.json', api.getApiName())"/>
+            </i:block>
         </t:pageHeader>
     </i:block>
 
