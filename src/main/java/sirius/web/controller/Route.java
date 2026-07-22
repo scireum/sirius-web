@@ -109,7 +109,7 @@ public class Route {
                                      method.getDeclaringClass().getName(),
                                      method.getName());
 
-        determineAPIFormat(method, routed, result);
+        determineAPIFormat(method, result);
         determineSubScope(method, result);
         createMethodHandle(method, result);
 
@@ -296,16 +296,13 @@ public class Route {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private static void determineAPIFormat(Method method, Routed routed, Route result) {
+    private static void determineAPIFormat(Method method, Route result) {
         if (method.isAnnotationPresent(PublicService.class)) {
             PublicService publicServiceAnnotation = method.getAnnotation(PublicService.class);
             result.enforceMaintenanceMode = publicServiceAnnotation.enforceMaintenanceMode();
             result.format = publicServiceAnnotation.format();
         } else if (method.isAnnotationPresent(InternalService.class)) {
             result.format = method.getAnnotation(InternalService.class).format();
-        } else if (routed.jsonCall()) {
-            result.format = Format.JSON;
         }
     }
 

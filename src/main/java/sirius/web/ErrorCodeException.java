@@ -13,7 +13,6 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.health.ExceptionHint;
 import sirius.kernel.health.HandledException;
 import sirius.web.controller.Controller;
-import sirius.web.controller.Routed;
 
 import java.io.Serial;
 import java.util.Collections;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Can be thrown in {@link sirius.web.services.StructuredService}s or in JSON calls ({@link Routed#jsonCall()}).
+ * Can be thrown in {@link sirius.web.services.StructuredService}s.
  * <p>
  * Adds an additional "code" property to the JSON result which contains the given code. Also the given message
  * is directly reported without any translation or logging.
