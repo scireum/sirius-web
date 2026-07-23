@@ -18,12 +18,16 @@ import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
+import sirius.kernel.async.Promise;
 import sirius.kernel.settings.Extension;
 import sirius.web.controller.ControllerDispatcher;
 import sirius.web.controller.Routed;
+import sirius.web.controller.Route;
 import sirius.web.http.WebServer;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -63,11 +67,12 @@ public class PublicServices {
 
     private List<PublicApiInfo> discoverPublicServices() {
         List<PublicApiInfo> modifiableApis = new ArrayList<>();
-        controllerDispatcher.getRoutes().forEach(route -> recordPublicService(route.getMethod(), modifiableApis));
+        controllerDispatcher.getRoutes().forEach(route -> recordPublicService(route, modifiableApis));
         return modifiableApis;
     }
 
-    private void recordPublicService(Method route, List<PublicApiInfo> modifiableApis) {
+    private void recordPublicService(Route compiledRoute, List<PublicApiInfo> modifiableApis) {
+        Method route = compiledRoute.getMethod();
         Routed routed = route.getAnnotation(Routed.class);
         if (routed == null) {
             return;
@@ -98,7 +103,9 @@ public class PublicServices {
                                                                                     ApiResponse.class)))
                                                                     .sorted(Comparator.comparingInt(apiResponse -> Integer.parseInt(
                                                                             apiResponse.responseCode())))
-                                                                    .toList());
+                                                                    .toList(),
+                                                              compiledRoute.getInputType(),
+                                                              determineOutputType(compiledRoute));
         PublicApiInfo apiInfo = modifiableApis.stream()
                                               .filter(api -> Strings.areEqual(api.getApiName(),
                                                                               publicService.apiName()))
@@ -111,6 +118,29 @@ public class PublicServices {
                                           .thenComparing(PublicApiInfo::getApiName));
         }
         apiInfo.addService(serviceInfo);
+    }
+
+    /**
+     * Determines the type which is effectively serialized as response of a mapped service.
+     * <p>
+     * For methods which return a {@link Promise} the contained type argument is used, otherwise the plain return type
+     * is used. Legacy (non-mapped) services stream their response via a StructuredOutput, so their return type does
+     * not describe the response and <tt>null</tt> is returned.
+     */
+    private Type determineOutputType(Route compiledRoute) {
+        if (!compiledRoute.isMappedPayload()) {
+            return null;
+        }
+        Method route = compiledRoute.getMethod();
+        Type genericReturnType = route.getGenericReturnType();
+        if (genericReturnType instanceof ParameterizedType parameterizedType
+            && Promise.class.isAssignableFrom(route.getReturnType())) {
+            Type[] typeArguments = parameterizedType.getActualTypeArguments();
+            if (typeArguments.length == 1) {
+                return typeArguments[0];
+            }
+        }
+        return genericReturnType;
     }
 
     private List<Parameter> collectSharedApiParameters(Method route) {

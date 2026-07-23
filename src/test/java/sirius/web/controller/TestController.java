@@ -12,11 +12,13 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.cookie.CookieHeaderNames;
 import sirius.kernel.async.Future;
+import sirius.kernel.async.Promise;
 import sirius.kernel.async.Tasks;
 import sirius.kernel.commons.Streams;
 import sirius.kernel.commons.Wait;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.CSRFHelper;
 import sirius.web.http.InputStreamHandler;
@@ -229,7 +231,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed(value = "/upload-test", preDispatchable = true)
+    @Routed(value = "/upload-test", preDispatchable = true, skipCsrfValidation = true)
     public void uploadTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
             throws IOException {
         try (upload) {
@@ -239,7 +241,7 @@ public class TestController extends BasicController {
     }
 
     @InternalService
-    @Routed(value = "/upload-gzip", preDispatchable = true)
+    @Routed(value = "/upload-gzip", preDispatchable = true, skipCsrfValidation = true)
     public void uploadGzipTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
             throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(upload)))) {
@@ -313,6 +315,35 @@ public class TestController extends BasicController {
         });
     }
 
+    @InternalService
+    @Routed(value = "/test/mapped/greet", skipCsrfValidation = true)
+    public GreetResult mappedGreet(WebContext webContext, GreetInput input) {
+        return new GreetResult("Hello " + input.getName());
+    }
+
+    @InternalService
+    @Routed("/test/mapped/echo/:1")
+    public GreetResult mappedEcho(WebContext webContext, String value) {
+        return new GreetResult(value);
+    }
+
+    @InternalService
+    @Routed(value = "/test/mapped/async", skipCsrfValidation = true)
+    public Promise<GreetResult> mappedAsyncGreet(WebContext webContext, GreetInput input) {
+        Promise<GreetResult> promise = new Promise<>();
+        tasks.defaultExecutor().start(() -> {
+            Wait.millis(100);
+            promise.success(new GreetResult("Hello " + input.getName()));
+        });
+        return promise;
+    }
+
+    @InternalService
+    @Routed(value = "/test/mapped/fail", skipCsrfValidation = true)
+    public GreetResult mappedFail(WebContext webContext, GreetInput input) {
+        throw Exceptions.createHandled().withDirectMessage("Intentional failure for " + input.getName()).handle();
+    }
+
     @Routed("/test/session-test")
     public void sessionTest(WebContext webContext) {
         webContext.setSessionValue("test1", "test");
@@ -325,7 +356,9 @@ public class TestController extends BasicController {
     public void sessionTestRead(WebContext webContext) {
         webContext.respondWith()
                   .direct(HttpResponseStatus.OK,
-                          "test1=" + webContext.getSessionValue("test1").asString("<none>") + "&test2="
+                          "test1="
+                          + webContext.getSessionValue("test1").asString("<none>")
+                          + "&test2="
                           + webContext.getSessionValue("test2").asString("<none>"));
     }
 
@@ -349,7 +382,8 @@ public class TestController extends BasicController {
         webContext.respondWith().direct(HttpResponseStatus.OK, "POST OK");
     }
 
-    @Routed(value = "/test/restricted-methods", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
+    @Routed(value = "/test/restricted-methods",
+            methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
             skipCsrfValidation = true)
     public void getAndPostOnlyTest(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "GET/POST OK");
@@ -372,9 +406,8 @@ public class TestController extends BasicController {
             preDispatchable = true,
             skipCsrfValidation = true)
     @InternalService
-    public void postOnlyPredispatchTest(WebContext webContext,
-                                        JSONStructuredOutput output,
-                                        InputStreamHandler upload) throws IOException {
+    public void postOnlyPredispatchTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
+            throws IOException {
         try (upload) {
             Streams.exhaust(upload);
             output.property("status", "POST OK");
@@ -397,7 +430,8 @@ public class TestController extends BasicController {
         }
     }
 
-    @Routed(value = "/test/restricted-methods-api", methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
+    @Routed(value = "/test/restricted-methods-api",
+            methods = {HttpMethod.GET, HttpMethod.POST, HttpMethod.POST},
             skipCsrfValidation = true)
     @InternalService
     public void getAndPostOnlyTest(WebContext webContext, JSONStructuredOutput output) {

@@ -146,6 +146,26 @@ class WebContextTest {
     }
 
     @Test
+    fun `the session cookie keeps its attributes and is not partitioned by default`() {
+
+        // Guards the setSessionScopedCookie refactor: the session cookie must still be marked HttpOnly (the attribute
+        // moved into the new helper), and - since http.sessionCookie.partitioned defaults to false - must NOT carry the
+        // Partitioned (CHIPS) attribute, so behaviour is unchanged for existing products.
+        val connection =
+            URI("http://localhost:9999/test/session-test").toURL().openConnection() as HttpURLConnection
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+        val sessionCookieLine = connection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+
+        assertTrue { sessionCookieLine.contains("HTTPOnly", ignoreCase = true) }
+        assertFalse { sessionCookieLine.contains("Partitioned", ignoreCase = true) }
+
+    }
+
+    @Test
     fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
 
         // Build a legacy (unencrypted) session cookie in the "<sha512 hash>:<querystring>" format, signed with the

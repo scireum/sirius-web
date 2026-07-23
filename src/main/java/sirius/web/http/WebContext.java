@@ -360,6 +360,19 @@ public class WebContext implements SubContext {
     private static boolean sessionCookieEncryption;
 
     /**
+     * Determines if the session cookie (and its pin cookie) is marked as
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/Privacy/Guides/Privacy_sandbox/Partitioned_cookies">Partitioned</a>
+     * (CHIPS). A partitioned cookie is stored and sent under a per-top-level-site partition, which lets it work in
+     * cross-site (third-party) iframe contexts that would otherwise block or partition it away. Browsers reject a
+     * {@code Partitioned} cookie that is not {@code Secure}, and the attribute is only meaningful on a cookie that is
+     * actually sent cross-site (i.e. {@code SameSite=None}). It is therefore only emitted when the resulting cookie is
+     * both {@code Secure} and {@code SameSite=None}; otherwise it is silently skipped, so enabling the flag can never
+     * produce an invalid cookie or break a session.
+     */
+    @ConfigValue("http.sessionCookie.partitioned")
+    private static boolean sessionCookiePartitioned;
+
+    /**
      * Determines the domain set for all cookies. If empty no domain will be set.
      * If a cookie's domain attribute is not set, the cookie is only applicable to the domain of the originating request, EXCLUDING all its subdomains.
      * (However in IE 9 and older versions, a cookie made for abc.com is also sent in requests to xyz.abc.com)
@@ -952,11 +965,7 @@ public class WebContext implements SubContext {
                                getRemoteIP());
         }
 
-        setCookie(getSessionPinCookieName(),
-                  givenSessionPin,
-                  SESSION_PIN_COOKIE_TTL,
-                  determineSessionCookieSameSite(),
-                  sessionCookieSecurity);
+        setSessionScopedCookie(getSessionPinCookieName(), givenSessionPin, SESSION_PIN_COOKIE_TTL);
     }
 
     private Map<String, String> decodeSession(String encodedSession) {
@@ -1566,10 +1575,31 @@ public class WebContext implements SubContext {
 
         long ttl = determineSessionCookieTTL();
         if (ttl == 0) {
-            setHTTPSessionCookie(sessionCookieName, cookieValue);
+            setSessionScopedCookie(sessionCookieName, cookieValue, Long.MIN_VALUE);
         } else {
-            setCookie(sessionCookieName, cookieValue, ttl, determineSessionCookieSameSite(), sessionCookieSecurity);
+            setSessionScopedCookie(sessionCookieName, cookieValue, ttl);
         }
+    }
+
+    /**
+     * Writes an http-only cookie belonging to the client session - the session cookie itself or its pin cookie -
+     * applying the session cookie's SameSite and security attributes. The {@link #sessionCookiePartitioned Partitioned}
+     * (CHIPS) attribute is applied only when it is enabled and the resulting cookie is both {@code Secure} and
+     * {@code SameSite=None}, so the whole session works consistently in cross-site iframe contexts without ever emitting
+     * a {@code Partitioned} attribute that a browser would reject.
+     *
+     * @param name          the cookie name
+     * @param value         the cookie value
+     * @param maxAgeSeconds the max age in seconds, or {@link Long#MIN_VALUE} for a browser-session cookie
+     */
+    private void setSessionScopedCookie(String name, String value, long maxAgeSeconds) {
+        DefaultCookie cookie =
+                createCookie(name, value, maxAgeSeconds, determineSessionCookieSameSite(), sessionCookieSecurity);
+        cookie.setHttpOnly(true);
+        cookie.setPartitioned(sessionCookiePartitioned
+                              && cookie.isSecure()
+                              && cookie.sameSite() == CookieHeaderNames.SameSite.None);
+        setCookie(cookie);
     }
 
     /**

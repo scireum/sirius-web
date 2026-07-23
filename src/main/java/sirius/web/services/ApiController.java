@@ -8,6 +8,9 @@
 
 package sirius.web.services;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -17,6 +20,10 @@ import sirius.web.controller.DefaultRoute;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permission;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Provides a UI to view all public available APIs.
@@ -72,6 +79,41 @@ public class ApiController extends BasicController {
     @Routed("/system/api/:1")
     @Permission(PERMISSION_SYSTEM_API)
     public void api(WebContext webContext, String apiName) {
+        PublicApiInfo publicApiInfo = findApi(apiName);
+        if (hasPermission(publicApiInfo.getRequiredRoles())) {
+            webContext.respondWith().template("/templates/system/api.html.pasta", publicApiInfo);
+        } else {
+            raiseMissingPermissionError(publicApiInfo.getRequiredRoles());
+        }
+    }
+
+    /**
+     * Generates and downloads an OpenAPI 3.1 document for the given API.
+     *
+     * @param webContext the request to respond to
+     * @param apiName    the name of the API to generate the OpenAPI document for
+     * @throws IOException in case of an IO error while writing the response
+     */
+    @Routed("/system/api/:1/openapi.json")
+    @Permission(PERMISSION_SYSTEM_API)
+    public void apiOpenApiDocument(WebContext webContext, String apiName) throws IOException {
+        PublicApiInfo publicApiInfo = findApi(apiName);
+        if (!hasPermission(publicApiInfo.getRequiredRoles())) {
+            raiseMissingPermissionError(publicApiInfo.getRequiredRoles());
+            return;
+        }
+
+        ObjectNode document = new OpenApiGenerator().generate(publicApiInfo);
+        try (OutputStream outputStream = webContext.respondWith()
+                                                   .download(apiName + "-openapi.json")
+                                                   .notCached()
+                                                   .outputStream(HttpResponseStatus.OK,
+                                                                 "application/json;charset=utf-8")) {
+            outputStream.write(Json.writePretty(document).getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private PublicApiInfo findApi(String apiName) {
         PublicApiInfo publicApiInfo = publicServices.getApis()
                                                     .stream()
                                                     .filter(api -> Strings.areEqual(api.getApiName(), apiName))
@@ -80,11 +122,6 @@ public class ApiController extends BasicController {
         if (publicApiInfo == null) {
             throw Exceptions.createHandled().withSystemErrorMessage("Unknown API: %s", apiName).handle();
         }
-
-        if (hasPermission(publicApiInfo.getRequiredRoles())) {
-            webContext.respondWith().template("/templates/system/api.html.pasta", publicApiInfo);
-        } else {
-            raiseMissingPermissionError(publicApiInfo.getRequiredRoles());
-        }
+        return publicApiInfo;
     }
 }
