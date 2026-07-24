@@ -19,3 +19,9 @@
         gap: 1rem;
     }
 }
+
+@supports selector(:focus-visible) {
+    .box {
+        outline: 2px solid;
+    }
+}

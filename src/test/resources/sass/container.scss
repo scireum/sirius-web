@@ -41,3 +41,10 @@ $breakpoint: 400px;
     color: black;
   }
 }
+
+// Container style query: the function name must stay glued to its argument
+@container style(--accent: blue) {
+  .card {
+    color: blue;
+  }
+}

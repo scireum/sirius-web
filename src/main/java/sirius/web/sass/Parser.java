@@ -32,6 +32,7 @@ import sirius.web.sass.ast.VariableReference;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Parses a given SASS source into a {@link Stylesheet}.
@@ -50,6 +51,13 @@ public class Parser {
     // keyword would break such declarations. They are detected via the '@' special identifier instead.
     private static final String AT_RULE_CONTAINER = "container";
     private static final String AT_RULE_SUPPORTS = "supports";
+
+    // Functional conditions whose name is glued directly to its parenthesized argument, e.g.
+    // "selector(:focus-visible)" or "style(--x: y)". Everything else - especially a @container name followed by a
+    // size query ("sidebar (min-width: 400px)") and connectors like "not (...)" - keeps the separating space.
+    // These have identical token streams (whitespace is dropped), so only a known function name may be glued.
+    private static final Set<String> CONDITION_FUNCTIONS =
+            Set.of("selector", "style", "font-tech", "font-format", "scroll-state");
 
     /**
      * How to put that right: CSS is kind of "special gifted" - so tokenization is not always that straightforward.
@@ -353,8 +361,16 @@ public class Parser {
             if (tokenizer.current().isSymbol("(")) {
                 parseConditionalGroupFilter(result);
             } else if (tokenizer.current().isIdentifier()) {
-                // A bare word: a '@container' name or a connector like 'and' / 'or' / 'not' / 'only'.
-                result.addMediaQuery(new Value(tokenizer.consume().getSource()));
+                String word = tokenizer.consume().getSource();
+                if (tokenizer.current().isSymbol("(") && CONDITION_FUNCTIONS.contains(word.toLowerCase())) {
+                    // A functional condition like "selector(:focus-visible)" or "style(--x: y)": the name is
+                    // glued directly to its argument (no separating space).
+                    tokenizer.consumeExpectedSymbol("(");
+                    result.addMediaQuery(new Value(word + readRawCondition()));
+                } else {
+                    // A bare word: a '@container' name or a connector like 'and' / 'or' / 'not' / 'only'.
+                    result.addMediaQuery(new Value(word));
+                }
             } else {
                 // Consume the offending token to make progress towards '{' and report the problem.
                 tokenizer.addError(tokenizer.current(),
@@ -387,13 +403,15 @@ public class Parser {
 
     /**
      * Reads a parenthesized condition verbatim (the opening '(' has already been consumed), balancing nested
-     * parentheses and separating the contained tokens with single spaces. Used for conditions which are not of the
-     * simple '(feature: value)' shape, e.g. the range syntax '(width > 400px)'.
+     * parentheses and separating the contained tokens with single spaces (kept tight around ':'/'::' and the
+     * parentheses, see {@link #needsSpaceBetween}). Used for conditions which are not of the simple
+     * '(feature: value)' shape, e.g. the range syntax '(width > 400px)' or a functional condition's argument.
      *
      * @return the condition including the surrounding parentheses
      */
     private String readRawCondition() {
-        List<String> parts = new ArrayList<>();
+        StringBuilder builder = new StringBuilder("(");
+        String previous = "(";
         int depth = 1;
         while (tokenizer.more() && depth > 0) {
             if (tokenizer.current().isSymbol("(")) {
@@ -405,9 +423,27 @@ public class Parser {
                     break;
                 }
             }
-            parts.add(tokenizer.consume().getSource());
+            String token = tokenizer.consume().getSource();
+            if (needsSpaceBetween(previous, token)) {
+                builder.append(' ');
+            }
+            builder.append(token);
+            previous = token;
         }
-        return "(" + String.join(" ", parts) + ")";
+        return builder.append(")").toString();
+    }
+
+    /*
+     * Decides whether two adjacent tokens of a raw condition need a separating space. Tokens are kept tight
+     * directly inside parentheses, before a comma and around a colon (so pseudo-classes like ":focus-visible" and
+     * custom-property queries like "--x: y" are not broken apart); everything else - e.g. range operators like
+     * '>' - keeps a single space.
+     */
+    private static boolean needsSpaceBetween(String previous, String next) {
+        if ("(".equals(previous) || ")".equals(next) || ",".equals(next)) {
+            return false;
+        }
+        return !":".equals(previous) && !"::".equals(previous) && !":".equals(next) && !"::".equals(next);
     }
 
     private void parseMediaQuerySelector(Section result) {
