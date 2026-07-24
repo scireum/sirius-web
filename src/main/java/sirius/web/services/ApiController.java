@@ -8,7 +8,7 @@
 
 package sirius.web.services;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;

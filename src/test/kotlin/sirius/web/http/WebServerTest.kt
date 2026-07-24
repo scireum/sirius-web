@@ -521,7 +521,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello_World", Json.parseObject(data).get("test").asText())
+        assertEquals("Hello_World", Json.parseObject(data).get("test").asString(""))
     }
 
     @ParameterizedTest
@@ -551,7 +551,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello", Json.parseObject(data).get("test").asText())
+        assertEquals("Hello", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -562,8 +562,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1", Json.parseObject(data).get("param1").asText())
-        assertEquals("2", Json.parseObject(data).get("param2").asText())
+        assertEquals("1", Json.parseObject(data).get("param1").asString(""))
+        assertEquals("2", Json.parseObject(data).get("param2").asString(""))
     }
 
     @Test
@@ -574,8 +574,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1", Json.parseObject(data).get("param1").asText())
-        assertEquals("2", Json.parseObject(data).get("param2").asText())
+        assertEquals("1", Json.parseObject(data).get("param1").asString(""))
+        assertEquals("2", Json.parseObject(data).get("param2").asString(""))
     }
 
     @Test
@@ -586,13 +586,13 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1", Json.parseObject(data).get("param1").asText())
-        assertEquals("2", Json.parseObject(data).get("param2").asText())
+        assertEquals("1", Json.parseObject(data).get("param1").asString(""))
+        assertEquals("2", Json.parseObject(data).get("param2").asString(""))
 
         val varargs = Json.getArray(Json.parseObject(data), "params")
         assertEquals(7, varargs.size())
-        assertEquals("3", varargs.get(0).asText())
-        assertEquals("9", varargs.get(6).asText())
+        assertEquals("3", varargs.get(0).asString(""))
+        assertEquals("9", varargs.get(6).asString(""))
     }
 
     /**
@@ -749,7 +749,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello/World", Json.parseObject(data).get("test").asText())
+        assertEquals("Hello/World", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -760,7 +760,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello World", Json.parseObject(data).get("test").asText())
+        assertEquals("Hello World", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -771,7 +771,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello/World", Json.parseObject(data).get("test").asText())
+        assertEquals("Hello/World", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -782,7 +782,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("Hello World", Json.parseObject(data).get("test").asText())
+        assertEquals("Hello World", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -793,8 +793,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("one", Json.parseObject(data).get("param1").asText())
-        assertEquals("t/wo", Json.parseObject(data).get("param2").asText())
+        assertEquals("one", Json.parseObject(data).get("param1").asString(""))
+        assertEquals("t/wo", Json.parseObject(data).get("param2").asString(""))
     }
 
     @Test
@@ -805,8 +805,8 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("one", Json.parseObject(data).get("param1").asText())
-        assertEquals("t wo", Json.parseObject(data).get("param2").asText())
+        assertEquals("one", Json.parseObject(data).get("param1").asString(""))
+        assertEquals("t wo", Json.parseObject(data).get("param2").asString(""))
     }
 
     @Test
@@ -817,17 +817,17 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1/", Json.parseObject(data).get("param1").asText())
-        assertEquals("/2", Json.parseObject(data).get("param2").asText())
+        assertEquals("1/", Json.parseObject(data).get("param1").asString(""))
+        assertEquals("/2", Json.parseObject(data).get("param2").asString(""))
 
         val varargs = Json.getArray(Json.parseObject(data), "params")
 
         assertEquals(5, varargs.size())
-        assertEquals("one", varargs.get(0).asText())
-        assertEquals("t/wo", varargs.get(1).asText())
-        assertEquals("t/hree", varargs.get(2).asText())
-        assertEquals("/four", varargs.get(3).asText())
-        assertEquals("five/", varargs.get(4).asText())
+        assertEquals("one", varargs.get(0).asString(""))
+        assertEquals("t/wo", varargs.get(1).asString(""))
+        assertEquals("t/hree", varargs.get(2).asString(""))
+        assertEquals("/four", varargs.get(3).asString(""))
+        assertEquals("five/", varargs.get(4).asString(""))
     }
 
     @Test
@@ -838,17 +838,17 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1 ", Json.parseObject(data).get("param1").asText())
-        assertEquals(" 2", Json.parseObject(data).get("param2").asText())
+        assertEquals("1 ", Json.parseObject(data).get("param1").asString(""))
+        assertEquals(" 2", Json.parseObject(data).get("param2").asString(""))
 
         val varargs = Json.getArray(Json.parseObject(data), "params")
 
         assertEquals(5, varargs.size())
-        assertEquals("one", varargs.get(0).asText())
-        assertEquals("t wo", varargs.get(1).asText())
-        assertEquals("t hree", varargs.get(2).asText())
-        assertEquals(" four", varargs.get(3).asText())
-        assertEquals("five ", varargs.get(4).asText())
+        assertEquals("one", varargs.get(0).asString(""))
+        assertEquals("t wo", varargs.get(1).asString(""))
+        assertEquals("t hree", varargs.get(2).asString(""))
+        assertEquals(" four", varargs.get(3).asString(""))
+        assertEquals("five ", varargs.get(4).asString(""))
     }
 
     @Test
@@ -859,7 +859,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("///", Json.parseObject(data).get("test").asText())
+        assertEquals("///", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -870,7 +870,7 @@ class WebServerTest {
 
         val data = callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("   ", Json.parseObject(data).get("test").asText())
+        assertEquals("   ", Json.parseObject(data).get("test").asString(""))
     }
 
     @Test
@@ -931,7 +931,7 @@ class WebServerTest {
     )
     fun `Requests to JSON routes with restricted method work`(uri: String, method: String, result: String) {
         val data = callAndRead(uri, null, null, method)
-        assertEquals(result, Json.parseObject(data).get("status").asText())
+        assertEquals(result, Json.parseObject(data).get("status").asString(""))
     }
 
     @ParameterizedTest
