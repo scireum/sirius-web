@@ -32,7 +32,7 @@ public class Section {
     private String conditionKeyword;
 
     /**
-     * Returns a list of all parsed selector chains. This is empty for media queries.
+     * Returns a list of all parsed selector chains. This is empty for conditional group rules (e.g. @media, @container, @supports).
      *
      * @return the list of all selector chains
      */
