@@ -129,7 +129,7 @@ class WebServerNightlyTest {
 
         val data = WebServerTest.callAndRead(uri, null, expectedHeaders)
 
-        assertEquals("1", Json.parseObject(data).get("test").asText())
+        assertEquals("1", Json.parseObject(data).get("test").asString(""))
     }
 
 }

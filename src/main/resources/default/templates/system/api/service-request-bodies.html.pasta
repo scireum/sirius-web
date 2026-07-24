@@ -1,5 +1,39 @@
 <i:arg type="sirius.web.services.PublicServiceInfo" name="service"/>
 
+<i:if test="!service.getInputSchema().isEmpty()">
+    <div class="mt-4">
+        <h5>Request Body</h5>
+        <table class="table table-hover" style="table-layout: fixed">
+            <thead>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <i:for type="sirius.web.services.SchemaFieldInfo" var="field" items="service.getInputSchema()">
+                <tr>
+                    <td>
+                        <code>@field.getName()</code>
+                        <i:if test="field.isRequired()">
+                            <t:fullTag color="red" class="align-text-top ms-1">required</t:fullTag>
+                        </i:if>
+                    </td>
+                    <td><code>@field.getType()</code></td>
+                    <td>
+                        <span><i:raw>@expandMessage(smartTranslate(field.getDescription()))</i:raw></span>
+                        <i:if test="@isFilled(field.getExample())">
+                            <div class="mt-2"><strong>Example:</strong> <code>@field.getExample()</code></div>
+                        </i:if>
+                    </td>
+                </tr>
+            </i:for>
+            </tbody>
+        </table>
+    </div>
+</i:if>
+
 <i:if test="!service.getRequestBodies().isEmpty()">
     <div class="mt-4">
         <h5>Requests</h5>

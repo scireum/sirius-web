@@ -12,7 +12,6 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.controller.Controller;
-import sirius.web.controller.Routed;
 
 /**
  * Provides a service which can be called via the HTTP interface and generate a structured output encoded as JSON or
@@ -22,9 +21,6 @@ import sirius.web.controller.Routed;
  * provided with a name, which also defines the URL of the service.
  * <p>
  * The generated output can be either JSON or XML, which is completely handled by the framework.
- * <p>
- * Note: Simple AJAX calls using JSON can also be realized using the controller framework. See {@link
- * Routed#jsonCall()} for further information.
  *
  * @deprecated the whole StructuredService framework has been deprecated.
  */

@@ -8,9 +8,9 @@
 
 package sirius.web.service;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.POJONode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.POJONode;
 import org.junit.jupiter.api.Test;
 import sirius.kernel.commons.Amount;
 import sirius.kernel.commons.Json;

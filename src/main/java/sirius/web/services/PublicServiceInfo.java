@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Value;
 import sirius.kernel.nls.NLS;
@@ -50,19 +51,29 @@ public class PublicServiceInfo {
     private final List<Parameter> serviceParameters = new ArrayList<>();
     private final List<RequestBody> requestBodies = new ArrayList<>();
     private final List<ApiResponse> responses = new ArrayList<>();
+    private final List<SchemaFieldInfo> inputSchema = new ArrayList<>();
+    private final List<SchemaFieldInfo> outputSchema = new ArrayList<>();
+    private final Class<?> inputType;
+    private final java.lang.reflect.Type outputType;
     private final String anchor;
 
     private static final Pattern URI_PARAMETER_PATTERN = Pattern.compile("\\{([^}]*?)}");
 
+    @SuppressWarnings("squid:S00107")
+    @Explain("The service metadata is naturally wide and only assembled internally by PublicServices")
     protected PublicServiceInfo(PublicService info,
                                 Routed routed,
                                 boolean deprecated,
                                 Operation operation,
                                 List<Parameter> serviceParameters,
                                 List<RequestBody> requestBodies,
-                                List<ApiResponse> responses) {
+                                List<ApiResponse> responses,
+                                Class<?> inputType,
+                                java.lang.reflect.Type outputType) {
         this.info = info;
         this.routed = routed;
+        this.inputType = inputType;
+        this.outputType = outputType;
         this.uri = Strings.isFilled(info.path()) ? info.path() : routed.value();
         this.formattedUri = formatUri(this.uri);
         this.deprecated = deprecated;
@@ -93,6 +104,15 @@ public class PublicServiceInfo {
 
         this.requestBodies.addAll(requestBodies);
         this.responses.addAll(responses);
+
+        // Auto-derive the request/response documentation from the input/output POJOs of a mapped service, but only
+        // if no explicit @RequestBody / @ApiResponse annotations have been provided.
+        if (this.requestBodies.isEmpty()) {
+            this.inputSchema.addAll(SchemaFieldInfo.forType(inputType));
+        }
+        if (this.responses.isEmpty()) {
+            this.outputSchema.addAll(SchemaFieldInfo.forType(outputType));
+        }
     }
 
     /**
@@ -194,6 +214,51 @@ public class PublicServiceInfo {
 
     public List<ApiResponse> getResponses() {
         return Collections.unmodifiableList(responses);
+    }
+
+    /**
+     * Returns the auto-derived description of the request body for a mapped service.
+     *
+     * @return the fields of the input POJO or an empty list if the service has no mapped request body
+     */
+    public List<SchemaFieldInfo> getInputSchema() {
+        return Collections.unmodifiableList(inputSchema);
+    }
+
+    /**
+     * Returns the auto-derived description of the response body for a mapped service.
+     *
+     * @return the fields of the output POJO or an empty list if the service has no mapped response body
+     */
+    public List<SchemaFieldInfo> getOutputSchema() {
+        return Collections.unmodifiableList(outputSchema);
+    }
+
+    /**
+     * Returns the Java type of the mapped request body, if any.
+     * <p>
+     * This is the POJO which is bound from the request payload of a
+     * {@linkplain sirius.web.controller.Route#isMappedPayload() mapped service} and is used to generate a machine
+     * readable schema (e.g. OpenAPI).
+     *
+     * @return the input type of a mapped service, or <tt>null</tt> if this service has no mapped request body
+     */
+    @Nullable
+    public Class<?> getInputType() {
+        return inputType;
+    }
+
+    /**
+     * Returns the Java type which is effectively serialized as response of a mapped service.
+     * <p>
+     * For methods returning a {@link sirius.kernel.async.Promise} this is the contained type argument. This is used to
+     * generate a machine readable schema (e.g. OpenAPI).
+     *
+     * @return the output type of a mapped service, or <tt>null</tt> if this service has no mapped response body
+     */
+    @Nullable
+    public java.lang.reflect.Type getOutputType() {
+        return outputType;
     }
 
     public String getLabel() {

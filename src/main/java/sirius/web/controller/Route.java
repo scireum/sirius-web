@@ -12,6 +12,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import sirius.kernel.Sirius;
 import sirius.kernel.async.CallContext;
 import sirius.kernel.async.Promise;
+import sirius.kernel.commons.Amount;
+import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.commons.Value;
@@ -33,8 +35,10 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +72,8 @@ public class Route {
     private Controller controller;
     private boolean preDispatchable;
     private Format format;
+    private boolean mappedPayload;
+    private Class<?> inputType;
     private boolean enforceMaintenanceMode;
     private Set<String> permissions = null;
     private String subScope;
@@ -103,7 +109,7 @@ public class Route {
                                      method.getDeclaringClass().getName(),
                                      method.getName());
 
-        determineAPIFormat(method, routed, result);
+        determineAPIFormat(method, result);
         determineSubScope(method, result);
         createMethodHandle(method, result);
 
@@ -114,6 +120,9 @@ public class Route {
         int params = compileRouteURI(result, elements, finalPattern);
         if (finalPattern.isEmpty()) {
             finalPattern = new StringBuilder("/");
+        }
+        if (result.mappedPayload) {
+            extractMappedInputType(method, result, parameterTypes, params);
         }
         failForInvalidParameterCount(routed, parameterTypes, params);
 
@@ -142,18 +151,126 @@ public class Route {
         }
         parameterTypes.removeFirst();
         if (result.format == Format.JSON) {
-            failForInvalidJSONMethod(parameterTypes);
-            parameterTypes.removeFirst();
+            if (isLegacyStructuredOutput(JSONStructuredOutput.class, parameterTypes)) {
+                parameterTypes.removeFirst();
+            } else {
+                result.mappedPayload = true;
+            }
         }
         if (result.format == Format.XML) {
-            failForInvalidXMLMethod(parameterTypes);
-            parameterTypes.removeFirst();
+            if (isLegacyStructuredOutput(XMLStructuredOutput.class, parameterTypes)) {
+                parameterTypes.removeFirst();
+            } else {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Mapped service method '%s' cannot use XML until an XML ApiPayloadCodec is available",
+                        result.label));
+            }
         }
         if (result.preDispatchable) {
             failForInvalidPredispatchableMethod(parameterTypes);
             parameterTypes.removeLast();
         }
         return parameterTypes;
+    }
+
+    private static boolean isLegacyStructuredOutput(Class<?> structuredOutputType, List<Class<?>> parameterTypes) {
+        return !parameterTypes.isEmpty() && structuredOutputType.equals(parameterTypes.getFirst());
+    }
+
+    /**
+     * Extracts the leading input POJO of a mapped service method (if any) from the parameter list.
+     * <p>
+     * A mapped method binds its request body to a POJO which is passed right after the {@link WebContext}. We detect
+     * such a parameter via the body-only binding rule: after removing the {@link WebContext}, the method declares
+     * exactly one parameter more than the route has path parameters. In that case the leading parameter is the input
+     * POJO. Otherwise (the parameter count matches the path parameters), the method has no request body.
+     * <p>
+     * As this rule is purely count-based, the parameter types are validated to detect miswired signatures at route
+     * compile time: a simple value type (String, number, enum, ...) cannot serve as request body and a POJO cannot
+     * serve as path parameter. Collections and arrays are rejected as request body as well, as the body must always
+     * be a JSON object.
+     */
+    private static void extractMappedInputType(Method method,
+                                               Route result,
+                                               List<Class<?>> parameterTypes,
+                                               int pathParameters) {
+        failForInvalidMappedMethod(method, result);
+        if (parameterTypes.size() == pathParameters + 1) {
+            failForPreDispatchableMappedBody(result);
+            failForSimpleValueBody(result, parameterTypes.getFirst());
+            failForCollectionBody(result, parameterTypes.getFirst());
+            result.inputType = parameterTypes.removeFirst();
+        }
+        failForPojoAsPathParameter(result, parameterTypes);
+    }
+
+    private static void failForCollectionBody(Route result, Class<?> bodyType) {
+        if (bodyType.isArray() || Collection.class.isAssignableFrom(bodyType)) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' declares '%s' as request body which can never be parsed, as the"
+                    + " request body must be a JSON object. Wrap the elements in a dedicated input object instead",
+                    result.label,
+                    bodyType.getName()));
+        }
+    }
+
+    private static void failForSimpleValueBody(Route result, Class<?> bodyType) {
+        if (isSimpleValueType(bodyType)) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' would bind '%s' as request body POJO. Either declare a proper POJO"
+                    + " directly after the WebContext parameter, declare a matching path parameter in the route or"
+                    + " use the legacy signature with '%s' as second parameter",
+                    result.label,
+                    bodyType.getName(),
+                    JSONStructuredOutput.class.getName()));
+        }
+    }
+
+    private static void failForPojoAsPathParameter(Route result, List<Class<?>> parameterTypes) {
+        for (Class<?> parameterType : parameterTypes) {
+            if (!isSimpleValueType(parameterType) && !List.class.equals(parameterType)) {
+                throw new IllegalArgumentException(Strings.apply(
+                        "Mapped service method '%s' declares '%s' as path parameter which cannot be bound from a"
+                        + " path element. A request body POJO must be declared directly after the WebContext"
+                        + " parameter and requires exactly one method parameter more than the route has path"
+                        + " parameters",
+                        result.label,
+                        parameterType.getName()));
+            }
+        }
+    }
+
+    @SuppressWarnings("java:S1067")
+    @Explain("The check is not very complex, It is best to handle all cases in one place.")
+    private static boolean isSimpleValueType(Class<?> type) {
+        return type.isPrimitive()
+               || type.isEnum()
+               || String.class.equals(type)
+               || Boolean.class.equals(type)
+               || Character.class.equals(type)
+               || Number.class.isAssignableFrom(type)
+               || Amount.class.equals(type)
+               || TemporalAccessor.class.isAssignableFrom(type);
+    }
+
+    private static void failForPreDispatchableMappedBody(Route result) {
+        if (result.preDispatchable) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Mapped service method '%s' cannot bind a request body POJO, as the body of a pre-dispatchable"
+                    + " route is streamed into the InputStreamHandler and thus cannot be parsed",
+                    result.label));
+        }
+    }
+
+    private static void failForInvalidMappedMethod(Method method, Route result) {
+        if (void.class.equals(method.getReturnType())) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Service method '%s' returns void. Either declare '%s' as second parameter to stream the"
+                    + " response (legacy service) or return a result object (or Promise/Future) to have it"
+                    + " serialized as response body (mapped service)",
+                    result.label,
+                    JSONStructuredOutput.class.getName()));
+        }
     }
 
     private static void createMethodHandle(Method method, Route result) {
@@ -179,16 +296,13 @@ public class Route {
         }
     }
 
-    @SuppressWarnings("deprecation")
-    private static void determineAPIFormat(Method method, Routed routed, Route result) {
+    private static void determineAPIFormat(Method method, Route result) {
         if (method.isAnnotationPresent(PublicService.class)) {
             PublicService publicServiceAnnotation = method.getAnnotation(PublicService.class);
             result.enforceMaintenanceMode = publicServiceAnnotation.enforceMaintenanceMode();
             result.format = publicServiceAnnotation.format();
         } else if (method.isAnnotationPresent(InternalService.class)) {
             result.format = method.getAnnotation(InternalService.class).format();
-        } else if (routed.jsonCall()) {
-            result.format = Format.JSON;
         }
     }
 
@@ -230,20 +344,6 @@ public class Route {
         }
     }
 
-    private static void failForInvalidJSONMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !JSONStructuredOutput.class.equals(parameterTypes.getFirst())) {
-            throw new IllegalArgumentException(Strings.apply("JSON API method needs '%s' as second parameter",
-                                                             JSONStructuredOutput.class.getName()));
-        }
-    }
-
-    private static void failForInvalidXMLMethod(List<Class<?>> parameterTypes) {
-        if (parameterTypes.isEmpty() || !XMLStructuredOutput.class.equals(parameterTypes.getFirst())) {
-            throw new IllegalArgumentException(Strings.apply("XML API method needs '%s' as second parameter",
-                                                             XMLStructuredOutput.class.getName()));
-        }
-    }
-
     private static void failForInvalidPredispatchableMethod(List<Class<?>> parameterTypes) {
         if (parameterTypes.isEmpty() || !InputStreamHandler.class.equals(parameterTypes.getLast())) {
             throw new IllegalArgumentException(Strings.apply("Pre-Dispatchable method needs '%s' as last parameter",
@@ -252,7 +352,7 @@ public class Route {
     }
 
     /*
-     * Compiles a routed URI (which is already split into its path parts.
+     * Compiles a routed URI, which is already split into its path parts.
      * See Route.value() for a description
      */
     private static int compileRouteURI(Route result, String[] elements, StringBuilder finalPattern) {
@@ -404,7 +504,7 @@ public class Route {
     }
 
     /**
-     * Returns the method which is to be invoked if an URI can be successfully routed using this route
+     * Returns the method which is to be invoked if a URI can be successfully routed using this route
      * (all parameters match).
      *
      * @return the method to be invoked in order to route a request using this route
@@ -448,6 +548,26 @@ public class Route {
      */
     public Format getApiResponseFormat() {
         return format;
+    }
+
+    /**
+     * Determines if this route uses the mapped payload mode in which the request body is deserialized into an input
+     * POJO and the returned object is serialized as response (instead of streaming via a
+     * {@link sirius.kernel.xml.StructuredOutput}).
+     *
+     * @return <tt>true</tt> if this route maps its payload to/from POJOs, <tt>false</tt> for the legacy streaming mode
+     */
+    public boolean isMappedPayload() {
+        return mappedPayload;
+    }
+
+    /**
+     * Returns the type into which the request body is deserialized for a {@link #isMappedPayload() mapped} route.
+     *
+     * @return the input POJO type or <tt>null</tt> if the route does not accept a request body
+     */
+    public Class<?> getInputType() {
+        return inputType;
     }
 
     /**

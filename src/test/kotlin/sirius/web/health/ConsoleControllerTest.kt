@@ -8,7 +8,7 @@
 
 package sirius.web.health
 
-import com.fasterxml.jackson.core.JsonPointer
+import tools.jackson.core.JsonPointer
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

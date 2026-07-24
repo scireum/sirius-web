@@ -10,7 +10,7 @@ package sirius.web.security.oauth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import sirius.kernel.commons.Strings;
 
 import java.time.LocalDateTime;
@@ -42,9 +42,9 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
      * @return the tokens received from the authorization server
      */
     public static ReceivedTokens fromJson(ObjectNode response) {
-        String accessToken = response.required(OAuth.ACCESS_TOKEN).asText("");
-        String refreshToken = response.path(OAuth.REFRESH_TOKEN).asText("");
-        String type = response.required(OAuth.TOKEN_TYPE).asText("");
+        String accessToken = response.required(OAuth.ACCESS_TOKEN).asString("");
+        String refreshToken = response.path(OAuth.REFRESH_TOKEN).asString("");
+        String type = response.required(OAuth.TOKEN_TYPE).asString("");
         long accessTokenExpiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
         LocalDateTime accessTokenExpiresAt =
                 accessTokenExpiresIn > 0 ? LocalDateTime.now().plusSeconds(accessTokenExpiresIn) : null;
