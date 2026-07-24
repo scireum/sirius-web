@@ -61,3 +61,27 @@ div::-webkit-scrollbar {
 #test + label {
     display: none;
 }
+
+.tabs {
+    color: red;
+}
+
+.tabs[hidden] {
+    display: none;
+}
+
+.tabs[data-active="true"] {
+    font-weight: bold;
+}
+
+.state {
+    color: black;
+}
+
+.state:hover:focus {
+    color: blue;
+}
+
+.state:not(.disabled):hover {
+    color: green;
+}

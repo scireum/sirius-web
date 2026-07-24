@@ -72,3 +72,29 @@ div {
 
   }
 }
+
+// We expect attribute filters attached to the parent reference '&' to work
+.tabs {
+  color: red;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &[data-active="true"] {
+    font-weight: bold;
+  }
+}
+
+// We expect chained and parametrized pseudo-classes attached to '&' to work
+.state {
+  color: black;
+
+  &:hover:focus {
+    color: blue;
+  }
+
+  &:not(.disabled):hover {
+    color: green;
+  }
+}

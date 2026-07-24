@@ -385,6 +385,14 @@ public class Parser {
                 parseFilterInSelector(builder);
                 parseOperatorInSelector(builder);
                 selector.add(builder.toString());
+            } else if (tokenizer.current().isSymbol("[")) {
+                // Handle attribute filters which are attached to a parent reference or a combinator
+                // (e.g. "&[hidden]"). Filters directly following an identifier (e.g. "a[href]") are
+                // handled by the branch above.
+                StringBuilder builder = new StringBuilder();
+                parseFilterInSelector(builder);
+                parseOperatorInSelector(builder);
+                selector.add(builder.toString());
             } else if (tokenizer.current().isSymbol("&") || tokenizer.current().isSymbol("*")) {
                 selector.add(tokenizer.consume().getTrigger());
             } else if (tokenizer.current().isSymbol(">", "+", "~")) {
@@ -411,20 +419,39 @@ public class Parser {
         }
         if (tokenizer.more() && tokenizer.current().isSymbol("::") && tokenizer.next().is(Token.TokenType.ID)) {
             tokenizer.consume();
-            selector.add("::" + tokenizer.consume().getContents());
+            selector.add(consumePseudoChain("::" + tokenizer.consume().getContents()));
         }
         if (tokenizer.more() && tokenizer.current().isSymbol(":") && tokenizer.next().is(Token.TokenType.ID)) {
             tokenizer.consume();
-            selector.add(":" + tokenizer.consume().getContents());
+            selector.add(consumePseudoChain(":" + tokenizer.consume().getContents()));
         }
     }
 
     /**
+     * Consumes the (optional) argument of the given pseudo-class/element as well as any subsequent chained
+     * pseudo-classes/elements (e.g. the ":focus" and ":not(.x)" in ":hover:focus" or ":hover:not(.x)").
+     *
+     * @param pseudo the already consumed pseudo-class/element (e.g. ":hover" or "::after")
+     * @return the full pseudo chain as a single selector part
+     */
+    private String consumePseudoChain(String pseudo) {
+        StringBuilder builder = new StringBuilder(pseudo);
+        // Consume arguments like :not(.class) or :nth-child(2)
+        if (tokenizer.current().isSymbol("(")) {
+            consumeArgument(builder);
+        }
+        // Consume further chained pseudo-classes/elements like the ":focus" in ":hover:focus"
+        parseOperatorInSelector(builder);
+        return builder.toString();
+    }
+
+    /**
      * Parses and consumes selector prefixes which add pseudo-classes ('&amp;:') or pseudo-elements ('&amp;::') to an existing selector,
-     * Arguments on pseudo classes like '&amp;:not(.class)' are also parsed and consumed.
-     * For valid input like e.g. '&amp;::after' , '&amp;:first-child' , '&amp;:not(.class)' two selectors are added to the given List:
+     * Arguments on pseudo classes like '&amp;:not(.class)' as well as chained pseudo-classes/elements like
+     * '&amp;:hover:focus' or '&amp;:not(.a):hover' are also parsed and consumed.
+     * For valid input like e.g. '&amp;::after' , '&amp;:first-child' , '&amp;:hover:focus' two selectors are added to the given List:
      * 1. '&amp;'
-     * 2. the pseudo-class/element e.g. '::after' , ':first-child' , ':not(.class)'
+     * 2. the pseudo chain e.g. '::after' , ':first-child' , ':hover:focus'
      *
      * @param selector the List to which the selectors are added.
      */
@@ -433,12 +460,7 @@ public class Parser {
         tokenizer.consume();
         if (tokenizer.current().is(Token.TokenType.ID)) {
             selector.add("&");
-            StringBuilder builder = new StringBuilder(pseudoOperator + tokenizer.consume().getContents());
-            // Consume arguments like :nth-child(2)
-            if (tokenizer.current().isSymbol("(")) {
-                consumeArgument(builder);
-            }
-            selector.add(builder.toString());
+            selector.add(consumePseudoChain(pseudoOperator + tokenizer.consume().getContents()));
         }
     }
 
