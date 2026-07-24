@@ -39,11 +39,11 @@ class CaptchaControllerTest {
         jsonOutput.endResult()
 
         val json = Json.parseObject(outputStream.toString(StandardCharsets.UTF_8))
-        assertEquals(challenge.algorithm(), json.get("algorithm").asString())
-        assertEquals(challenge.challenge(), json.get("challenge").asString())
+        assertEquals(challenge.algorithm(), json.get("algorithm").asString(""))
+        assertEquals(challenge.challenge(), json.get("challenge").asString(""))
         assertEquals(challenge.maxnumber(), json.get("maxnumber").asLong())
-        assertEquals(challenge.salt(), json.get("salt").asString())
-        assertEquals(challenge.signature(), json.get("signature").asString())
+        assertEquals(challenge.salt(), json.get("salt").asString(""))
+        assertEquals(challenge.signature(), json.get("signature").asString(""))
     }
 
     @Test

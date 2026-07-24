@@ -66,7 +66,7 @@ class MappedServiceTest {
         val (status, data, _) = call("/test/mapped/echo/Hello")
 
         assertEquals(HttpURLConnection.HTTP_OK, status)
-        assertEquals("Hello", Json.parseObject(data).get("greeting").asText())
+        assertEquals("Hello", Json.parseObject(data).get("greeting").asString(""))
     }
 
     @Test
@@ -74,7 +74,7 @@ class MappedServiceTest {
         val (status, data, _) = call("/test/mapped/async", """{"name": "Async"}""")
 
         assertEquals(HttpURLConnection.HTTP_OK, status)
-        assertEquals("Hello Async", Json.parseObject(data).get("greeting").asText())
+        assertEquals("Hello Async", Json.parseObject(data).get("greeting").asString(""))
     }
 
     @Test
@@ -85,7 +85,7 @@ class MappedServiceTest {
         val json = Json.parseObject(data)
         assertFalse(json.get("success").asBoolean())
         assertTrue(json.get("error").asBoolean())
-        assertTrue(json.get("message").asText().contains("World"))
+        assertTrue(json.get("message").asString("").contains("World"))
     }
 
     @Test

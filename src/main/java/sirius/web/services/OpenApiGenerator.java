@@ -8,9 +8,6 @@
 
 package sirius.web.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.headers.Header;
@@ -23,6 +20,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.commons.Json;
 import sirius.kernel.commons.Strings;
 import sirius.kernel.nls.NLS;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
@@ -267,7 +267,7 @@ public class OpenApiGenerator {
         node.set(FIELD_SCHEMA, schema);
 
         if (Strings.isFilled(parameter.example())) {
-            node.set(FIELD_EXAMPLE, typedExample(schema.path(FIELD_TYPE).asText(), parameter.example()));
+            node.set(FIELD_EXAMPLE, typedExample(schema.path(FIELD_TYPE).asString(""), parameter.example()));
         }
         return node;
     }
@@ -475,7 +475,7 @@ public class OpenApiGenerator {
         try {
             return Json.MAPPER.readTree(value);
         } catch (Exception _) {
-            return Json.MAPPER.getNodeFactory().textNode(value);
+            return Json.MAPPER.getNodeFactory().stringNode(value);
         }
     }
 
@@ -610,7 +610,7 @@ public class OpenApiGenerator {
     }
 
     private void putExample(ObjectNode schema, String example) {
-        schema.set(FIELD_EXAMPLE, typedExample(schema.path(FIELD_TYPE).asText(), example));
+        schema.set(FIELD_EXAMPLE, typedExample(schema.path(FIELD_TYPE).asString(""), example));
     }
 
     private JsonNode typedExample(String type, String example) {
@@ -619,18 +619,18 @@ public class OpenApiGenerator {
                 try {
                     yield Json.MAPPER.getNodeFactory().numberNode(Long.parseLong(example));
                 } catch (NumberFormatException _) {
-                    yield Json.MAPPER.getNodeFactory().textNode(example);
+                    yield Json.MAPPER.getNodeFactory().stringNode(example);
                 }
             }
             case TYPE_NUMBER -> {
                 try {
                     yield Json.MAPPER.getNodeFactory().numberNode(Double.parseDouble(example));
                 } catch (NumberFormatException _) {
-                    yield Json.MAPPER.getNodeFactory().textNode(example);
+                    yield Json.MAPPER.getNodeFactory().stringNode(example);
                 }
             }
             case TYPE_BOOLEAN -> Json.MAPPER.getNodeFactory().booleanNode(Boolean.parseBoolean(example));
-            default -> Json.MAPPER.getNodeFactory().textNode(example);
+            default -> Json.MAPPER.getNodeFactory().stringNode(example);
         };
     }
 

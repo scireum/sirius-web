@@ -10,7 +10,7 @@
 
 package sirius.web.service
 
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 import io.swagger.v3.oas.annotations.media.Schema
 import sirius.web.services.OpenApiGenerator
 import kotlin.test.Test
@@ -34,13 +34,13 @@ class OpenApiGeneratorTest {
         assertEquals(true, schemas.containsKey("SearchItem"))
 
         val properties = schemas["SearchResponse"]!!.get("properties")
-        assertEquals("integer", properties.get("totalHits").get("type").asText())
-        assertEquals("boolean", properties.get("hasMore").get("type").asText())
+        assertEquals("integer", properties.get("totalHits").get("type").asString(""))
+        assertEquals("boolean", properties.get("hasMore").get("type").asString(""))
 
-        assertEquals("array", properties.get("items").get("type").asText())
+        assertEquals("array", properties.get("items").get("type").asString(""))
         assertEquals("#/components/schemas/SearchItem", ref(properties.get("items").get("items")))
 
-        assertEquals("object", properties.get("itemsById").get("type").asText())
+        assertEquals("object", properties.get("itemsById").get("type").asString(""))
         assertEquals("#/components/schemas/SearchItem", ref(properties.get("itemsById").get("additionalProperties")))
     }
 
@@ -52,14 +52,14 @@ class OpenApiGeneratorTest {
         val itemSchema = generator.componentSchemas["SearchItem"]!!
         val itemProperties = itemSchema.get("properties")
 
-        assertEquals("number", itemProperties.get("price").get("type").asText())
-        assertEquals("Item price", itemProperties.get("price").get("description").asText())
+        assertEquals("number", itemProperties.get("price").get("type").asString(""))
+        assertEquals("Item price", itemProperties.get("price").get("description").asString(""))
 
         val availability = itemProperties.get("availability")
-        assertEquals("string", availability.get("type").asText())
-        assertEquals(listOf("IN_STOCK", "OUT_OF_STOCK"), availability.get("enum").map { it.asText() })
+        assertEquals("string", availability.get("type").asString(""))
+        assertEquals(listOf("IN_STOCK", "OUT_OF_STOCK"), availability.get("enum").values().map { it.asString("") })
 
-        assertEquals(listOf("code"), itemSchema.get("required").map { it.asText() })
+        assertEquals(listOf("code"), itemSchema.get("required").values().map { it.asString("") })
     }
 
     @Test
@@ -98,7 +98,7 @@ class OpenApiGeneratorTest {
         assertEquals(1, example.intValue())
     }
 
-    private fun ref(node: JsonNode): String = node.get("\$ref").asText()
+    private fun ref(node: JsonNode): String = node.get("\$ref").asString("")
 
     @Suppress("unused")
     private enum class Availability { IN_STOCK, OUT_OF_STOCK }
