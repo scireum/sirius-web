@@ -29,6 +29,7 @@ public class Section {
     private final List<Attribute> attributes = new ArrayList<>();
     private final List<Section> subSections = new ArrayList<>();
     private final List<MixinReference> references = new ArrayList<>();
+    private String conditionKeyword;
 
     /**
      * Returns a list of all parsed selector chains. This is empty for media queries.
@@ -57,6 +58,26 @@ public class Section {
      */
     public void addMediaQuery(Expression query) {
         mediaQueries.add(query);
+    }
+
+    /**
+     * Specifies the conditional group at-rule (without the leading '@') this section represents, e.g.
+     * "media", "container" or "supports". A value of <tt>null</tt> indicates a normal section with selectors.
+     *
+     * @param conditionKeyword the at-rule keyword (without '@') or <tt>null</tt> for a normal section
+     */
+    public void setConditionKeyword(String conditionKeyword) {
+        this.conditionKeyword = conditionKeyword;
+    }
+
+    /**
+     * Returns the conditional group at-rule (without the leading '@') this section represents.
+     *
+     * @return the at-rule keyword (without '@'), e.g. "media", "container" or "supports", or <tt>null</tt> for a
+     * normal section
+     */
+    public String getConditionKeyword() {
+        return conditionKeyword;
     }
 
     /**
@@ -138,10 +159,14 @@ public class Section {
      * @return the effective media query as string or "" if there is no media query
      */
     public String getMediaQuery(Scope scope, Generator generator) {
+        // @media joins its parts with an implicit "and" (the connector is not stored). Other conditional group
+        // rules (@container, @supports) store their connectors ("and"/"or"/"not") as explicit parts and are
+        // therefore joined with a plain space.
+        String separator = conditionKeyword == null || "media".equals(conditionKeyword) ? " and " : " ";
         StringBuilder builder = new StringBuilder();
         for (Expression expression : mediaQueries) {
             if (!builder.isEmpty()) {
-                builder.append(" and ");
+                builder.append(separator);
             }
             builder.append(expression.eval(scope, generator));
         }

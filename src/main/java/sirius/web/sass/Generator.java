@@ -44,7 +44,7 @@ import java.util.TreeSet;
  * resolved (The default is to use the classpath). Also {@link #warn(String)} and {@link #debug(String)} can be
  * overridden to process messages which are generated while processing the code.
  * <p>
- * The resulting css code can be obtained by calling the {@link #toString()} method.
+ * The resulting CSS code can be obtained by calling the {@link #toString()} method.
  */
 public class Generator {
 
@@ -64,7 +64,9 @@ public class Generator {
     protected Map<String, Section> extensibleSections = new HashMap<>();
 
     /**
-     * Contains all media queries
+     * Contains the top-level conditional group rules (@media / @container / @supports), keyed by their prelude.
+     * Nested conditional group rules are kept as subsections of their parent, so this map only holds the
+     * outermost level.
      */
     protected Map<String, Section> mediaQueries = new LinkedHashMap<>();
 
@@ -230,39 +232,41 @@ public class Generator {
     }
 
     /*
-     * Expands nested sections / media queries into a flat structure as expected by CSS
+     * Expands nested sections / conditional group rules (@media / @container / @supports) into the structure
+     * expected by CSS. Selector nesting is flattened; nested conditional group rules are kept as a nesting path
+     * so that they can be emitted as nested blocks (see expandConditionPath / resolveConditionSection).
      */
-    private void expand(String mediaQueryPath, Section section, List<Section> stack) {
+    private void expand(List<String> conditionPath, Section section, List<Section> stack) {
         stack = new ArrayList<>(stack);
         if (!section.getSelectors().isEmpty()) {
-            expandSection(mediaQueryPath, section, stack);
+            expandSection(conditionPath, section, stack);
         } else {
-            mediaQueryPath = expandMediaQuery(mediaQueryPath, section, stack);
+            conditionPath = expandConditionalGroup(conditionPath, section, stack);
         }
 
         if (section.getSelectorString() != null && !section.getSelectorString().startsWith("@")) {
             // Unfold subsections
             for (Section child : section.getSubSections()) {
-                expand(mediaQueryPath, child, stack);
+                expand(conditionPath, child, stack);
             }
 
-            // Delete subsections - no longer necessary (and not supported by css)
+            // Delete subsections - no longer necessary (and not supported by CSS)
             section.getSubSections().clear();
         }
     }
 
-    private String expandMediaQuery(String mediaQueryPath, Section section, List<Section> stack) {
-        mediaQueryPath = expandMediaQueryPath(mediaQueryPath, section);
+    private List<String> expandConditionalGroup(List<String> conditionPath, Section section, List<Section> stack) {
+        conditionPath = expandConditionPath(conditionPath, section);
 
-        // We have implicit attributes - copy the next non-media-query parent
+        // We have implicit attributes - copy the next non-conditional-group parent
         // and create a pseudo-section covering these attributes
         if (!section.getAttributes().isEmpty()) {
-            transferImplicitAttributes(mediaQueryPath, section, stack);
+            transferImplicitAttributes(conditionPath, section, stack);
         }
-        return mediaQueryPath;
+        return conditionPath;
     }
 
-    private void transferImplicitAttributes(String mediaQueryPath, Section section, List<Section> stack) {
+    private void transferImplicitAttributes(List<String> conditionPath, Section section, List<Section> stack) {
         Section copy = new Section();
         if (!stack.isEmpty()) {
             Section parent = stack.getLast();
@@ -275,31 +279,41 @@ public class Generator {
             }
         }
         if (copy.getSelectors().isEmpty()) {
-            warn(String.format("Cannot define attributes in @media selector '%s'", section.getMediaQuery(scope, this)));
+            warn(String.format("Cannot define attributes in conditional group rule '%s'",
+                               section.getMediaQuery(scope, this)));
         } else {
             copy.getAttributes().addAll(section.getAttributes());
-            addResultSection(mediaQueryPath, copy);
+            addResultSection(conditionPath, copy);
         }
     }
 
-    private String expandMediaQueryPath(String mediaQueryPath, Section section) {
-        // We're a media query - update path
-        if (mediaQueryPath == null) {
-            mediaQueryPath = "@media " + section.getMediaQuery(scope, this);
+    /*
+     * Appends the given conditional group rule to the nesting path. Consecutive @media rules are merged into a
+     * single "@media a and b" segment (the established SASS shortcut, kept for backwards compatibility); every
+     * other rule - and every @media following a non-@media rule - starts a new nesting level, so that mixed
+     * nesting (e.g. @container inside @media) is emitted as nested blocks as required by CSS.
+     */
+    private List<String> expandConditionPath(List<String> conditionPath, Section section) {
+        String keyword = section.getConditionKeyword() != null ? section.getConditionKeyword() : "media";
+        String query = section.getMediaQuery(scope, this);
+        List<String> result = conditionPath == null ? new ArrayList<>() : new ArrayList<>(conditionPath);
+
+        if ("media".equals(keyword) && !result.isEmpty() && result.getLast().startsWith("@media ")) {
+            result.set(result.size() - 1, result.getLast() + " and " + query);
         } else {
-            mediaQueryPath += " and " + section.getMediaQuery(scope, this);
+            result.add("@" + keyword + " " + query);
         }
-        return mediaQueryPath;
+        return result;
     }
 
-    private void expandSection(String mediaQueryPath, Section section, List<Section> stack) {
-        // We have selectors -> we're a normal section no a media query
-        if (mediaQueryPath == null) {
+    private void expandSection(List<String> conditionPath, Section section, List<Section> stack) {
+        // We have selectors -> we're a normal section, not a conditional group rule
+        if (conditionPath == null) {
             // Add to output
             sections.add(section);
         } else {
-            // We're already inside a media query, add to the appropriate result section
-            addResultSection(mediaQueryPath, section);
+            // We're inside one or more conditional group rules, add to the appropriate (possibly nested) section
+            addResultSection(conditionPath, section);
         }
         // Expand all selectors with those of the parents (flatten nesting)
         List<List<String>> newSelectors = new ArrayList<>();
@@ -362,16 +376,44 @@ public class Generator {
     }
 
     /*
-     * Adds a section to the given media query section - creates if necessary
+     * Adds a section to the conditional group rule identified by the given nesting path, creating the (possibly
+     * nested) group sections as necessary.
      */
-    private void addResultSection(String mediaQueryPath, Section section) {
-        Section query = mediaQueries.computeIfAbsent(mediaQueryPath, ignored -> {
-            Section newQuerySection = new Section();
-            newQuerySection.getSelectors().add(Collections.singletonList(mediaQueryPath));
-            return newQuerySection;
-        });
+    private void addResultSection(List<String> conditionPath, Section section) {
+        resolveConditionSection(conditionPath).addSubSection(section);
+    }
 
-        query.addSubSection(section);
+    /*
+     * Resolves - creating as necessary - the section representing the innermost conditional group rule of the given
+     * nesting path. The top-most level is kept in the 'mediaQueries' map (so that identical top-level rules are
+     * merged), deeper levels are looked up among the subsections of their parent (so that identical nested rules
+     * are merged as well).
+     */
+    private Section resolveConditionSection(List<String> conditionPath) {
+        // The top-most level is kept in the shared 'mediaQueries' map, every deeper level is a subsection of its
+        // parent. The path is never empty (see expandConditionPath), so 'current' is always assigned.
+        Section current = mediaQueries.computeIfAbsent(conditionPath.getFirst(), this::newConditionSection);
+        for (int level = 1; level < conditionPath.size(); level++) {
+            current = findOrCreateChildConditionSection(current, conditionPath.get(level));
+        }
+        return current;
+    }
+
+    private Section findOrCreateChildConditionSection(Section parent, String segment) {
+        for (Section child : parent.getSubSections()) {
+            if (segment.equals(child.getSelectorString())) {
+                return child;
+            }
+        }
+        Section child = newConditionSection(segment);
+        parent.addSubSection(child);
+        return child;
+    }
+
+    private Section newConditionSection(String segment) {
+        Section section = new Section();
+        section.getSelectors().add(Collections.singletonList(segment));
+        return section;
     }
 
     /**

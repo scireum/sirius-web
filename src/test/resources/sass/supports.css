@@ -1,0 +1,21 @@
+.box {
+    display: flex;
+}
+
+@supports (display: grid) {
+    .box {
+        display: grid;
+    }
+}
+
+@supports not (display: grid) {
+    .box {
+        float: left;
+    }
+}
+
+@supports (display: grid) and (gap: 1rem) {
+    .box {
+        gap: 1rem;
+    }
+}

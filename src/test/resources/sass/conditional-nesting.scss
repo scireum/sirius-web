@@ -1,0 +1,30 @@
+// @media nested inside @container is emitted as nested blocks
+@container (min-width: 300px) {
+  .card {
+    color: red;
+  }
+
+  @media (min-width: 600px) {
+    .card {
+      color: blue;
+    }
+  }
+}
+
+// @container nested inside @media is emitted as nested blocks
+@media screen {
+  @container (min-width: 200px) {
+    .box {
+      color: green;
+    }
+  }
+}
+
+// Consecutive @media rules stay merged using "and"
+@media screen {
+  @media (min-width: 100px) {
+    .x {
+      color: black;
+    }
+  }
+}

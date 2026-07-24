@@ -1,0 +1,24 @@
+@container (min-width: 300px) {
+    .card {
+        color: red;
+    }
+    @media (min-width: 600px) {
+        .card {
+            color: blue;
+        }
+    }
+}
+
+@media screen {
+    @container (min-width: 200px) {
+        .box {
+            color: green;
+        }
+    }
+}
+
+@media screen and (min-width: 100px) {
+    .x {
+        color: black;
+    }
+}

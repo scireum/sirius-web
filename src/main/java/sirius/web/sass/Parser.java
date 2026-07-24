@@ -45,6 +45,12 @@ public class Parser {
     private static final String KEYWORD_EXTEND = "extend";
     private static final String KEYWORD_MEDIA = "media";
 
+    // Additional conditional group at-rules. These are intentionally NOT registered as tokenizer keywords:
+    // "container" is also a regular CSS property (e.g. "container: name / inline-size;"), so registering it as a
+    // keyword would break such declarations. They are detected via the '@' special identifier instead.
+    private static final String AT_RULE_CONTAINER = "container";
+    private static final String AT_RULE_SUPPORTS = "supports";
+
     /**
      * How to put that right: CSS is kind of "special gifted" - so tokenization is not always that straightforward.
      * <p>
@@ -170,13 +176,16 @@ public class Parser {
                 }
             } else if (tokenizer.current().isKeyword(KEYWORD_MEDIA)) {
                 // Handle @media
-                result.addSection(parseSection(true));
+                result.addSection(parseSection(KEYWORD_MEDIA));
+            } else if (isAtConditionalGroupRule()) {
+                // Handle @container / @supports
+                result.addSection(parseSection(tokenizer.current().getContents()));
             } else if (tokenizer.current().isSpecialIdentifier("$") && tokenizer.next().isSymbol(":")) {
                 // Handle variable definition
                 parseVariableDeclaration();
             } else {
                 // Everything else is a "normal" section  with selectors and attributes
-                result.addSection(parseSection(false));
+                result.addSection(parseSection(null));
             }
         }
 
@@ -189,14 +198,16 @@ public class Parser {
     }
 
     /**
-     * Parses a "section" which is either a media query or a css selector along with a set of attributes.
+     * Parses a "section" which is either a conditional group rule (@media / @container / @supports) or a css
+     * selector along with a set of attributes.
      *
-     * @param mediaQuery determines if we're about to parse a media query or a "normal" section
+     * @param conditionKeyword the at-rule keyword (without '@') if this is a conditional group rule
+     *                         ("media", "container", "supports"), or <tt>null</tt> for a "normal" section
      * @return the parsed section
      */
-    private Section parseSection(boolean mediaQuery) {
+    private Section parseSection(String conditionKeyword) {
         Section section = new Section();
-        parseSectionSelector(mediaQuery, section);
+        parseSectionSelector(conditionKeyword, section);
         tokenizer.consumeExpectedSymbol("{");
         while (tokenizer.more()) {
             if (tokenizer.current().isSymbol("}")) {
@@ -209,18 +220,35 @@ public class Parser {
                 section.addAttribute(attribute);
             } else if (tokenizer.current().isKeyword(KEYWORD_MEDIA)) {
                 // Take care of @media sub sections
-                section.addSubSection(parseSection(true));
+                section.addSubSection(parseSection(KEYWORD_MEDIA));
+            } else if (isAtConditionalGroupRule()) {
+                // Take care of @container / @supports sub sections
+                section.addSubSection(parseSection(tokenizer.current().getContents()));
             } else if (tokenizer.current().isKeyword(KEYWORD_INCLUDE)) {
                 parseInclude(section);
             } else if (tokenizer.current().isKeyword(KEYWORD_EXTEND)) {
                 parseExtend(section);
             } else {
                 // If it is neither an attribute, nor a media query or instruction - it is probably a sub section...
-                section.addSubSection(parseSection(false));
+                section.addSubSection(parseSection(null));
             }
         }
         tokenizer.consumeExpectedSymbol("}");
         return section;
+    }
+
+    /**
+     * Determines if the tokenizer is currently at the start of a conditional group at-rule which is handled like
+     * '@media' but is not a registered keyword, i.e. '@container' or '@supports'.
+     *
+     * @return <tt>true</tt> if the current token starts a '@container' or '@supports' rule
+     */
+    private boolean isAtConditionalGroupRule() {
+        if (!tokenizer.current().isSpecialIdentifier("@")) {
+            return false;
+        }
+        String name = tokenizer.current().getContents();
+        return AT_RULE_CONTAINER.equals(name) || AT_RULE_SUPPORTS.equals(name);
     }
 
     private boolean isAtAttribute() {
@@ -287,9 +315,14 @@ public class Parser {
         }
     }
 
-    private void parseSectionSelector(boolean mediaQuery, Section result) {
-        if (mediaQuery) {
-            parseMediaQuerySelector(result);
+    private void parseSectionSelector(String conditionKeyword, Section result) {
+        if (conditionKeyword != null) {
+            result.setConditionKeyword(conditionKeyword);
+            if (KEYWORD_MEDIA.equals(conditionKeyword)) {
+                parseMediaQuerySelector(result);
+            } else {
+                parseConditionalGroupSelector(conditionKeyword, result);
+            }
         } else {
             // Parse selectors like "b div.test"
             while (tokenizer.more()) {
@@ -303,6 +336,78 @@ public class Parser {
                 }
             }
         }
+    }
+
+    /**
+     * Parses the condition of a '@container' or '@supports' rule (everything between the at-rule and the opening
+     * '{'). In contrast to '@media', the connectors ('and'/'or'/'not') and an optional '@container' name are kept
+     * as explicit parts so that the condition can be reproduced faithfully.
+     *
+     * @param keyword the at-rule keyword (without '@'), i.e. "container" or "supports"
+     * @param result  the section to add the parsed condition parts to
+     */
+    private void parseConditionalGroupSelector(String keyword, Section result) {
+        // Consume the "@container" / "@supports" token
+        tokenizer.consume();
+        while (tokenizer.more() && !tokenizer.current().isSymbol("{")) {
+            if (tokenizer.current().isSymbol("(")) {
+                parseConditionalGroupFilter(result);
+            } else if (tokenizer.current().isIdentifier()) {
+                // A bare word: a '@container' name or a connector like 'and' / 'or' / 'not' / 'only'.
+                result.addMediaQuery(new Value(tokenizer.consume().getSource()));
+            } else {
+                // Consume the offending token to make progress towards '{' and report the problem.
+                tokenizer.addError(tokenizer.current(),
+                                   "Unexpected token in @%s condition: '%s'",
+                                   keyword,
+                                   tokenizer.consume().getSource());
+            }
+        }
+    }
+
+    /**
+     * Parses a single parenthesized condition of a '@container' / '@supports' rule. A '(feature: value)' condition
+     * is parsed into a {@link MediaFilter} (so that variables are evaluated and the output is formatted
+     * consistently), everything else (e.g. the range syntax '(width > 400px)') is captured verbatim.
+     *
+     * @param result the section to add the parsed condition to
+     */
+    private void parseConditionalGroupFilter(Section result) {
+        tokenizer.consumeExpectedSymbol("(");
+        if (tokenizer.current().isIdentifier() && tokenizer.next().isSymbol(":")) {
+            MediaFilter filter = new MediaFilter(tokenizer.consume().getContents());
+            tokenizer.consumeExpectedSymbol(":");
+            filter.setExpression(parseExpression(true));
+            result.addMediaQuery(filter);
+            tokenizer.consumeExpectedSymbol(")");
+        } else {
+            result.addMediaQuery(new Value(readRawCondition()));
+        }
+    }
+
+    /**
+     * Reads a parenthesized condition verbatim (the opening '(' has already been consumed), balancing nested
+     * parentheses and separating the contained tokens with single spaces. Used for conditions which are not of the
+     * simple '(feature: value)' shape, e.g. the range syntax '(width > 400px)'.
+     *
+     * @return the condition including the surrounding parentheses
+     */
+    private String readRawCondition() {
+        List<String> parts = new ArrayList<>();
+        int depth = 1;
+        while (tokenizer.more() && depth > 0) {
+            if (tokenizer.current().isSymbol("(")) {
+                depth++;
+            } else if (tokenizer.current().isSymbol(")")) {
+                depth--;
+                if (depth == 0) {
+                    tokenizer.consume();
+                    break;
+                }
+            }
+            parts.add(tokenizer.consume().getSource());
+        }
+        return "(" + String.join(" ", parts) + ")";
     }
 
     private void parseMediaQuerySelector(Section result) {
@@ -757,7 +862,7 @@ public class Parser {
 
     private void parseMixinSubSection(Mixin mixin) {
         Section subSection = new Section();
-        parseSectionSelector(false, subSection);
+        parseSectionSelector(null, subSection);
         tokenizer.consumeExpectedSymbol("{");
         while (tokenizer.more() && !tokenizer.current().isSymbol("}")) {
             if (tokenizer.current().isIdentifier() && tokenizer.next().isSymbol(":")) {

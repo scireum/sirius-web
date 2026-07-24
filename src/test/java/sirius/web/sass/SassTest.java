@@ -87,6 +87,21 @@ public class SassTest {
     }
 
     @Test
+    public void testContainer() {
+        compare("container.scss", "container.css");
+    }
+
+    @Test
+    public void testSupports() {
+        compare("supports.scss", "supports.css");
+    }
+
+    @Test
+    public void testConditionalNesting() {
+        compare("conditional-nesting.scss", "conditional-nesting.css");
+    }
+
+    @Test
     public void testKeyframes() {
         compare("keyframes.scss", "keyframes.css");
     }
