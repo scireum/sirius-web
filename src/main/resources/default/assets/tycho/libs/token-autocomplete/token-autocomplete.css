@@ -21,6 +21,7 @@
 
 .token-autocomplete-container .token-autocomplete-tokens {
     flex-grow: 1;
+    min-width: 0;
     display: inline-flex;
     flex-wrap: wrap;
 }
@@ -52,6 +53,7 @@
     pointer-events: none;
     display: flex;
     align-items: center;
+    max-width: 100%;
 }
 
 .token-autocomplete-container.token-autocomplete-readonly .token-autocomplete-token {
