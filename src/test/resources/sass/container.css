@@ -34,7 +34,7 @@
     }
 }
 
-@container style(--accent:blue) {
+@container style(--accent: blue) {
     .card {
         color: blue;
     }

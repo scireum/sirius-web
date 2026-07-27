@@ -26,3 +26,10 @@
     outline: 2px solid;
   }
 }
+
+// Whitespace inside a functional condition is significant: the descendant combinator must be preserved
+@supports selector(.a :focus) {
+  .box {
+    outline: 1px dotted;
+  }
+}

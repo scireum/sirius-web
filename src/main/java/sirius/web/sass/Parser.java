@@ -397,15 +397,16 @@ public class Parser {
 
     /**
      * Reads a parenthesized condition verbatim (the opening '(' has already been consumed), balancing nested
-     * parentheses and separating the contained tokens with single spaces (kept tight around ':'/'::' and the
-     * parentheses, see {@link #needsSpaceBetween}). Used for conditions which are not of the simple
-     * '(feature: value)' shape, e.g. the range syntax '(width > 400px)' or a functional condition's argument.
+     * parentheses and reconstructing the original whitespace between tokens from their source positions (see
+     * {@link #areAdjacent}). This keeps significant spacing intact, e.g. "a:hover" vs "a :hover" (compound vs
+     * descendant selector) or "--x: y". Used for conditions which are not of the simple '(feature: value)' shape,
+     * e.g. the range syntax '(width > 400px)' or a functional condition's argument.
      *
      * @return the condition including the surrounding parentheses
      */
     private String readRawCondition() {
         StringBuilder builder = new StringBuilder("(");
-        String previous = "(";
+        Token previous = null;
         int depth = 1;
         while (tokenizer.more() && depth > 0) {
             if (tokenizer.current().isSymbol("(")) {
@@ -417,39 +418,32 @@ public class Parser {
                     break;
                 }
             }
-            String token = tokenizer.consume().getSource();
-            if (needsSpaceBetween(previous, token)) {
+            Token token = tokenizer.consume();
+            if (previous != null && !areAdjacent(previous, token)) {
                 builder.append(' ');
             }
-            builder.append(token);
+            builder.append(token.getSource());
             previous = token;
         }
         return builder.append(")").toString();
     }
 
     /*
-     * Decides whether two adjacent tokens of a raw condition need a separating space. Tokens are kept tight
-     * directly inside parentheses, before a comma and around a colon (so pseudo-classes like ":focus-visible" and
-     * custom-property queries like "--x: y" are not broken apart); everything else - e.g. range operators like
-     * '>' - keeps a single space.
+     * Determines whether the two tokens were written directly next to each other, i.e. without any separating
+     * whitespace. The tokenizer discards whitespace, so comparing source positions is the only way to reconstruct
+     * the original spacing - which is significant in e.g. "a:hover" vs "a :hover" or "style(...)" vs "style (...)".
      */
-    private static boolean needsSpaceBetween(String previous, String next) {
-        if ("(".equals(previous) || ")".equals(next) || ",".equals(next)) {
-            return false;
-        }
-        return !":".equals(previous) && !"::".equals(previous) && !":".equals(next) && !"::".equals(next);
+    private static boolean areAdjacent(Token first, Token second) {
+        return second.getLine() == first.getLine()
+               && second.getPos() == first.getPos() + first.getSource().length();
     }
 
     /*
-     * Determines whether the two tokens were written without any separating whitespace. The tokenizer discards
-     * whitespace, so "style(--x: y)" and "style (--x: y)" produce identical token streams - only the source
-     * positions tell a functional condition ("style(...)") apart from a container name followed by a query
-     * ("style (...)").
+     * Determines if the given identifier is directly followed by '(' (a functional condition like "style(...)")
+     * rather than a whitespace-separated '(' (a container name followed by a query, "style (...)").
      */
     private static boolean isGluedTo(Token first, Token second) {
-        return second.isSymbol("(")
-               && second.getLine() == first.getLine()
-               && second.getPos() == first.getPos() + first.getSource().length();
+        return second.isSymbol("(") && areAdjacent(first, second);
     }
 
     private void parseMediaQuerySelector(Section result) {

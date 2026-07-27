@@ -25,3 +25,9 @@
         outline: 2px solid;
     }
 }
+
+@supports selector(.a :focus) {
+    .box {
+        outline: 1px dotted;
+    }
+}
