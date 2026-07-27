@@ -48,3 +48,10 @@ $breakpoint: 400px;
     color: blue;
   }
 }
+
+// A container NAMED like a functional keyword must NOT be glued when a space is present
+@container style (min-width: 500px) {
+  .card {
+    color: teal;
+  }
+}

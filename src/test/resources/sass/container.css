@@ -39,3 +39,9 @@
         color: blue;
     }
 }
+
+@container style (min-width: 500px) {
+    .card {
+        color: teal;
+    }
+}

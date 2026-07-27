@@ -32,7 +32,6 @@ import sirius.web.sass.ast.VariableReference;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Parses a given SASS source into a {@link Stylesheet}.
@@ -51,13 +50,6 @@ public class Parser {
     // keyword would break such declarations. They are detected via the '@' special identifier instead.
     private static final String AT_RULE_CONTAINER = "container";
     private static final String AT_RULE_SUPPORTS = "supports";
-
-    // Functional conditions whose name is glued directly to its parenthesized argument, e.g.
-    // "selector(:focus-visible)" or "style(--x: y)". Everything else - especially a @container name followed by a
-    // size query ("sidebar (min-width: 400px)") and connectors like "not (...)" - keeps the separating space.
-    // These have identical token streams (whitespace is dropped), so only a known function name may be glued.
-    private static final Set<String> CONDITION_FUNCTIONS =
-            Set.of("selector", "style", "font-tech", "font-format", "scroll-state");
 
     /**
      * How to put that right: CSS is kind of "special gifted" - so tokenization is not always that straightforward.
@@ -361,10 +353,12 @@ public class Parser {
             if (tokenizer.current().isSymbol("(")) {
                 parseConditionalGroupFilter(result);
             } else if (tokenizer.current().isIdentifier()) {
-                String word = tokenizer.consume().getSource();
-                if (tokenizer.current().isSymbol("(") && CONDITION_FUNCTIONS.contains(word.toLowerCase())) {
+                Token wordToken = tokenizer.consume();
+                String word = wordToken.getSource();
+                if (isGluedTo(wordToken, tokenizer.current())) {
                     // A functional condition like "selector(:focus-visible)" or "style(--x: y)": the name is
-                    // glued directly to its argument (no separating space).
+                    // glued directly to its argument. As the tokenizer drops whitespace, the source positions
+                    // tell "style(...)" (a style query) apart from "style (...)" (a container named "style").
                     tokenizer.consumeExpectedSymbol("(");
                     result.addMediaQuery(new Value(word + readRawCondition()));
                 } else {
@@ -444,6 +438,18 @@ public class Parser {
             return false;
         }
         return !":".equals(previous) && !"::".equals(previous) && !":".equals(next) && !"::".equals(next);
+    }
+
+    /*
+     * Determines whether the two tokens were written without any separating whitespace. The tokenizer discards
+     * whitespace, so "style(--x: y)" and "style (--x: y)" produce identical token streams - only the source
+     * positions tell a functional condition ("style(...)") apart from a container name followed by a query
+     * ("style (...)").
+     */
+    private static boolean isGluedTo(Token first, Token second) {
+        return second.isSymbol("(")
+               && second.getLine() == first.getLine()
+               && second.getPos() == first.getPos() + first.getSource().length();
     }
 
     private void parseMediaQuerySelector(Section result) {
