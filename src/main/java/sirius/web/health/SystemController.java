@@ -377,10 +377,10 @@ public class SystemController extends BasicController {
      * @param webContext the current request, expecting an <tt>enable</tt> flag
      * @param output     the JSON output the resulting state is written to
      */
-    @Routed("/system/timing/toggle")
+    @Routed("/system/timing/change")
     @Permission(PERMISSION_SYSTEM_TIMING)
     @InternalService
-    public void timingToggle(WebContext webContext, JSONStructuredOutput output) {
+    public void timingChange(WebContext webContext, JSONStructuredOutput output) {
         Microtiming.setEnabled(webContext.get("enable").asBoolean());
         output.property("enabled", Microtiming.isEnabled());
     }

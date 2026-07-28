@@ -151,7 +151,7 @@ sirius.ready(() => {
     // Enables/disables the micro timing without reloading the page.
     function toggleTiming() {
         const enable = _toggleButton.dataset.enabled !== 'true';
-        sirius.getJSON('/system/timing/toggle', {enable: enable})
+        sirius.getJSON('/system/timing/change', {enable: enable})
             .then((data) => {
                 updateToggleUI(data.enabled);
                 if (data.enabled) {
@@ -166,7 +166,6 @@ sirius.ready(() => {
     // Reflects the new enabled state on the button and the status dot (without touching the table).
     function updateToggleUI(enabled) {
         _toggleButton.dataset.enabled = enabled;
-        // Replace the inner icon so FontAwesome re-renders it (changing only the class would not redraw the SVG).
         _toggleIcon.innerHTML = '<i class="fa-solid ' + (enabled ? 'fa-minus' : 'fa-plus') + '"></i>';
         _toggleLabel.textContent = enabled ? 'Disable' : 'Enable';
         _statusActive.classList.toggle('d-none', !enabled);
