@@ -21,6 +21,8 @@
        name="fullHeight"
        default="true"
        description="Determines if the card will fill the whole column, adding h-100 to the card classes"/>
+<i:arg type="boolean" name="sendPostRequest" default="false"
+       description="Whether to send a POST request (including a CSRF token) instead of a GET request when the card is clicked"/>
 
 <i:pragma name="description">
     Renders a data centric card which has a title an optional subtitle and body contents.
@@ -68,7 +70,15 @@
                     <i:render name="body"/>
 
                     <i:if test="isFilled(link)">
-                        <a href="@link" class="stretched-link"></a>
+                        <i:if test="sendPostRequest">
+                            <form method="post" action="@link" class="d-contents">
+                                <input name="CSRFToken" value="@part(CSRFHelper.class).getCSRFToken()" type="hidden"/>
+                                <button type="submit" class="stretched-link border-0 bg-transparent p-0"></button>
+                            </form>
+                            <i:else>
+                                <a href="@link" class="stretched-link"></a>
+                            </i:else>
+                        </i:if>
                     </i:if>
                 </div>
 
