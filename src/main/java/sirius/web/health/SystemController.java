@@ -340,13 +340,6 @@ public class SystemController extends BasicController {
     @Routed("/system/timing")
     @Permission(PERMISSION_SYSTEM_TIMING)
     public void timing(WebContext webContext) {
-        if (webContext.hasParameter("enable")) {
-            Microtiming.setEnabled(true);
-        }
-        if (webContext.hasParameter("disable")) {
-            Microtiming.setEnabled(false);
-        }
-
         String periodSinceReset =
                 NLS.convertDuration(Duration.ofMillis(System.currentTimeMillis() - Microtiming.getLastReset()),
                                     true,
@@ -376,5 +369,19 @@ public class SystemController extends BasicController {
             output.endObject();
         }
         output.endArray();
+    }
+
+    /**
+     * Enables or disables the micro timing without reloading the page.
+     *
+     * @param webContext the current request, expecting an <tt>enable</tt> flag
+     * @param output     the JSON output the resulting state is written to
+     */
+    @Routed("/system/timing/toggle")
+    @Permission(PERMISSION_SYSTEM_TIMING)
+    @InternalService
+    public void timingToggle(WebContext webContext, JSONStructuredOutput output) {
+        Microtiming.setEnabled(webContext.get("enable").asBoolean());
+        output.property("enabled", Microtiming.isEnabled());
     }
 }
