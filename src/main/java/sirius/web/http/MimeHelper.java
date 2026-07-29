@@ -216,6 +216,7 @@ public class MimeHelper {
         mimeTable.put("lha", APPLICATION_OCTET_STREAM);
         mimeTable.put("log", TEXT_PLAIN);
         mimeTable.put("lzh", APPLICATION_OCTET_STREAM);
+        mimeTable.put("mjs", "text/javascript");
         mimeTable.put("m3u", "audio/x-mpegurl");
         mimeTable.put("m4a", "audio/mp4a-latm");
         mimeTable.put("m4b", "audio/mp4a-latm");
@@ -323,6 +324,7 @@ public class MimeHelper {
         mimeTable.put("vcd", "application/x-cdlink");
         mimeTable.put("vrml", "model/vrml");
         mimeTable.put("vxml", "application/voicexml+xml");
+        mimeTable.put("wasm", "application/wasm");
         mimeTable.put("wav", "audio/x-wav");
         mimeTable.put("wbmp", "image/vnd.wap.wbmp");
         mimeTable.put("wbmxl", "application/vnd.wap.wbxml");
