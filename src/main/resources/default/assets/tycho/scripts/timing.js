@@ -12,6 +12,12 @@ sirius.ready(() => {
     const _searchInput = document.getElementById('timing-filter');
     const _searchButton = document.getElementById('timing-search');
     const _reloadButton = document.getElementById('timing-reload');
+    const _toggleButton = document.getElementById('timing-toggle');
+    const _csrfToken = document.getElementById('timing-csrf-token');
+    const _toggleIcon = document.getElementById('timing-toggle-icon');
+    const _toggleLabel = document.getElementById('timing-toggle-label');
+    const _statusActive = document.getElementById('timing-status-active');
+    const _statusInactive = document.getElementById('timing-status-inactive');
 
     let rows = [];
 
@@ -36,7 +42,9 @@ sirius.ready(() => {
                 return entries;
             }
             return [...entries].sort((a, b) => {
-                const comparison = a[state.key] - b[state.key];
+                const valueA = a[state.key];
+                const valueB = b[state.key];
+                const comparison = typeof valueA === 'string' ? valueA.localeCompare(valueB) : valueA - valueB;
                 return state.ascending ? comparison : -comparison;
             });
         },
@@ -100,6 +108,10 @@ sirius.ready(() => {
 
         _container.innerHTML = '';
         groups.forEach((entries, category) => {
+            if (!sorting.state[category]) {
+                sorting.state[category] = {key: 'key', ascending: true};
+            }
+
             const sorted = sorting.apply(category, entries);
 
             const _card = _cardTemplate.content.cloneNode(true);
@@ -130,6 +142,38 @@ sirius.ready(() => {
             });
     }
 
+    // Reload only fetches while collecting; when disabled it would wipe the frozen data, so it does nothing.
+    function reload() {
+        if (_toggleButton.dataset.enabled === 'true') {
+            loadData();
+        }
+    }
+
+    // Enables/disables the micro timing without reloading the page.
+    function toggleTiming() {
+        const enable = _toggleButton.dataset.enabled !== 'true';
+        sirius.postJSON('/system/timing/' + (enable ? 'enable' : 'disable'), {CSRFToken: _csrfToken.value})
+            .then((data) => {
+                updateToggleUI(data.enabled);
+                if (data.enabled) {
+                    loadData();
+                }
+            })
+            .catch((error) => {
+                console.error('Could not toggle timing:', error);
+            });
+    }
+
+    // Reflects the new enabled state on the button and the status dot (without touching the table).
+    function updateToggleUI(enabled) {
+        _toggleButton.dataset.enabled = enabled;
+        _toggleIcon.innerHTML = '<i class="fa-solid ' + (enabled ? 'fa-minus' : 'fa-plus') + '"></i>';
+        _toggleLabel.textContent = enabled ? 'Disable' : 'Enable';
+        _statusActive.classList.toggle('d-none', !enabled);
+        _statusInactive.classList.toggle('d-none', enabled);
+        _reloadButton.classList.toggle('disabled', !enabled);
+    }
+
     // Sorting: clicking or pressing Enter/Space on a sortable column header toggles the sort order for its category.
     function toggleSortFor(_header) {
         sorting.toggle(_header.dataset.category, _header.dataset.sort);
@@ -156,11 +200,12 @@ sirius.ready(() => {
         toggleSortFor(_header);
     });
 
-    // Search is triggered explicitly via the Enter key or the search icon (no live search).
     sirius.addEnterListener(_searchInput, render);
     sirius.addClickOrEnterListener(_searchButton, render);
 
-    sirius.addClickOrEnterListener(_reloadButton, loadData);
+    sirius.addClickOrEnterListener(_reloadButton, reload);
+    _reloadButton.classList.toggle('disabled', _toggleButton.dataset.enabled !== 'true');
+    sirius.addClickOrEnterListener(_toggleButton, toggleTiming);
 
     loadData();
 });

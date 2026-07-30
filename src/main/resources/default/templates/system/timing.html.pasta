@@ -13,13 +13,13 @@
 
     <i:block name="page-header">
         <t:pageHeader title="Microtiming">
-            <i:if test="enabled">
+            <span id="timing-status-active" class="@if(!enabled) { d-none }">
                 <t:dot color="green">Active</t:dot>
                 <t:inlineInfo label="Collecting for">@periodSinceReset</t:inlineInfo>
-                <i:else>
-                    <t:dot color="gray">Inactive</t:dot>
-                </i:else>
-            </i:if>
+            </span>
+            <span id="timing-status-inactive" class="@if(enabled) { d-none }">
+                <t:dot color="gray">Inactive</t:dot>
+            </span>
         </t:pageHeader>
     </i:block>
 
@@ -32,26 +32,27 @@
                                placeholder="@i18n('NLS.searchkey')"/>
                         <span class="input-group-text" id="timing-search" role="button" tabindex="0" aria-label="Search"
                               style="cursor: pointer;">
-                             <i class="fa-solid fa-magnifying-glass"></i>
+                            <i class="fa-solid fa-magnifying-glass"></i>
                         </span>
                     </div>
                 </div>
                 <div class="col flex-grow-0 d-flex justify-content-end text-nowrap">
-                    <i:if test="enabled">
-                        <a href="/system/timing?disable=true" class="btn btn-outline-primary">
-                            <i class="fa-solid fa-minus"></i>
-                            <span class="d-none d-md-inline-block">Disable</span>
-                        </a>
-                        <i:else>
-                            <a href="/system/timing?enable=true" class="btn btn-outline-primary">
-                                <i class="fa-solid fa-plus"></i>
-                                <span class="d-none d-md-inline-block">Enable</span>
-                            </a>
-                        </i:else>
-                    </i:if>
+                    <a href="#" role="button" id="timing-toggle" class="btn btn-outline-primary"
+                       data-enabled="@enabled">
+                        <span id="timing-toggle-icon">
+                            <i class="fa-solid @if(enabled) { fa-minus } @if(!enabled) { fa-plus }"></i>
+                        </span>
+                        <span id="timing-toggle-label" class="d-none d-md-inline-block">
+                            <i:if test="enabled">Disable<i:else>Enable</i:else></i:if>
+                        </span>
+                    </a>
                     <a href="#" role="button" id="timing-reload" class="ms-2 btn btn-outline-secondary" title="Reload">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </a>
+                    <input type="hidden"
+                           id="timing-csrf-token"
+                           name="CSRFToken"
+                           value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()"/>
                 </div>
             </div>
         </div>
@@ -64,7 +65,9 @@
                 <table class="table table-hover" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th>Key</th>
+                        <th style="cursor: pointer;" role="button" tabindex="0" data-sort="key">
+                            Key <i class="fa-solid fa-sort text-muted"></i>
+                        </th>
                         <th class="text-end text-nowrap" style="width: 100px; cursor: pointer;" role="button"
                             tabindex="0" data-sort="count">
                             Calls <i class="fa-solid fa-sort text-muted"></i>

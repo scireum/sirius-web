@@ -29,6 +29,7 @@ import sirius.kernel.health.metrics.MetricState;
 import sirius.kernel.health.metrics.Metrics;
 import sirius.kernel.nls.NLS;
 import sirius.web.controller.BasicController;
+import sirius.web.controller.HttpMethod;
 import sirius.web.controller.Routed;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebServer;
@@ -340,13 +341,6 @@ public class SystemController extends BasicController {
     @Routed("/system/timing")
     @Permission(PERMISSION_SYSTEM_TIMING)
     public void timing(WebContext webContext) {
-        if (webContext.hasParameter("enable")) {
-            Microtiming.setEnabled(true);
-        }
-        if (webContext.hasParameter("disable")) {
-            Microtiming.setEnabled(false);
-        }
-
         String periodSinceReset =
                 NLS.convertDuration(Duration.ofMillis(System.currentTimeMillis() - Microtiming.getLastReset()),
                                     true,
@@ -376,5 +370,20 @@ public class SystemController extends BasicController {
             output.endObject();
         }
         output.endArray();
+    }
+
+    /**
+     * Enables or disables the micro timing without reloading the page.
+     *
+     * @param webContext the current request
+     * @param output     the JSON output the resulting state is written to
+     * @param state      the desired state, either <tt>enable</tt> or <tt>disable</tt>
+     */
+    @Routed(value = "/system/timing/:1", methods = HttpMethod.POST)
+    @Permission(PERMISSION_SYSTEM_TIMING)
+    @InternalService
+    public void timingChange(WebContext webContext, JSONStructuredOutput output, String state) {
+        Microtiming.setEnabled("enable".equals(state));
+        output.property("enabled", Microtiming.isEnabled());
     }
 }
