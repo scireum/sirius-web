@@ -91,7 +91,7 @@ public class MimeHelper {
     public static final String TEXT_CSV = "text/comma-separated-values";
 
     /**
-     * Mime type of javascript (JS) files
+     * Mime type of JavaScript (JS) files
      */
     public static final String TEXT_JAVASCRIPT = "text/javascript";
 
@@ -210,7 +210,7 @@ public class MimeHelper {
         mimeTable.put("jpeg", IMAGE_JPEG);
         mimeTable.put("jpg", IMAGE_JPEG);
         mimeTable.put("js", TEXT_JAVASCRIPT);
-        mimeTable.put("json", "application/json");
+        mimeTable.put("json", APPLICATION_JSON);
         mimeTable.put("kar", "audio/midi");
         mimeTable.put("latex", "application/x-latex");
         mimeTable.put("lha", APPLICATION_OCTET_STREAM);
@@ -231,6 +231,7 @@ public class MimeHelper {
         mimeTable.put("mid", "audio/midi");
         mimeTable.put("midi", "audio/midi");
         mimeTable.put("mif", "application/vnd.mif");
+        mimeTable.put("mjs", TEXT_JAVASCRIPT);
         mimeTable.put("mov", VIDEO_QUICKTIME);
         mimeTable.put("movie", "video/x-sgi-movie");
         mimeTable.put("mp2", AUDIO_MPEG);
@@ -323,6 +324,7 @@ public class MimeHelper {
         mimeTable.put("vcd", "application/x-cdlink");
         mimeTable.put("vrml", "model/vrml");
         mimeTable.put("vxml", "application/voicexml+xml");
+        mimeTable.put("wasm", "application/wasm");
         mimeTable.put("wav", "audio/x-wav");
         mimeTable.put("wbmp", "image/vnd.wap.wbmp");
         mimeTable.put("wbmxl", "application/vnd.wap.wbxml");
