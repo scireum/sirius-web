@@ -13,6 +13,7 @@ sirius.ready(() => {
     const _searchButton = document.getElementById('timing-search');
     const _reloadButton = document.getElementById('timing-reload');
     const _toggleButton = document.getElementById('timing-toggle');
+    const _csrfToken = document.getElementById('timing-csrf-token');
     const _toggleIcon = document.getElementById('timing-toggle-icon');
     const _toggleLabel = document.getElementById('timing-toggle-label');
     const _statusActive = document.getElementById('timing-status-active');
@@ -151,7 +152,7 @@ sirius.ready(() => {
     // Enables/disables the micro timing without reloading the page.
     function toggleTiming() {
         const enable = _toggleButton.dataset.enabled !== 'true';
-        sirius.getJSON('/system/timing/change', {enable: enable})
+        sirius.postJSON('/system/timing/' + (enable ? 'enable' : 'disable'), {CSRFToken: _csrfToken.value})
             .then((data) => {
                 updateToggleUI(data.enabled);
                 if (data.enabled) {

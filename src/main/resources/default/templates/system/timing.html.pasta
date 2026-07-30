@@ -49,36 +49,40 @@
                     <a href="#" role="button" id="timing-reload" class="ms-2 btn btn-outline-secondary" title="Reload">
                         <i class="fa-solid fa-arrows-rotate"></i>
                     </a>
+                    <input type="hidden"
+                           id="timing-csrf-token"
+                           name="CSRFToken"
+                           value="@part(sirius.web.http.CSRFHelper.class).getCSRFToken()"/>
                 </div>
             </div>
         </div>
     </div>
 
     <template id="category-card-template">
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title"></h5>
-                    <table class="table table-hover" style="table-layout: fixed;">
-                        <thead>
-                        <tr>
-                            <th style="cursor: pointer;" role="button" tabindex="0" data-sort="key">
-                                Key <i class="fa-solid fa-sort text-muted"></i>
-                            </th>
-                            <th class="text-end text-nowrap" style="width: 100px; cursor: pointer;" role="button"
-                                tabindex="0" data-sort="count">
-                                Calls <i class="fa-solid fa-sort text-muted"></i>
-                            </th>
-                            <th class="text-end text-nowrap" style="width: 130px; cursor: pointer;" role="button"
-                                tabindex="0" data-sort="averageMillis">
-                                Ø Duration<i class="fa-solid fa-sort text-muted"></i>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"></h5>
+                <table class="table table-hover" style="table-layout: fixed;">
+                    <thead>
+                    <tr>
+                        <th style="cursor: pointer;" role="button" tabindex="0" data-sort="key">
+                            Key <i class="fa-solid fa-sort text-muted"></i>
+                        </th>
+                        <th class="text-end text-nowrap" style="width: 100px; cursor: pointer;" role="button"
+                            tabindex="0" data-sort="count">
+                            Calls <i class="fa-solid fa-sort text-muted"></i>
+                        </th>
+                        <th class="text-end text-nowrap" style="width: 130px; cursor: pointer;" role="button"
+                            tabindex="0" data-sort="averageMillis">
+                            Ø Duration<i class="fa-solid fa-sort text-muted"></i>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
-        </template>
+        </div>
+    </template>
 
-        <div id="timing-container"></div>
+    <div id="timing-container"></div>
 </t:page>
