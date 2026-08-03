@@ -30,6 +30,8 @@ import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
+import sirius.web.cors.AllowedOrigin;
+import sirius.web.cors.CorsAllowOriginHelper;
 import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
@@ -103,6 +105,9 @@ public class ControllerDispatcher implements WebDispatcher {
 
     @Part
     private CSRFHelper csrfHelper;
+
+    @Part
+    private CorsAllowOriginHelper corsOriginHelper;
 
     @Part
     @Nullable
@@ -228,6 +233,12 @@ public class ControllerDispatcher implements WebDispatcher {
     public DispatchDecision dispatch(WebContext webContext) throws Exception {
         String uri = determineEffectiveURI(webContext);
 
+        // In order to be able to send a CORS `Access-Control-Allow-Origin` header, we determine the
+        // preferred allowed origin and store it in the WebContext.
+        // It may then be used in the different relevant places: In this class in order to answer preflight requests
+        // and OPTIONS requests, as well as the Response class to attach it to all remaining responses.
+        determineAndStoreAllowedOriginForUri(webContext, uri);
+
         // A genuine CORS preflight request must always be answered centrally with a method list derived from the
         // routes registered for this path. It must never reach any business logic - not even a controller which
         // explicitly handles OPTIONS - so we intercept it before matching the routes below.
@@ -280,6 +291,69 @@ public class ControllerDispatcher implements WebDispatcher {
         }
 
         return DispatchDecision.CONTINUE;
+    }
+
+    /**
+     * Determines the {@link AllowedOrigin} for the given URI and stores the resolved CORS origin in the request's
+     * {@link WebContext}.
+     *
+     * <p>
+     * The stored origin can then be used in order to set the {@code Access-Control-Allow-Origin} header in the
+     * response in the relevant places by using
+     * {@link CorsAllowOriginHelper#applyHeaderFromWebContext(WebContext, Response)}.
+     * </p>
+     *
+     * <p>
+     * <b>Note:</b> If {@code WebContext.isCorsAllowAll()} is set, a {@link AllowedOrigin.MatchRequest} is used.
+     * Otherwise, the interceptors decide based on the routes matching the URI.
+     * </p>
+     *
+     * @param webContext the current request
+     * @param uri        the effective request URI
+     */
+    private void determineAndStoreAllowedOriginForUri(WebContext webContext, String uri) {
+        Collection<Route> routes = collectMatchingRoutes(webContext, uri);
+
+        Optional<AllowedOrigin> origin = WebContext.isCorsAllowAll() ?
+                                         Optional.of(new AllowedOrigin.MatchRequest()) :
+                                         determineAllowedOriginForRoutes(webContext, routes);
+
+        origin.ifPresentOrElse(actual -> corsOriginHelper.tryResolveOriginAndStoreInWebContext(webContext, actual),
+                               () -> LOG.WARN("CORS: No allowed origin could be determined for '%s'!", uri, routes));
+    }
+
+    /**
+     * Asks the interceptors to determine the {@link AllowedOrigin} for the given routes.
+     * <p>
+     * The first interceptor returning a non-empty result via
+     * {@link Interceptor#determineAllowedCorsOrigin(WebContext, Collection)} wins.
+     * </p>
+     *
+     * @param webContext the current request
+     * @param routes     the routes matching the requested URI
+     * @return the preferred CORS allowed origin, or an empty optional if none could be determined
+     */
+    private Optional<AllowedOrigin> determineAllowedOriginForRoutes(WebContext webContext, Collection<Route> routes) {
+        for (var interceptor : interceptors) {
+            Optional<AllowedOrigin> origin = interceptor.determineAllowedCorsOrigin(webContext, routes);
+            if (origin.isPresent()) {
+                return origin;
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Collects all routes matching the given URI, regardless of their HTTP method.
+     *
+     * @param webContext the current request
+     * @param uri        the effective request URI
+     * @return the routes matching the URI
+     */
+    private Collection<Route> collectMatchingRoutes(WebContext webContext, String uri) {
+        return getRoutes().stream()
+                          .filter(route -> route.matches(webContext, uri, route.isPreDispatchable()) != Route.NO_MATCH)
+                          .collect(Collectors.toSet());
     }
 
     /**
@@ -365,6 +439,7 @@ public class ControllerDispatcher implements WebDispatcher {
             response.setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, allowedMethods)
                     .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS,
                                requestedHeaders == null ? "" : requestedHeaders);
+            corsOriginHelper.applyHeaderFromWebContext(webContext, response);
         }
 
         response.status(HttpResponseStatus.OK);

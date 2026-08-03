@@ -55,6 +55,7 @@ import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.controller.PreserveErrorMessageTransformer;
+import sirius.web.cors.CorsAllowOriginHelper;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
@@ -178,6 +179,9 @@ public class Response {
     @Part
     private static Tagliatelle engine;
 
+    @Part
+    private static CorsAllowOriginHelper corsOriginHelper;
+
     @ConfigValue("http.response.defaultClientCacheTTL")
     private static Duration defaultCacheDuration;
 
@@ -279,18 +283,13 @@ public class Response {
     }
 
     private void setupCors(DefaultHttpResponse response) {
-        if (!WebContext.isCorsAllowAll() || response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
-            return;
+        response.headers().set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
+
+        if (!response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
+            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
         }
 
-        response.headers().set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
-        String requestedOrigin = webContext.getHeader(HttpHeaderNames.ORIGIN);
-        if (Strings.isFilled(requestedOrigin)) {
-            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN, requestedOrigin);
-            if (!response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
-                response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
-            }
-        }
+        corsOriginHelper.applyHeaderFromWebContext(webContext, response);
     }
 
     private void setupCookies(DefaultHttpResponse response) {
