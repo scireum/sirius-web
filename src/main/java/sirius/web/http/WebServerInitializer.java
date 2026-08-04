@@ -39,10 +39,10 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
     }
 
     @Override
-    public void initChannel(SocketChannel ch) throws Exception {
-        enableKeepAlive(ch);
+    public void initChannel(SocketChannel channel) throws Exception {
+        enableKeepAlive(channel);
 
-        ChannelPipeline pipeline = ch.pipeline();
+        ChannelPipeline pipeline = channel.pipeline();
 
         pipeline.addFirst("lowlevel", LowLevelHandler.INSTANCE);
         pipeline.addLast(new HttpServerCodec());
@@ -72,14 +72,14 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
      * option here means the failure can be recognised for what it is, while a healthy connection is set up exactly as
      * before.
      *
-     * @param ch the accepted channel
+     * @param channel the accepted channel
      */
-    private void enableKeepAlive(SocketChannel ch) {
+    private void enableKeepAlive(SocketChannel channel) {
         try {
-            ch.config().setKeepAlive(true);
+            channel.config().setKeepAlive(true);
         } catch (ChannelException exception) {
             Exceptions.ignore(exception);
-            WebServer.LOG.FINE("Cannot enable TCP keep-alive for %s, the connection is already gone", ch);
+            WebServer.LOG.FINE("Cannot enable TCP keep-alive for %s, the connection is already gone", channel);
         }
     }
 
