@@ -59,7 +59,13 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
     }
 
     /**
-     * Asks the operating system to send a KEEPALIVE packet every 2h and to expect an ACK on the TCP layer.
+     * Enables TCP keep-alive, so that a connection whose peer has silently gone away is eventually recognised as dead.
+     * <p>
+     * When the probing starts, how often it repeats and how many unanswered probes end the connection are the
+     * operating system's to decide — <tt>net.ipv4.tcp_keepalive_time</tt> and its neighbours on Linux, the
+     * <tt>net.inet.tcp.keepidle</tt> family on macOS — and this flag cannot influence any of it. The defaults are
+     * measured in hours, so this is a backstop against half-open connections rather than a liveness check;
+     * <tt>http.idleTimeout</tt> is what notices an idle client soon enough to act on it.
      * <p>
      * This is done here rather than as a child option of the bootstrap, because a child option is applied to every
      * accepted socket, including one the client has already reset in the meantime. Setting an option on such a socket
