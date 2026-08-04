@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -15,6 +16,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.timeout.IdleStateHandler;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -38,6 +40,8 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
 
     @Override
     public void initChannel(SocketChannel ch) throws Exception {
+        enableKeepAlive(ch);
+
         ChannelPipeline pipeline = ch.pipeline();
 
         pipeline.addFirst("lowlevel", LowLevelHandler.INSTANCE);
@@ -52,6 +56,31 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
             pipeline.addLast("websockethandler", new WebsocketHandler(websocketDispatcher));
         }
         pipeline.addLast("handler", new WebServerHandler(isSSL()));
+    }
+
+    /**
+     * Asks the operating system to send a KEEPALIVE packet every 2h and to expect an ACK on the TCP layer.
+     * <p>
+     * This is done here rather than as a child option of the bootstrap, because a child option is applied to every
+     * accepted socket, including one the client has already reset in the meantime. Setting an option on such a socket
+     * fails with <tt>EINVAL</tt> on some platforms (macOS among them), and netty reports that with two warnings and a
+     * full stack trace before closing the channel.
+     * <p>
+     * That is not a rare condition: a client resolving a dual-stack host opens a connection over IPv4 and IPv6 at once
+     * and abandons the loser as soon as the other one is established (RFC 8305), which resets it. Every such connect
+     * would log a stack trace about a connection that no longer exists and never carried a request. Applying the
+     * option here means the failure can be recognised for what it is, while a healthy connection is set up exactly as
+     * before.
+     *
+     * @param ch the accepted channel
+     */
+    private void enableKeepAlive(SocketChannel ch) {
+        try {
+            ch.config().setKeepAlive(true);
+        } catch (ChannelException exception) {
+            Exceptions.ignore(exception);
+            WebServer.LOG.FINE("Cannot enable TCP keep-alive for %s, the connection is already gone", ch);
+        }
     }
 
     /**
