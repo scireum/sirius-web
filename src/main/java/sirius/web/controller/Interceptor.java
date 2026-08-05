@@ -108,20 +108,23 @@ public interface Interceptor extends Priorized {
      * </p>
      *
      * <p>
-     * By <b>default</b>, this method returns an {@link AllowedOrigin.MatchRequest} which will resolve to the origin of
-     * the current request.
+     * By <b>default</b>, this method returns an empty optional, signalling that this interceptor does not make a
+     * decision. If no interceptor decides on a strategy, the {@link ControllerDispatcher} falls back to an
+     * {@link AllowedOrigin.MatchRequest}, which resolves to the origin of the current request.
      * </p>
      *
      * <p>
-     * Please note that the {@link ControllerDispatcher} will ignore this choice if {@link WebContext#isCorsAllowAll()}
-     * returns {@code true}!
+     * Please note that {@code corsAllowAll} acts as a master switch: this method is only consulted when
+     * {@link WebContext#isCorsAllowAll()} returns {@code true} for the request's scope. If CORS handling is disabled,
+     * no origin is resolved at all and this method is not invoked.
      * </p>
      *
      * @param webContext the current request
      * @param routes     the routes matching the uri that has been called
-     * @return the preferred CORS allowed origin strategy
+     * @return the preferred CORS allowed origin strategy, or an empty optional if this interceptor does not make a
+     * decision
      */
     default Optional<AllowedOrigin> determineAllowedCorsOrigin(WebContext webContext, Collection<Route> routes) {
-        return Optional.of(new AllowedOrigin.MatchRequest());
+        return Optional.empty();
     }
 }
