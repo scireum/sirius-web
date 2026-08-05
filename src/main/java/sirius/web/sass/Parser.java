@@ -44,7 +44,7 @@ public class Parser {
     private static final String KEYWORD_MIXIN = "mixin";
     private static final String KEYWORD_INCLUDE = "include";
     private static final String KEYWORD_EXTEND = "extend";
-    private static final String KEYWORD_MEDIA = "media";
+    public static final String KEYWORD_MEDIA = "media";
 
     // Additional conditional group at-rules. These are intentionally NOT registered as tokenizer keywords:
     // "container" is also a regular CSS property (e.g. "container-type: inline-size;"), so registering it as a

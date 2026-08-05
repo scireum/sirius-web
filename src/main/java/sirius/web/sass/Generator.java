@@ -236,7 +236,7 @@ public class Generator {
      * expected by CSS. Selector nesting is flattened; nested conditional group rules are kept as a nesting path
      * so that they can be emitted as nested blocks (see expandConditionPath / resolveConditionSection).
      */
-    private void expand(List<String> conditionPath, Section section, List<Section> stack) {
+    private void expand(List<ConditionSegment> conditionPath, Section section, List<Section> stack) {
         stack = new ArrayList<>(stack);
         if (!section.getSelectors().isEmpty()) {
             expandSection(conditionPath, section, stack);
@@ -255,7 +255,9 @@ public class Generator {
         }
     }
 
-    private List<String> expandConditionalGroup(List<String> conditionPath, Section section, List<Section> stack) {
+    private List<ConditionSegment> expandConditionalGroup(List<ConditionSegment> conditionPath,
+                                                          Section section,
+                                                          List<Section> stack) {
         conditionPath = expandConditionPath(conditionPath, section);
 
         // We have implicit attributes - copy the next non-conditional-group parent
@@ -266,7 +268,9 @@ public class Generator {
         return conditionPath;
     }
 
-    private void transferImplicitAttributes(List<String> conditionPath, Section section, List<Section> stack) {
+    private void transferImplicitAttributes(List<ConditionSegment> conditionPath,
+                                            Section section,
+                                            List<Section> stack) {
         Section copy = new Section();
         if (!stack.isEmpty()) {
             Section parent = stack.getLast();
@@ -293,20 +297,22 @@ public class Generator {
      * other rule - and every @media following a non-@media rule - starts a new nesting level, so that mixed
      * nesting (e.g. @container inside @media) is emitted as nested blocks as required by CSS.
      */
-    private List<String> expandConditionPath(List<String> conditionPath, Section section) {
-        String keyword = section.getConditionKeyword() != null ? section.getConditionKeyword() : "media";
+    private List<ConditionSegment> expandConditionPath(List<ConditionSegment> conditionPath, Section section) {
+        String keyword = section.getConditionKeyword() != null ? section.getConditionKeyword() : Parser.KEYWORD_MEDIA;
         String query = section.getMediaQuery(scope, this);
-        List<String> result = conditionPath == null ? new ArrayList<>() : new ArrayList<>(conditionPath);
+        List<ConditionSegment> result = conditionPath == null ? new ArrayList<>() : new ArrayList<>(conditionPath);
 
-        if ("media".equals(keyword) && !result.isEmpty() && result.getLast().startsWith("@media ")) {
-            result.set(result.size() - 1, result.getLast() + " and " + query);
+        if (Parser.KEYWORD_MEDIA.equals(keyword) && !result.isEmpty() &&
+            Parser.KEYWORD_MEDIA.equals(result.getLast().keyword())) {
+            ConditionSegment merged = new ConditionSegment(keyword, result.getLast().query() + " and " + query);
+            result.set(result.size() - 1, merged);
         } else {
-            result.add("@" + keyword + " " + query);
+            result.add(new ConditionSegment(keyword, query));
         }
         return result;
     }
 
-    private void expandSection(List<String> conditionPath, Section section, List<Section> stack) {
+    private void expandSection(List<ConditionSegment> conditionPath, Section section, List<Section> stack) {
         // We have selectors -> we're a normal section, not a conditional group rule
         if (conditionPath == null) {
             // Add to output
@@ -379,8 +385,20 @@ public class Generator {
      * Adds a section to the conditional group rule identified by the given nesting path, creating the (possibly
      * nested) group sections as necessary.
      */
-    private void addResultSection(List<String> conditionPath, Section section) {
+    private void addResultSection(List<ConditionSegment> conditionPath, Section section) {
         resolveConditionSection(conditionPath).addSubSection(section);
+    }
+
+    /*
+     * A single level of the conditional group nesting path, e.g. ("media", "screen and (min-width: 100px)") or
+     * ("container", "(min-width: 300px)"). Keeping the keyword separate (instead of a pre-rendered "@media ..."
+     * string) lets expandConditionPath decide the merge without sniffing the rendered prefix.
+     */
+    private record ConditionSegment(String keyword, String query) {
+
+        private String render() {
+            return "@" + keyword + " " + query;
+        }
     }
 
     /*
@@ -389,12 +407,12 @@ public class Generator {
      * merged), deeper levels are looked up among the subsections of their parent (so that identical nested rules
      * are merged as well).
      */
-    private Section resolveConditionSection(List<String> conditionPath) {
+    private Section resolveConditionSection(List<ConditionSegment> conditionPath) {
         // The top-most level is kept in the shared 'mediaQueries' map, every deeper level is a subsection of its
         // parent. The path is never empty (see expandConditionPath), so 'current' is always assigned.
-        Section current = mediaQueries.computeIfAbsent(conditionPath.getFirst(), this::newConditionSection);
+        Section current = mediaQueries.computeIfAbsent(conditionPath.getFirst().render(), this::newConditionSection);
         for (int level = 1; level < conditionPath.size(); level++) {
-            current = findOrCreateChildConditionSection(current, conditionPath.get(level));
+            current = findOrCreateChildConditionSection(current, conditionPath.get(level).render());
         }
         return current;
     }

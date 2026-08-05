@@ -11,6 +11,7 @@ package sirius.web.sass.ast;
 import sirius.kernel.commons.Explain;
 import sirius.web.sass.Generator;
 import sirius.web.sass.Output;
+import sirius.web.sass.Parser;
 import sirius.web.sass.Scope;
 
 import java.io.IOException;
@@ -162,7 +163,7 @@ public class Section {
         // @media joins its parts with an implicit "and" (the connector is not stored). Other conditional group
         // rules (@container, @supports) store their connectors ("and"/"or"/"not") as explicit parts and are
         // therefore joined with a plain space.
-        String separator = conditionKeyword == null || "media".equals(conditionKeyword) ? " and " : " ";
+        String separator = conditionKeyword == null || Parser.KEYWORD_MEDIA.equals(conditionKeyword) ? " and " : " ";
         StringBuilder builder = new StringBuilder();
         for (Expression expression : mediaQueries) {
             if (!builder.isEmpty()) {
