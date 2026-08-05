@@ -510,7 +510,7 @@ public class Parser {
      */
     private List<String> parseSelector() {
         List<String> selector = new ArrayList<>();
-        parseSelectorPrefix(selector);
+        Token parentReference = parseSelectorPrefix(selector);
 
         while (tokenizer.more()) {
             if (tokenizer.current().isSymbol("{", ",")) {
@@ -527,9 +527,15 @@ public class Parser {
                 parseOperatorInSelector(builder);
                 selector.add(builder.toString());
             } else if (tokenizer.current().isSymbol("[")) {
-                // Handle attribute filters which are attached to a parent reference or a combinator
-                // (e.g. "&[hidden]"). Filters directly following an identifier (e.g. "a[href]") are
-                // handled by the branch above.
+                // Handle attribute filters attached to a parent reference or a combinator (e.g. "&[hidden]").
+                // Filters directly following an identifier (e.g. "a[href]") are handled by the branch above.
+                // "&[hidden]" (glued) is a compound selector, but "& [hidden]" (whitespace) is a descendant - and
+                // combineSelectors() always glues a part following "&". So for the descendant form drop the now
+                // redundant "&" and let the parent be prepended with a descendant combinator instead.
+                if (parentReference != null && "&".equals(selector.getLast()) && !areAdjacent(parentReference,
+                                                                                              tokenizer.current())) {
+                    selector.removeLast();
+                }
                 StringBuilder builder = new StringBuilder();
                 parseFilterInSelector(builder);
                 parseOperatorInSelector(builder);
@@ -545,7 +551,8 @@ public class Parser {
         return selector;
     }
 
-    private void parseSelectorPrefix(List<String> selector) {
+    private Token parseSelectorPrefix(List<String> selector) {
+        Token parentReference = null;
         if (tokenizer.more() && tokenizer.current().isSymbol("[")) {
             StringBuilder builder = new StringBuilder();
             parseFilterInSelector(builder);
@@ -553,6 +560,7 @@ public class Parser {
             selector.add(builder.toString());
         }
         if (tokenizer.more() && tokenizer.current().isSymbol("&")) {
+            parentReference = tokenizer.current();
             selector.add(tokenizer.consume().getTrigger());
         }
         if (tokenizer.more() && (tokenizer.current().isSymbol("&:") || tokenizer.current().isSymbol("&::"))) {
@@ -566,6 +574,7 @@ public class Parser {
             tokenizer.consume();
             selector.add(consumePseudoChain(":" + tokenizer.consume().getContents()));
         }
+        return parentReference;
     }
 
     /**

@@ -85,3 +85,11 @@ div::-webkit-scrollbar {
 .state:not(.disabled):hover {
     color: green;
 }
+
+.wrap {
+    color: black;
+}
+
+.wrap [hidden] {
+    display: none;
+}

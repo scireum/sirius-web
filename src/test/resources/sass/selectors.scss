@@ -98,3 +98,12 @@ div {
     color: green;
   }
 }
+
+// "& [hidden]" (with whitespace) is a descendant, unlike the glued compound "&[hidden]" above
+.wrap {
+  color: black;
+
+  & [hidden] {
+    display: none;
+  }
+}
