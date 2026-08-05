@@ -45,3 +45,9 @@
         color: teal;
     }
 }
+
+@container (width >= 400px) {
+    .card {
+        color: navy;
+    }
+}

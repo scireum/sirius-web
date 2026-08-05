@@ -55,3 +55,10 @@ $breakpoint: 400px;
     color: teal;
   }
 }
+
+// Variables inside the modern range syntax must be resolved as well
+@container (width >= $breakpoint) {
+  .card {
+    color: navy;
+  }
+}

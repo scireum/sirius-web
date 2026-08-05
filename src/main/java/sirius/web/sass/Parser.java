@@ -22,6 +22,7 @@ import sirius.web.sass.ast.MixinReference;
 import sirius.web.sass.ast.NamedParameter;
 import sirius.web.sass.ast.Number;
 import sirius.web.sass.ast.Operation;
+import sirius.web.sass.ast.RawCondition;
 import sirius.web.sass.ast.Section;
 import sirius.web.sass.ast.Stylesheet;
 import sirius.web.sass.ast.Value;
@@ -360,7 +361,7 @@ public class Parser {
                     // glued directly to its argument. As the tokenizer drops whitespace, the source positions
                     // tell "style(...)" (a style query) apart from "style (...)" (a container named "style").
                     tokenizer.consumeExpectedSymbol("(");
-                    result.addMediaQuery(new Value(word + readRawCondition()));
+                    result.addMediaQuery(readRawCondition(word));
                 } else {
                     // A bare word: a '@container' name or a connector like 'and' / 'or' / 'not' / 'only'.
                     result.addMediaQuery(new Value(word));
@@ -391,7 +392,7 @@ public class Parser {
             result.addMediaQuery(filter);
             tokenizer.consumeExpectedSymbol(")");
         } else {
-            result.addMediaQuery(new Value(readRawCondition()));
+            result.addMediaQuery(readRawCondition(""));
         }
     }
 
@@ -401,11 +402,17 @@ public class Parser {
      * {@link #areAdjacent}). This keeps significant spacing intact, e.g. "a:hover" vs "a :hover" (compound vs
      * descendant selector) or "--x: y". Used for conditions which are not of the simple '(feature: value)' shape,
      * e.g. the range syntax '(width > 400px)' or a functional condition's argument.
+     * <p>
+     * Embedded SASS variables are kept as {@link VariableReference} parts so they are resolved when the stylesheet
+     * is evaluated (e.g. '(width > $bp)').
      *
-     * @return the condition including the surrounding parentheses
+     * @param prefix a leading literal to prepend before the opening '(' (a functional condition's name like
+     *               "style", or "" for a plain parenthesized condition)
+     * @return the condition (including the surrounding parentheses and prefix) as an evaluable expression
      */
-    private String readRawCondition() {
-        StringBuilder builder = new StringBuilder("(");
+    private Expression readRawCondition(String prefix) {
+        RawCondition condition = new RawCondition();
+        StringBuilder literal = new StringBuilder(prefix).append("(");
         Token previous = null;
         int depth = 1;
         while (tokenizer.more() && depth > 0) {
@@ -418,14 +425,23 @@ public class Parser {
                     break;
                 }
             }
-            Token token = tokenizer.consume();
+            Token token = tokenizer.current();
             if (previous != null && !areAdjacent(previous, token)) {
-                builder.append(' ');
+                literal.append(' ');
             }
-            builder.append(token.getSource());
+            if (token.isSpecialIdentifier("$")) {
+                // Delegate to parseAtom() (single source of truth for variable references) so the variable is
+                // resolved during evaluation instead of leaking a literal "$name" into the generated CSS.
+                condition.add(new Value(literal.toString()));
+                literal.setLength(0);
+                condition.add(parseAtom());
+            } else {
+                literal.append(tokenizer.consume().getSource());
+            }
             previous = token;
         }
-        return builder.append(")").toString();
+        condition.add(new Value(literal.append(")").toString()));
+        return condition;
     }
 
     /*
@@ -434,8 +450,7 @@ public class Parser {
      * the original spacing - which is significant in e.g. "a:hover" vs "a :hover" or "style(...)" vs "style (...)".
      */
     private static boolean areAdjacent(Token first, Token second) {
-        return second.getLine() == first.getLine()
-               && second.getPos() == first.getPos() + first.getSource().length();
+        return second.getLine() == first.getLine() && second.getPos() == first.getPos() + first.getSource().length();
     }
 
     /*
