@@ -8,6 +8,7 @@
 
 package sirius.web.http;
 
+import io.netty.channel.ChannelException;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -15,6 +16,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.timeout.IdleStateHandler;
 import sirius.kernel.di.std.ConfigValue;
 import sirius.kernel.di.std.Part;
+import sirius.kernel.health.Exceptions;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -37,8 +39,10 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
     }
 
     @Override
-    public void initChannel(SocketChannel ch) throws Exception {
-        ChannelPipeline pipeline = ch.pipeline();
+    public void initChannel(SocketChannel channel) throws Exception {
+        enableKeepAlive(channel);
+
+        ChannelPipeline pipeline = channel.pipeline();
 
         pipeline.addFirst("lowlevel", LowLevelHandler.INSTANCE);
         pipeline.addLast(new HttpServerCodec());
@@ -52,6 +56,37 @@ class WebServerInitializer extends ChannelInitializer<SocketChannel> {
             pipeline.addLast("websockethandler", new WebsocketHandler(websocketDispatcher));
         }
         pipeline.addLast("handler", new WebServerHandler(isSSL()));
+    }
+
+    /**
+     * Enables TCP keep-alive, so that a connection whose peer has silently gone away is eventually recognised as dead.
+     * <p>
+     * When the probing starts, how often it repeats and how many unanswered probes end the connection are the
+     * operating system's to decide — <tt>net.ipv4.tcp_keepalive_time</tt> and its neighbours on Linux, the
+     * <tt>net.inet.tcp.keepidle</tt> family on macOS — and this flag cannot influence any of it. The defaults are
+     * measured in hours, so this is a backstop against half-open connections rather than a liveness check;
+     * <tt>http.idleTimeout</tt> is what notices an idle client soon enough to act on it.
+     * <p>
+     * This is done here rather than as a child option of the bootstrap, because a child option is applied to every
+     * accepted socket, including one the client has already reset in the meantime. Setting an option on such a socket
+     * fails with <tt>EINVAL</tt> on some platforms (macOS among them), and netty reports that with two warnings and a
+     * full stack trace before closing the channel.
+     * <p>
+     * That is not a rare condition: a client resolving a dual-stack host opens a connection over IPv4 and IPv6 at once
+     * and abandons the loser as soon as the other one is established (RFC 8305), which resets it. Every such connect
+     * would log a stack trace about a connection that no longer exists and never carried a request. Applying the
+     * option here means the failure can be recognised for what it is, while a healthy connection is set up exactly as
+     * before.
+     *
+     * @param channel the accepted channel
+     */
+    private void enableKeepAlive(SocketChannel channel) {
+        try {
+            channel.config().setKeepAlive(true);
+        } catch (ChannelException exception) {
+            Exceptions.ignore(exception);
+            WebServer.LOG.FINE("Cannot enable TCP keep-alive for %s, the connection is already gone", channel);
+        }
     }
 
     /**

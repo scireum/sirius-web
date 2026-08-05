@@ -520,8 +520,8 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
         bootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         // At mose have 128 connections waiting to be "connected" - drop everything else...
         bootstrap.option(ChannelOption.SO_BACKLOG, 128);
-        // Send a KEEPALIVE packet every 2h and expect and ACK on the TCP layer
-        bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+        // Note that SO_KEEPALIVE is not set here as a child option, but in WebServerInitializer, which is able to
+        // handle a connection the client has already reset - see the comment there
         bootstrap.group(eventLoop);
         bootstrap.channel(NioServerSocketChannel.class);
         bootstrap.childHandler(globalContext.wire(initializer));
