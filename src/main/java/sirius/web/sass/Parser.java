@@ -46,7 +46,7 @@ public class Parser {
     private static final String KEYWORD_MEDIA = "media";
 
     // Additional conditional group at-rules. These are intentionally NOT registered as tokenizer keywords:
-    // "container" is also a regular CSS property (e.g. "container: name / inline-size;"), so registering it as a
+    // "container" is also a regular CSS property (e.g. "container-type: inline-size;"), so registering it as a
     // keyword would break such declarations. They are detected via the '@' special identifier instead.
     private static final String AT_RULE_CONTAINER = "container";
     private static final String AT_RULE_SUPPORTS = "supports";
