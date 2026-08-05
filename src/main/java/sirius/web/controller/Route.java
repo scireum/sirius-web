@@ -412,6 +412,25 @@ public class Route {
     }
 
     /**
+     * Determines if this route matches the current request based on the request URI but <b>does not have any
+     * side effects</b>.
+     * <p>
+     * This method is used to determine if a route matches a given URI without extracting any parameters or setting any
+     * attributes in the {@link WebContext}. It is useful for scenarios where you want to check if a route exists for a
+     * given URI without actually invoking it or modifying the context.
+     * Use {@link #matches(WebContext, String, boolean)} if you want to extract parameters and set attributes in the
+     * context.
+     * </p>
+     *
+     * @param requestedUri the requested URI
+     * @return {@code true} if the Route's pattern matches the given URI, {@code false} otherwise
+     */
+    protected boolean matchesUri(String requestedUri) {
+        Matcher matcher = pattern.matcher(requestedUri);
+        return matcher.matches();
+    }
+
+    /**
      * Determines if this route matches the HTTP method of the current request.
      * <p>
      * Note that this method is not included in {@link #matches(WebContext, String, boolean)} as we want to distinguish
