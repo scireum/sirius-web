@@ -20,6 +20,7 @@ import java.io.StringWriter
 import java.time.LocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /**
@@ -119,19 +120,25 @@ class JsonOutputEquivalenceTest {
 
     @Test
     fun `a localized amount is where the two deliberately part company`() {
-        // amountProperty hands on whatever the NumberFormat produced. Streaming writes it into the document as it
-        // stands, which for a localized format is not a JSON number and leaves the document unparseable; building a
-        // node cannot do that, so it keeps the value as a string instead. Pinned rather than left to be discovered:
-        // the equivalence above holds for everything a service should be writing, and this is the one exception.
+        // amountProperty hands on whatever the NumberFormat produced, and the two do different things with it:
+        // streaming writes the formatted text into the document unquoted, so a format carrying a grouping separator
+        // leaves the document unparseable, while building a node keeps it as a string. Pinned rather than left to be
+        // discovered: the equivalence above holds for everything a service should be writing, and this is the one
+        // exception. The expected text is taken from the formatter itself, so this says the same thing in any locale.
+        val price = Amount.of(1234.5)
+        val formatted = price.toString(NumberFormat.TWO_DECIMAL_PLACES).asString()
         val payload: (StructuredOutput) -> Unit = {
-            it.amountProperty("price", Amount.of(1234.5), NumberFormat.TWO_DECIMAL_PLACES, false)
+            it.amountProperty("price", price, NumberFormat.TWO_DECIMAL_PLACES, false)
         }
 
+        val streamed = streamed(payload)
+        val built = built(payload)
+
         assertAll(
-            { assertTrue(streamed(payload).contains(""""price":1.234,50"""),
-                         "the streamed document carries the localized value verbatim: ${streamed(payload)}") },
-            { assertEquals("""{"price":"1.234,50"}""", built(payload),
-                           "while the node keeps it as a string, so that it stays parseable") }
+            { assertEquals("""{"price":$formatted}""", streamed, "streamed unquoted, verbatim as formatted") },
+            { assertEquals("""{"price":"$formatted"}""", built, "kept as a string, so the document stays parseable") },
+            { assertNotEquals(price.toString(NumberFormat.MACHINE_TWO_DECIMAL_PLACES).asString(), formatted,
+                              "a localized format that equals the machine one would make this case prove nothing") }
         )
     }
 
