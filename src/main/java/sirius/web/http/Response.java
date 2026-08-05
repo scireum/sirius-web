@@ -55,6 +55,7 @@ import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.controller.PreserveErrorMessageTransformer;
+import sirius.web.cors.AllowedOrigin;
 import sirius.web.cors.CorsAllowOriginHelper;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
@@ -283,13 +284,41 @@ public class Response {
     }
 
     private void setupCors(DefaultHttpResponse response) {
-        response.headers().set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
-
-        if (!response.headers().contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
-            response.headers().set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+        // If `corsAllowAll` is disabled, we explicitly do not want to handle anything CORS.
+        if (!webContext.isCorsAllowAll()) {
+            return;
         }
 
-        corsOriginHelper.applyHeaderFromWebContext(webContext, response);
+        HttpHeaders headers = response.headers();
+
+        // Only apply CORS headers from the global helper if they have not been set manually before.
+        // Different `Dispatcher` implementations or code paths may set CORS headers themselves, and we should not
+        // ignore them.
+
+        if (!headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
+            corsOriginHelper.applyResolvedOriginHeader(response);
+        }
+
+        // Only set the `Access-Control-Allow-Credentials` header if credentials have explicitly been allowed by the
+        // interceptor determining the origin:
+
+        var shouldAllowCredentials = corsOriginHelper.getConfiguredOrigin()
+                                                     .filter(origin -> origin instanceof AllowedOrigin.Specific)
+                                                     .map(origin -> ((AllowedOrigin.Specific) origin).allowCredentials())
+                                                     .orElse(false);
+
+        if (shouldAllowCredentials && !headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
+            headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+        }
+
+        // Regardless whether the CORS origin has actually been resolved/applied, we must send a `Vary` header for all
+        // resources depending on the origin. For performance reasons we do always set the header, though, in order to
+        // avoid expensive evaluation of the origin for same-origin requests without an `Origin` header.
+        // Also see `ControllerDispatcher#dispatch()`.
+
+        if (!headers.contains(HttpHeaderNames.VARY)) {
+            headers.set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
+        }
     }
 
     private void setupCookies(DefaultHttpResponse response) {
