@@ -9,6 +9,8 @@
 package sirius.web.sass;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import sirius.kernel.SiriusExtension;
 import sirius.kernel.commons.Streams;
 
 import java.io.IOException;
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Tests the SASS to CSS compiler
  */
+@ExtendWith(SiriusExtension.class)
 public class SassTest {
 
     @Test
@@ -81,6 +84,21 @@ public class SassTest {
     @Test
     public void testMedia() {
         compare("media.scss", "media.css");
+    }
+
+    @Test
+    public void testContainer() {
+        compare("container.scss", "container.css");
+    }
+
+    @Test
+    public void testSupports() {
+        compare("supports.scss", "supports.css");
+    }
+
+    @Test
+    public void testConditionalNesting() {
+        compare("conditional-nesting.scss", "conditional-nesting.css");
     }
 
     @Test

@@ -1,0 +1,64 @@
+$breakpoint: 400px;
+
+// 'container' / 'container-type' are also regular CSS properties - these must NOT be treated as at-rules
+.card {
+  display: block;
+  container-type: inline-size;
+  container: layout;
+}
+
+// Plain container size query
+@container (min-width: 300px) {
+  .card {
+    display: grid;
+  }
+}
+
+// Named container query
+@container sidebar (min-width: 400px) {
+  .card {
+    color: red;
+  }
+}
+
+// Multiple conditions combined with 'and'
+@container (min-width: 200px) and (min-height: 100px) {
+  .card {
+    color: blue;
+  }
+}
+
+// We expect variables inside the query to be evaluated
+@container (min-width: $breakpoint) {
+  .card {
+    color: green;
+  }
+}
+
+// We expect the modern range syntax to be captured verbatim
+@container (width > 400px) {
+  .card {
+    color: black;
+  }
+}
+
+// Container style query: the function name must stay glued to its argument
+@container style(--accent: blue) {
+  .card {
+    color: blue;
+  }
+}
+
+// A container NAMED like a functional keyword must NOT be glued when a space is present
+@container style (min-width: 500px) {
+  .card {
+    color: teal;
+  }
+}
+
+// Variables inside the modern range syntax must be resolved as well
+@container (width >= $breakpoint) {
+  .card {
+    color: navy;
+  }
+}

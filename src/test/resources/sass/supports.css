@@ -1,0 +1,33 @@
+.box {
+    display: flex;
+}
+
+@supports (display: grid) {
+    .box {
+        display: grid;
+    }
+}
+
+@supports not (display: grid) {
+    .box {
+        float: left;
+    }
+}
+
+@supports (display: grid) and (gap: 1rem) {
+    .box {
+        gap: 1rem;
+    }
+}
+
+@supports selector(:focus-visible) {
+    .box {
+        outline: 2px solid;
+    }
+}
+
+@supports selector(.a :focus) {
+    .box {
+        outline: 1px dotted;
+    }
+}

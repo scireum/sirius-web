@@ -1,0 +1,35 @@
+.box {
+  display: flex;
+}
+
+@supports (display: grid) {
+  .box {
+    display: grid;
+  }
+}
+
+@supports not (display: grid) {
+  .box {
+    float: left;
+  }
+}
+
+@supports (display: grid) and (gap: 1rem) {
+  .box {
+    gap: 1rem;
+  }
+}
+
+// Functional condition: the name must stay glued to its argument (no space before the parenthesis)
+@supports selector(:focus-visible) {
+  .box {
+    outline: 2px solid;
+  }
+}
+
+// Whitespace inside a functional condition is significant: the descendant combinator must be preserved
+@supports selector(.a :focus) {
+  .box {
+    outline: 1px dotted;
+  }
+}
