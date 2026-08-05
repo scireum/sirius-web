@@ -17,6 +17,8 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.web.cors.AllowedOrigin;
+import sirius.web.cors.CorsAllowOriginHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.Limited;
 import sirius.web.http.Unlimited;
@@ -45,6 +47,9 @@ public class ServiceDispatcher implements WebDispatcher {
     private static final String SYSTEM_SERVICE = "SERVICE";
 
     @Part
+    private static CorsAllowOriginHelper corsOriginHelper;
+
+    @Part
     private GlobalContext gc;
 
     @Part
@@ -61,6 +66,9 @@ public class ServiceDispatcher implements WebDispatcher {
         if (!ctx.getRequestedURI().startsWith("/service/")) {
             return DispatchDecision.CONTINUE;
         }
+
+        corsOriginHelper.tryResolveAndStoreOrigin(ctx, new AllowedOrigin.MatchRequest());
+
         // The real dispatching is put into its own method to support inlining of this check by the JIT
         return doDispatch(ctx);
     }
