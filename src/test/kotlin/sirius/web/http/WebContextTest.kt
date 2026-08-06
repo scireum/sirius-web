@@ -269,6 +269,34 @@ class WebContextTest {
     }
 
     @Test
+    fun `a safe GET does not initialize the session just for the CSRF check`() {
+
+        // The CSRF skip condition must be evaluated after the cheap method check: GETs are never CSRF-validated,
+        // so they must not pay for the (potentially expensive) session initialization.
+        val checksBefore = TestServerSessionStorage.getResponsibilityChecks()
+
+        val connection = openConnection("/test/redirect-target")
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+        assertEquals(checksBefore, TestServerSessionStorage.getResponsibilityChecks())
+    }
+
+    @Test
+    fun `a POST without CSRF token is accepted when the server session is active`() {
+
+        // Without the server session header this request yields 403 (see CSRFTokenTest): the CSRF check protects
+        // ambient cookie authority. With an active server session the cookie is ignored entirely, so there is
+        // nothing to protect and the check is skipped.
+        val connection = openConnection("/test/fake-delete-data", "csrf-skip")
+        connection.requestMethod = "POST"
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+    }
+
+    @Test
     fun `a custom uri installed before execute survives the build step`() {
 
         // build() re-parses the final uri; a uri installed via withCustomURI must remain its base instead of
@@ -284,7 +312,6 @@ class WebContextTest {
         assertEquals("b", request.getParameter("b"))
         assertEquals(200, result.status.code())
     }
-
 
     @Test
     fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
