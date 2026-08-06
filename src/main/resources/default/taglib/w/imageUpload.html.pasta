@@ -17,7 +17,7 @@
                 '@imageUrl',
                 <i:raw>@allowedExtensions</i:raw>,
                 @singleFile,
-                {CSRFToken: '@part(sirius.web.http.CSRFHelper.class).getCSRFToken()'});
+                {CSRFToken: '@part(CSRFHelper.class).getCSRFToken()'});
         });
     });
 </script>
