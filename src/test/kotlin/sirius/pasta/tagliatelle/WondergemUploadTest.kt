@@ -16,6 +16,7 @@ import sirius.pasta.noodle.compiler.SourceCodeInfo
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import sirius.web.http.CSRFHelper
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -38,6 +39,12 @@ class WondergemUploadTest {
         val token = csrfHelper.csrfToken
 
         assertTrue { render("<w:fileUpload uploadUrl=\"/test/upload\"/>").contains("CSRFToken: '$token'") }
+    }
+
+    @Test
+    fun `w imageUpload accepts any extension by default`() {
+        // A quoted [] would reach the uploader as a two element extension list which rejects every file
+        assertFalse { render("<w:imageUpload uploadUrl=\"/test/upload\"/>").contains("'[]'") }
     }
 
     private fun render(source: String): String {
