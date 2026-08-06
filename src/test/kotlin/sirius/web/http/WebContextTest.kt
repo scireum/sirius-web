@@ -166,6 +166,24 @@ class WebContextTest {
     }
 
     @Test
+    fun `a custom uri installed before execute survives the build step`() {
+
+        // build() re-parses the final uri; a uri installed via withCustomURI must remain its base instead of
+        // being reset to the constructor uri.
+        val request = TestRequest.GET("/test/wrong-route")
+        request.withParameters(mapOf("b" to "b"))
+        request.withCustomURI("/test/redirect-target?a=a")
+
+        val result = request.execute()
+
+        assertEquals("/test/redirect-target", request.requestedURI)
+        assertEquals("a", request.getParameter("a"))
+        assertEquals("b", request.getParameter("b"))
+        assertEquals(200, result.status.code())
+    }
+
+
+    @Test
     fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
 
         // Build a legacy (unencrypted) session cookie in the "<sha512 hash>:<querystring>" format, signed with the

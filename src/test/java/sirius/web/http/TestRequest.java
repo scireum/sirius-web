@@ -436,11 +436,27 @@ public class TestRequest extends WebContext implements HttpRequest {
         }
     }
 
+    /**
+     * Keeps the uri used for dispatching in sync when a custom uri is installed before {@link #execute()}:
+     * {@link #build()} appends the collected parameters to it and re-parses the final uri, so a custom uri must
+     * become the base of that final uri instead of being silently reset to the constructor uri.
+     */
+    @Override
+    public WebContext withCustomURI(String uri) {
+        this.testUri = uri;
+        return super.withCustomURI(uri);
+    }
+
     protected void build() {
         // append GET parameters to URI
         String queryString = generateQueryString(parameters);
         this.testUri =
                 this.testUri + (Strings.isFilled(queryString) ? (testUri.contains("?") ? "&" : "?") + queryString : "");
+
+        // Re-parse the query string against the final uri: if a parameter was accessed before execute() (e.g. by
+        // a part which is consulted during the lazy session initialization and happens to check for a parameter),
+        // the parameterless uri would otherwise remain pinned in the cached query string.
+        withCustomURI(testUri);
 
         // send resource in body
         if (resource != null && (testMethod.equals(HttpMethod.PATCH)
