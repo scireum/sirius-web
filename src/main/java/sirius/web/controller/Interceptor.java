@@ -114,8 +114,8 @@ public interface Interceptor extends Priorized {
      * </p>
      *
      * <p>
-     * Please note that {@code corsAllowAll} acts as a master switch: this method is only consulted when
-     * {@link WebContext#isCorsAllowAll()} returns {@code true} for the request's scope. If CORS handling is disabled,
+     * Please note that {@code enableCors} acts as a master switch: this method is only consulted when
+     * {@link WebContext#isCorsEnabled()} returns {@code true} for the request's scope. If CORS handling is disabled,
      * no origin is resolved at all and this method is not invoked.
      * </p>
      *

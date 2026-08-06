@@ -22,7 +22,7 @@ import java.util.Optional;
  * <p>
  * The strategy is controlled via the static {@link #allowedOrigin} field. A {@code null} value simulates an interceptor
  * which cannot decide on a strategy (i.e. it returns an empty optional). As it is only consulted when
- * {@code http.corsAllowAll} is disabled (see {@link TestCorsScopeDetector}), it does not interfere with requests using
+ * {@code http.enableCors} is disabled (see {@link TestCorsScopeDetector}), it does not interfere with requests using
  * the globally enabled CORS handling.
  */
 @Register(framework = "web.test-cors")

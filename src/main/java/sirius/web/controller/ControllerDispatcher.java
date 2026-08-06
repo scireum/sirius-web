@@ -311,7 +311,7 @@ public class ControllerDispatcher implements WebDispatcher {
      * </p>
      *
      * <p>
-     * <b>Note:</b> The strategy is only resolved and stored when {@code webContext.isCorsAllowAll()} is set for the
+     * <b>Note:</b> The strategy is only resolved and stored when {@code webContext.isCorsEnabled()} is set for the
      * request's scope - in that case the interceptors decide based on the routes matching the URI (falling back to a
      * {@link AllowedOrigin.MatchRequest} reflecting the request's origin if none does). If it is not set,
      * {@link CorsAllowOriginHelper#tryResolveAndStoreOrigin(WebContext, java.util.function.Supplier)} stores nothing

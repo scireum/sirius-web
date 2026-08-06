@@ -28,13 +28,13 @@ import kotlin.test.*
 /**
  * Tests the CORS handling of the web server.
  *
- * `http.corsAllowAll` acts as a master switch: only when it is enabled for the request's scope are the interceptors
+ * `http.enableCors` acts as a master switch: only when it is enabled for the request's scope are the interceptors
  * consulted to determine the allowed origin (falling back to reflecting the request's `Origin`). When it is disabled,
  * no CORS headers are emitted at all - not even if an interceptor would allow the origin.
  *
  * Note: Some tests set the restricted `Origin:` header, requiring `-Dsun.net.http.allowRestrictedHeaders=true`. This is
  * enabled centrally in [SiriusExtension.beforeAll]. Requests carrying [TestCorsScopeDetector.HEADER_DISABLE_CORS_ALL]
- * are bound to a scope which disables `corsAllowAll`.
+ * are bound to a scope which disables `enableCors`.
  */
 @ExtendWith(SiriusExtension::class)
 class CorsTest {
@@ -46,15 +46,15 @@ class CorsTest {
         TestCorsInterceptor.allowedOrigin = null
     }
 
-    // --- corsAllowAll master switch ---
+    // --- enableCors master switch ---
 
     @Test
-    fun `given corsAllowAll is enabled when a request carries an origin then it is reflected as 'Access-Control-Allow-Origin'`() {
+    fun `given enableCors is enabled when a request carries an origin then it is reflected as 'Access-Control-Allow-Origin'`() {
         assertEquals("TEST", requestAllowedOrigin("TEST"))
     }
 
     @Test
-    fun `given corsAllowAll is disabled then no CORS headers are emitted even if an interceptor would allow the origin`() {
+    fun `given enableCors is disabled then no CORS headers are emitted even if an interceptor would allow the origin`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Wildcard()
 
         val connection = sendGet("https://example.com", disableCorsAll = true)
@@ -68,7 +68,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when a preflight request is received then origin, methods and headers are answered`() {
+    fun `given enableCors is enabled when a preflight request is received then origin, methods and headers are answered`() {
         val connection = sendPreflight(origin = "TEST", requestHeaders = "X-Test")
 
         assertAll(
@@ -94,7 +94,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when a preflight request is received then 'Access-Control-Allow-Methods' is derived from the registered routes`() {
+    fun `given enableCors is enabled when a preflight request is received then 'Access-Control-Allow-Methods' is derived from the registered routes`() {
         // '/test/another-restricted-method' only declares GET, so the preflight must advertise exactly GET and the
         // centrally handled OPTIONS - and not the previously hard-coded "GET,PUT,POST,DELETE".
         val connection = sendPreflight(uri = "/test/another-restricted-method", origin = "TEST")
@@ -104,21 +104,21 @@ class CorsTest {
     }
 
     @Test
-    fun `given a scope overriding corsAllowAll to false when the global setting is enabled then automatic cors is disabled`() {
+    fun `given a scope overriding enableCors to false when the global setting is enabled then automatic cors is disabled`() {
         UserContext.get().setCurrentScope(configuredScope("corsDisabled", false))
-        assertFalse(TestRequest.GET("/system/ok").isCorsAllowAll)
+        assertFalse(TestRequest.GET("/system/ok").isCorsEnabled)
     }
 
     @Test
-    fun `given a scope without a corsAllowAll override when the global setting is enabled then the global setting is used`() {
+    fun `given a scope without an enableCors override when the global setting is enabled then the global setting is used`() {
         UserContext.get().setCurrentScope(configuredScope("default", null))
-        assertTrue(TestRequest.GET("/system/ok").isCorsAllowAll)
+        assertTrue(TestRequest.GET("/system/ok").isCorsEnabled)
     }
 
-    // --- Allowed origin strategies (corsAllowAll enabled) ---
+    // --- Allowed origin strategies (CORS enabled) ---
 
     @Test
-    fun `given corsAllowAll is enabled when no interceptor decides on a strategy then the requested origin is reflected as fallback`() {
+    fun `given enableCors is enabled when no interceptor decides on a strategy then the requested origin is reflected as fallback`() {
         TestCorsInterceptor.allowedOrigin = null
 
         assertEquals("https://example.com", requestAllowedOrigin("https://example.com"))
@@ -126,7 +126,7 @@ class CorsTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["https://example.com", "http://localhost:3000"])
-    fun `given corsAllowAll is enabled when the interceptor returns a Wildcard strategy then the asterisk is returned regardless of the requested origin`(
+    fun `given enableCors is enabled when the interceptor returns a Wildcard strategy then the asterisk is returned regardless of the requested origin`(
         requestOrigin: String
     ) {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Wildcard()
@@ -136,7 +136,7 @@ class CorsTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["https://example.com", "http://localhost:3000", "https://sub.domain.example.com:8443"])
-    fun `given corsAllowAll is enabled when the interceptor returns a MatchRequest strategy then the requested origin is reflected`(
+    fun `given enableCors is enabled when the interceptor returns a MatchRequest strategy then the requested origin is reflected`(
         requestOrigin: String
     ) {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.MatchRequest()
@@ -146,7 +146,7 @@ class CorsTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["https://a.example.com", "https://b.example.com"])
-    fun `given corsAllowAll is enabled when the interceptor returns a Specific strategy then an allowed origin is reflected`(
+    fun `given enableCors is enabled when the interceptor returns a Specific strategy then an allowed origin is reflected`(
         requestOrigin: String
     ) {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
@@ -156,7 +156,7 @@ class CorsTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["HTTPS://A.EXAMPLE.COM", "https://evil.example.com"])
-    fun `given corsAllowAll is enabled when the interceptor returns a Specific strategy then a disallowed origin yields no 'Access-Control-Allow-Origin' header`(
+    fun `given enableCors is enabled when the interceptor returns a Specific strategy then a disallowed origin yields no 'Access-Control-Allow-Origin' header`(
         requestOrigin: String
     ) {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
@@ -164,11 +164,11 @@ class CorsTest {
         assertNull(requestAllowedOrigin(requestOrigin))
     }
 
-    // --- Access-Control-Allow-Credentials (corsAllowAll enabled) ---
+    // --- Access-Control-Allow-Credentials (CORS enabled) ---
 
     @ParameterizedTest
     @ValueSource(strings = ["https://a.example.com", "https://b.example.com"])
-    fun `given corsAllowAll is enabled when the interceptor allows credentials for a Specific origin then the credentials header is set`(
+    fun `given enableCors is enabled when the interceptor allows credentials for a Specific origin then the credentials header is set`(
         requestOrigin: String
     ) {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(true, specificAllowedOrigins)
@@ -192,7 +192,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when the interceptor does not allow credentials for a Specific origin then no credentials header is set`() {
+    fun `given enableCors is enabled when the interceptor does not allow credentials for a Specific origin then no credentials header is set`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
 
         val connection = sendGet("https://a.example.com")
@@ -209,7 +209,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when the interceptor reflects the origin (MatchRequest) then no credentials header is set`() {
+    fun `given enableCors is enabled when the interceptor reflects the origin (MatchRequest) then no credentials header is set`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.MatchRequest()
 
         val connection = sendGet("https://example.com")
@@ -226,7 +226,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when the interceptor allows any origin (Wildcard) then no credentials header is set`() {
+    fun `given enableCors is enabled when the interceptor allows any origin (Wildcard) then no credentials header is set`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Wildcard()
 
         val connection = sendGet("https://example.com")
@@ -238,7 +238,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when a preflight allows credentials for a Specific origin then origin and credentials headers are set`() {
+    fun `given enableCors is enabled when a preflight allows credentials for a Specific origin then origin and credentials headers are set`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(true, specificAllowedOrigins)
 
         val connection = sendPreflight(origin = "https://b.example.com")
@@ -260,7 +260,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when a preflight does not allow credentials for a Specific origin then no credentials header is set`() {
+    fun `given enableCors is enabled when a preflight does not allow credentials for a Specific origin then no credentials header is set`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
 
         val connection = sendPreflight(origin = "https://b.example.com")
@@ -276,13 +276,13 @@ class CorsTest {
         )
     }
 
-    // --- Vary (corsAllowAll enabled) ---
+    // --- Vary (CORS enabled) ---
     //
     // The `Vary` header is checked for the `Origin` token rather than exact equality, so unrelated entries (e.g.
     // `Accept-Encoding` added by compression) do not affect the result.
 
     @Test
-    fun `given corsAllowAll is enabled when the origin is reflected (MatchRequest) then Vary lists Origin`() {
+    fun `given enableCors is enabled when the origin is reflected (MatchRequest) then Vary lists Origin`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.MatchRequest()
 
         val vary = sendGet("https://example.com").getHeaderField(HttpHeaderNames.VARY.toString())
@@ -293,7 +293,7 @@ class CorsTest {
     }
 
     @Test
-    fun `given corsAllowAll is enabled when a Specific origin is not allowed then Vary still lists Origin although no allow-origin header is returned`() {
+    fun `given enableCors is enabled when a Specific origin is not allowed then Vary still lists Origin although no allow-origin header is returned`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
 
         val connection = sendGet("https://evil.example.com")
@@ -306,13 +306,13 @@ class CorsTest {
         )
     }
 
-    private fun configuredScope(scopeType: String, corsAllowAll: Boolean?): ScopeInfo =
+    private fun configuredScope(scopeType: String, enableCors: Boolean?): ScopeInfo =
         ScopeInfo(
             scopeType,
             scopeType,
             scopeType,
             null,
-            corsAllowAll?.let { value -> { ConfigFactory.parseString("http.corsAllowAll=$value") } },
+            enableCors?.let { value -> { ConfigFactory.parseString("http.enableCors=$value") } },
             null
         )
 

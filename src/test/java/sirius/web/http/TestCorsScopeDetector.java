@@ -18,9 +18,9 @@ import java.util.Optional;
 
 /**
  * A test {@link ScopeDetector} which allows {@code CorsTest} to disable the automatic CORS handling
- * ({@code http.corsAllowAll}) for an individual request over a real HTTP connection.
+ * ({@code http.enableCors}) for an individual request over a real HTTP connection.
  * <p>
- * Since the global test configuration enables {@code http.corsAllowAll}, the {@link sirius.web.controller.Interceptor}
+ * Since the global test configuration enables {@code http.enableCors}, the {@link sirius.web.controller.Interceptor}
  * based CORS origin resolution would never be reached. Requests carrying the {@link #HEADER_DISABLE_CORS_ALL} header
  * are therefore bound to a scope which overrides the setting to {@code false}. All other requests use the
  * {@link ScopeInfo#DEFAULT_SCOPE} and hence keep the globally enabled handling.
@@ -38,7 +38,7 @@ public class TestCorsScopeDetector implements ScopeDetector {
                                                                          "cors-restricted",
                                                                          null,
                                                                          scope -> ConfigFactory.parseString(
-                                                                                 "http.corsAllowAll = false"),
+                                                                                 "http.enableCors = false"),
                                                                          null);
 
     @Nonnull

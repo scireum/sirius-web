@@ -35,9 +35,9 @@ public class CorsAllowOriginHelper {
      * Stores the given strategy in the request's {@link CorsContext} and, if it resolves to a concrete origin for the
      * current request, stores that resolved origin as well.
      * <p>
-     * If automatic CORS handling is disabled for the request's scope (i.e. {@link WebContext#isCorsAllowAll()} returns
+     * If automatic CORS handling is disabled for the request's scope (i.e. {@link WebContext#isCorsEnabled()} returns
      * {@code false}), this method does nothing: neither the strategy nor a resolved origin is stored, so no CORS
-     * headers are emitted for the request. {@code corsAllowAll} therefore acts as a master switch for the whole CORS
+     * headers are emitted for the request. {@code enableCors} therefore acts as a master switch for the whole CORS
      * handling.
      * </p>
      * <p>
@@ -48,7 +48,7 @@ public class CorsAllowOriginHelper {
      * </p>
      * <p>
      * <b>Note on performance:</b> The supplier is only invoked when CORS handling is enabled, so an expensive
-     * strategy computation (e.g. consulting interceptors) is deferred and skipped entirely when {@code corsAllowAll}
+     * strategy computation (e.g. consulting interceptors) is deferred and skipped entirely when {@code enableCors}
      * is disabled. Statically known strategies may be passed directly via the overloaded variant of this method.
      * </p>
      *
@@ -56,8 +56,8 @@ public class CorsAllowOriginHelper {
      * @param allowedOriginSupplier  supplies the allowed origin strategy to resolve and store
      */
     public void tryResolveAndStoreOrigin(WebContext webContext, Supplier<AllowedOrigin> allowedOriginSupplier) {
-        // If `corsAllowAll` is disabled, we explicitly do not want to handle anything CORS.
-        if (!webContext.isCorsAllowAll()) {
+        // If `enableCors` is disabled, we explicitly do not want to handle anything CORS.
+        if (!webContext.isCorsEnabled()) {
             return;
         }
 
@@ -73,7 +73,7 @@ public class CorsAllowOriginHelper {
      * <p>
      * <b>Note on performance:</b> The origin is only considered when CORS handling is enabled, so an expensive
      * strategy computation (e.g. consulting interceptors) should be deferred via
-     * {@link #tryResolveAndStoreOrigin(WebContext, Supplier)} so it can be skipped entirely when {@code corsAllowAll}
+     * {@link #tryResolveAndStoreOrigin(WebContext, Supplier)} so it can be skipped entirely when {@code enableCors}
      * is disabled!
      * </p>
      *

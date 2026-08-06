@@ -284,8 +284,8 @@ public class Response {
     }
 
     private void setupCors(DefaultHttpResponse response) {
-        // If `corsAllowAll` is disabled, we explicitly do not want to handle anything CORS.
-        if (!webContext.isCorsAllowAll()) {
+        // If `enableCors` is disabled, we explicitly do not want to handle anything CORS.
+        if (!webContext.isCorsEnabled()) {
             return;
         }
 

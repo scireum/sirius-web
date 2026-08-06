@@ -98,7 +98,7 @@ public class WebContext implements SubContext {
     /**
      * Defines the config key for enabling the automatic CORS handling.
      */
-    public static final String CONFIG_KEY_CORS_ALLOW_ALL = "http.corsAllowAll";
+    public static final String CONFIG_KEY_ENABLE_CORS = "http.enableCors";
 
     private static final String HEADER_X_FORWARDED_PROTO = "X-Forwarded-Proto";
     private static final String PROTOCOL_HTTPS = "https";
@@ -405,8 +405,8 @@ public class WebContext implements SubContext {
     /**
      * Should the automatic CORS handling be done or not?
      */
-    @ConfigValue(CONFIG_KEY_CORS_ALLOW_ALL)
-    private static boolean corsAllowAll;
+    @ConfigValue(CONFIG_KEY_ENABLE_CORS)
+    private static boolean enableCors;
 
     /**
      * Should a Strict-Transport-Security header be sent?
@@ -451,7 +451,7 @@ public class WebContext implements SubContext {
     /**
      * Determines if automatic CORS handling is enabled for the scope of this request.
      * <p>
-     * If the security scope defines {@code http.corsAllowAll}, that value overrides the global setting.
+     * If the security scope defines {@code http.enableCors}, that value overrides the global setting.
      * <p>
      * The scope is resolved via {@link UserContext#peekScope(WebContext)} and therefore <b>without installing it</b>.
      * This permits reading the setting early during request handling (e.g. while determining the allowed CORS origin)
@@ -459,8 +459,8 @@ public class WebContext implements SubContext {
      *
      * @return {@code true} if automatic CORS handling should be applied, {@code false} otherwise
      */
-    public boolean isCorsAllowAll() {
-        return UserContext.get().peekScope(this).getSettings().get(CONFIG_KEY_CORS_ALLOW_ALL).asBoolean(corsAllowAll);
+    public boolean isCorsEnabled() {
+        return UserContext.get().peekScope(this).getSettings().get(CONFIG_KEY_ENABLE_CORS).asBoolean(enableCors);
     }
 
     /**
