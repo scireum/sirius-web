@@ -28,8 +28,8 @@ import java.util.function.Supplier;
  * stores it in the request scoped {@link CorsContext}, and later writes it to the response as the actual CORS header.
  * </p>
  */
-@Register(classes = CorsAllowOriginHelper.class)
-public class CorsAllowOriginHelper {
+@Register(classes = CorsAllowOriginResolver.class)
+public class CorsAllowOriginResolver {
 
     /**
      * Stores the given strategy in the request's {@link CorsContext} and, if it resolves to a concrete origin for the

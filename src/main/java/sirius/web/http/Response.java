@@ -56,7 +56,7 @@ import sirius.pasta.tagliatelle.Template;
 import sirius.pasta.tagliatelle.rendering.GlobalRenderContext;
 import sirius.web.controller.PreserveErrorMessageTransformer;
 import sirius.web.cors.AllowedOrigin;
-import sirius.web.cors.CorsAllowOriginHelper;
+import sirius.web.cors.CorsAllowOriginResolver;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.services.JSONStructuredOutput;
@@ -181,7 +181,7 @@ public class Response {
     private static Tagliatelle engine;
 
     @Part
-    private static CorsAllowOriginHelper corsOriginHelper;
+    private static CorsAllowOriginResolver corsOriginResolver;
 
     @ConfigValue("http.response.defaultClientCacheTTL")
     private static Duration defaultCacheDuration;
@@ -296,16 +296,16 @@ public class Response {
         // ignore them.
 
         if (!headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)) {
-            corsOriginHelper.applyResolvedOriginHeader(response);
+            corsOriginResolver.applyResolvedOriginHeader(response);
         }
 
         // Only set the `Access-Control-Allow-Credentials` header if credentials have explicitly been allowed by the
         // interceptor determining the origin:
 
-        var shouldAllowCredentials = corsOriginHelper.getConfiguredOrigin()
-                                                     .filter(origin -> origin instanceof AllowedOrigin.Specific)
-                                                     .map(origin -> ((AllowedOrigin.Specific) origin).allowCredentials())
-                                                     .orElse(false);
+        var shouldAllowCredentials = corsOriginResolver.getConfiguredOrigin()
+                                                       .filter(origin -> origin instanceof AllowedOrigin.Specific)
+                                                       .map(origin -> ((AllowedOrigin.Specific) origin).allowCredentials())
+                                                       .orElse(false);
 
         if (shouldAllowCredentials && !headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
             headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");

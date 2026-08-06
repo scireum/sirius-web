@@ -27,7 +27,7 @@ import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.web.controller.Message;
 import sirius.web.cors.AllowedOrigin;
-import sirius.web.cors.CorsAllowOriginHelper;
+import sirius.web.cors.CorsAllowOriginResolver;
 import sirius.web.event.TemplateInvocationHandler;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -61,7 +61,7 @@ public class HelpDispatcher implements WebDispatcher {
     private static Duration defaultStaticAssetTTL;
 
     @Part
-    private static CorsAllowOriginHelper corsOriginHelper;
+    private static CorsAllowOriginResolver corsOriginResolver;
 
     @Part
     private Resources resources;
@@ -84,7 +84,7 @@ public class HelpDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        corsOriginHelper.tryResolveAndStoreOrigin(ctx, new AllowedOrigin.Wildcard());
+        corsOriginResolver.tryResolveAndStoreOrigin(ctx, new AllowedOrigin.Wildcard());
 
         ctx.enableTiming(HELP_PREFIX);
 

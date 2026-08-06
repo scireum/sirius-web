@@ -16,7 +16,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.HandledException;
 import sirius.web.cors.AllowedOrigin;
-import sirius.web.cors.CorsAllowOriginHelper;
+import sirius.web.cors.CorsAllowOriginResolver;
 import sirius.web.http.MimeHelper;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -40,7 +40,7 @@ public class DefaultDispatcher implements WebDispatcher {
     public static final String ATTRIBUTE_ORIGINAL_URI = "ORIGINAL_URI";
 
     @Part
-    private static CorsAllowOriginHelper corsOriginHelper;
+    private static CorsAllowOriginResolver corsOriginResolver;
 
     @ConfigValue("http.robots.txt.enabled")
     private boolean serveRobots;
@@ -55,7 +55,7 @@ public class DefaultDispatcher implements WebDispatcher {
 
     @Override
     public DispatchDecision dispatch(WebContext webContext) throws Exception {
-        corsOriginHelper.tryResolveAndStoreOrigin(webContext, new AllowedOrigin.MatchRequest());
+        corsOriginResolver.tryResolveAndStoreOrigin(webContext, new AllowedOrigin.MatchRequest());
 
         Optional<HandledException> exception = webContext.checkParameterReadability();
         if (exception.isPresent()) {

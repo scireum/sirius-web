@@ -26,7 +26,7 @@ import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
 import sirius.pasta.tagliatelle.Template;
 import sirius.web.cors.AllowedOrigin;
-import sirius.web.cors.CorsAllowOriginHelper;
+import sirius.web.cors.CorsAllowOriginResolver;
 import sirius.web.http.Response;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
@@ -76,7 +76,7 @@ public class AssetsDispatcher implements WebDispatcher {
     private static Duration defaultStaticAssetTTL;
 
     @Part
-    private static CorsAllowOriginHelper corsOriginHelper;
+    private static CorsAllowOriginResolver corsOriginResolver;
 
     private File cacheDirFile;
 
@@ -98,7 +98,7 @@ public class AssetsDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        corsOriginHelper.tryResolveAndStoreOrigin(webContext, new AllowedOrigin.Wildcard());
+        corsOriginResolver.tryResolveAndStoreOrigin(webContext, new AllowedOrigin.Wildcard());
 
         String effectiveUrl = computeEffectiveURI(webContext);
 

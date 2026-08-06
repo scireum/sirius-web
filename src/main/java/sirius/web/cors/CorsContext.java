@@ -17,7 +17,7 @@ import java.util.Optional;
 /**
  * Carries the CORS origin resolved for the current request as a {@link SubContext}.
  * <p>
- * {@link CorsAllowOriginHelper} determines the effective {@code Access-Control-Allow-Origin} early during dispatching
+ * {@link CorsAllowOriginResolver} determines the effective {@code Access-Control-Allow-Origin} early during dispatching
  * and stores it here, so that it can later be applied when the response is created - without having to thread it
  * through the call chain or resort to string keyed request attributes.
  */

@@ -31,7 +31,7 @@ import sirius.kernel.health.HandledException;
 import sirius.kernel.health.Log;
 import sirius.kernel.xml.StructuredOutput;
 import sirius.web.cors.AllowedOrigin;
-import sirius.web.cors.CorsAllowOriginHelper;
+import sirius.web.cors.CorsAllowOriginResolver;
 import sirius.web.http.CSRFHelper;
 import sirius.web.http.Firewall;
 import sirius.web.http.InputStreamHandler;
@@ -107,7 +107,7 @@ public class ControllerDispatcher implements WebDispatcher {
     private CSRFHelper csrfHelper;
 
     @Part
-    private CorsAllowOriginHelper corsOriginHelper;
+    private CorsAllowOriginResolver corsOriginResolver;
 
     @Part
     @Nullable
@@ -307,14 +307,14 @@ public class ControllerDispatcher implements WebDispatcher {
      * <p>
      * The stored origin can then be used in order to set the {@code Access-Control-Allow-Origin} header in the
      * response in the relevant places by using
-     * {@link CorsAllowOriginHelper#applyResolvedOriginHeader(Response)}.
+     * {@link CorsAllowOriginResolver#applyResolvedOriginHeader(Response)}.
      * </p>
      *
      * <p>
      * <b>Note:</b> The strategy is only resolved and stored when {@code webContext.isCorsEnabled()} is set for the
      * request's scope - in that case the interceptors decide based on the routes matching the URI (falling back to a
      * {@link AllowedOrigin.MatchRequest} reflecting the request's origin if none does). If it is not set,
-     * {@link CorsAllowOriginHelper#tryResolveAndStoreOrigin(WebContext, java.util.function.Supplier)} stores nothing
+     * {@link CorsAllowOriginResolver#tryResolveAndStoreOrigin(WebContext, java.util.function.Supplier)} stores nothing
      * (and does not even consult the interceptors), so no CORS headers are emitted.
      * </p>
      *
@@ -322,7 +322,7 @@ public class ControllerDispatcher implements WebDispatcher {
      * @param uri        the effective request URI
      */
     private void determineAndStoreAllowedOriginForUri(WebContext webContext, String uri) {
-        corsOriginHelper.tryResolveAndStoreOrigin(webContext, () -> {
+        corsOriginResolver.tryResolveAndStoreOrigin(webContext, () -> {
             Collection<Route> routes = collectMatchingRoutes(webContext, uri);
             return determineAllowedOriginForRoutes(webContext, routes);
         });
@@ -445,7 +445,7 @@ public class ControllerDispatcher implements WebDispatcher {
             response.setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_METHODS, allowedMethods)
                     .setHeader(HttpHeaderNames.ACCESS_CONTROL_ALLOW_HEADERS,
                                requestedHeaders == null ? "" : requestedHeaders);
-            corsOriginHelper.applyResolvedOriginHeader(response);
+            corsOriginResolver.applyResolvedOriginHeader(response);
         }
 
         response.status(HttpResponseStatus.OK);
