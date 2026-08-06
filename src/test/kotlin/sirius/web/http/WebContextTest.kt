@@ -165,6 +165,109 @@ class WebContextTest {
 
     }
 
+    private fun openConnection(path: String, sessionId: String? = null): HttpURLConnection {
+        val connection = URI("http://localhost:9999$path").toURL().openConnection() as HttpURLConnection
+        sessionId?.let { connection.setRequestProperty(TestServerSessionStorage.SESSION_HEADER, it) }
+        return connection
+    }
+
+    @Test
+    fun `a server session round-trips between requests without emitting any cookie`() {
+
+        // The first request writes into the server session...
+        val writeConnection = openConnection("/test/session-test", "roundtrip")
+        writeConnection.requestMethod = "GET"
+        writeConnection.connect()
+
+        assertEquals(200, writeConnection.responseCode)
+        // ...but neither a session cookie nor a session pin cookie is emitted.
+        val setCookies = writeConnection.headerFields[HttpHeaderNames.SET_COOKIE.toString()] ?: emptyList()
+        assertTrue { setCookies.none { it.startsWith("SIRIUS_SESSION") } }
+        assertTrue { setCookies.none { it.contains("PIN", ignoreCase = true) } }
+        assertEquals("test", TestServerSessionStorage.getStoredSession("roundtrip")["test1"])
+
+        // The second request reads the value back from the storage (value set to null is not stored).
+        val readConnection = openConnection("/test/session-test-read", "roundtrip")
+        readConnection.requestMethod = "GET"
+        readConnection.connect()
+
+        assertEquals(200, readConnection.responseCode)
+        val body = readConnection.inputStream.bufferedReader().readText()
+        assertTrue { body.contains("test1=test") }
+        assertFalse { body.contains("test2=test") }
+    }
+
+    @Test
+    fun `a session cookie is ignored when the server session is active`() {
+
+        // Obtain a valid session cookie carrying test1=test the classic way...
+        val cookieConnection = openConnection("/test/session-test")
+        cookieConnection.requestMethod = "GET"
+        cookieConnection.connect()
+        assertEquals(200, cookieConnection.responseCode)
+        val sessionCookie = cookieConnection.headerFields[HttpHeaderNames.SET_COOKIE.toString()]!!
+            .first { it.startsWith("SIRIUS_SESSION=") }
+            .substringBefore(";")
+
+        // ...and send it along with a server session id: the cookie values must be invisible.
+        val readConnection = openConnection("/test/session-test-read", "cookie-ignored")
+        readConnection.requestMethod = "GET"
+        readConnection.setRequestProperty(HttpHeaderNames.COOKIE.toString(), sessionCookie)
+        readConnection.connect()
+
+        assertEquals(200, readConnection.responseCode)
+        assertTrue { readConnection.inputStream.bufferedReader().readText().contains("test1=<none>") }
+    }
+
+    @Test
+    fun `server session changes on a cacheable response are discarded`() {
+
+        val persistCallsBefore = TestServerSessionStorage.getPersistCalls()
+
+        val connection = openConnection("/test/session-test-cacheable", "cacheable")
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+        assertEquals(persistCallsBefore, TestServerSessionStorage.getPersistCalls())
+        assertFalse { TestServerSessionStorage.hasStoredSession("cacheable") }
+    }
+
+    @Test
+    fun `a failing server session load yields an empty session and suppresses persisting`() {
+
+        val persistCallsBefore = TestServerSessionStorage.getPersistCalls()
+
+        // The load fails, but the request is still answered normally (fail-open) with an empty session...
+        val connection = openConnection("/test/session-test", TestServerSessionStorage.FAILING_SESSION_ID)
+        connection.requestMethod = "GET"
+        connection.connect()
+
+        assertEquals(200, connection.responseCode)
+        // ...and the written value is NOT persisted, so a transient error cannot wipe the stored session.
+        assertEquals(persistCallsBefore, TestServerSessionStorage.getPersistCalls())
+        assertFalse { TestServerSessionStorage.hasStoredSession(TestServerSessionStorage.FAILING_SESSION_ID) }
+    }
+
+    @Test
+    fun `clearing a server session deletes the stored session`() {
+
+        // Seed a stored session...
+        val writeConnection = openConnection("/test/session-test", "to-clear")
+        writeConnection.requestMethod = "GET"
+        writeConnection.connect()
+        assertEquals(200, writeConnection.responseCode)
+        assertTrue { TestServerSessionStorage.hasStoredSession("to-clear") }
+
+        // ...and clear it: the storage receives an empty map and removes the session.
+        val clearConnection = openConnection("/test/session-test-clear", "to-clear")
+        clearConnection.requestMethod = "GET"
+        clearConnection.connect()
+
+        assertEquals(200, clearConnection.responseCode)
+        assertFalse { TestServerSessionStorage.hasStoredSession("to-clear") }
+    }
+
     @Test
     fun `a custom uri installed before execute survives the build step`() {
 

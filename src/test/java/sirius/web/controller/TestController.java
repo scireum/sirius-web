@@ -362,6 +362,20 @@ public class TestController extends BasicController {
                           + webContext.getSessionValue("test2").asString("<none>"));
     }
 
+    @Routed("/test/session-test-clear")
+    public void sessionTestClear(WebContext webContext) {
+        webContext.clearSession();
+
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    @Routed("/test/session-test-cacheable")
+    public void sessionTestCacheable(WebContext webContext) {
+        webContext.setSessionValue("test1", "test");
+
+        webContext.respondWith().cached().direct(HttpResponseStatus.OK, "OK");
+    }
+
     @Routed("/test/redirect-to-get")
     public void redirect(WebContext webContext) {
         webContext.respondWith().redirectToGet("/test/redirect-target");
