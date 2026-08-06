@@ -16,6 +16,7 @@ import sirius.pasta.noodle.compiler.SourceCodeInfo
 import sirius.pasta.tagliatelle.compiler.TemplateCompilationContext
 import sirius.pasta.tagliatelle.compiler.TemplateCompiler
 import sirius.web.http.CSRFHelper
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -47,6 +48,27 @@ class WondergemUploadTest {
         assertFalse { render("<w:imageUpload uploadUrl=\"/test/upload\"/>").contains("'[]'") }
     }
 
+    @Test
+    fun `w imageUpload keeps every query parameter of the upload URL`() {
+        val rendered = render("<w:imageUpload uploadUrl=\"/test/upload?a=1&b=2\"/>")
+
+        assertEquals("/test/upload?a=1&b=2", uploadUrlPassedTo("imageUpload", rendered))
+    }
+
+    @Test
+    fun `w fileUpload keeps every query parameter of the upload URL`() {
+        val rendered = render("<w:fileUpload uploadUrl=\"/test/upload?a=1&b=2\"/>")
+
+        assertEquals("/test/upload?a=1&b=2", uploadUrlPassedTo("fileUpload", rendered))
+    }
+
+    @Test
+    fun `w fileUpload keeps an apostrophe within the upload URL`() {
+        val rendered = render("<w:fileUpload uploadUrl=\"/test/upload?name=O'Brien&a=1\"/>")
+
+        assertEquals("/test/upload?name=O'Brien&a=1", uploadUrlPassedTo("fileUpload", rendered))
+    }
+
     private fun render(source: String): String {
         val context = TemplateCompilationContext(
                 Template("test.html.pasta", null),
@@ -58,6 +80,19 @@ class WondergemUploadTest {
         assertTrue { errors.isEmpty() }
 
         return context.template.renderToString()
+    }
+
+    /**
+     * Reads back the URL the given uploader was invoked with.
+     * <p>
+     * The JavaScript string escapes are undone so that the result can be compared to the URL which was handed to
+     * the taglib. This deliberately does not assert how the value is escaped, only that it survives unharmed.
+     */
+    private fun uploadUrlPassedTo(uploader: String, rendered: String): String {
+        return rendered.substringAfter("$uploader('")
+                       .substringBefore("',")
+                       .replace("\\/", "/")
+                       .replace("\\'", "'")
     }
 
     companion object {

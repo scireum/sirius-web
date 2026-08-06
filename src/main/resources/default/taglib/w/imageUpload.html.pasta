@@ -11,7 +11,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('.@name').each(function (index) {
-            imageUpload('@uploadUrl',
+            imageUpload('<i:raw>@escapeJS(uploadUrl)</i:raw>',
                 this,
                 '@previewUrl',
                 '@imageUrl',

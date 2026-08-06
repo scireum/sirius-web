@@ -9,7 +9,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('.@name').each(function (index) {
-            fileUpload('@uploadUrl',
+            fileUpload('<i:raw>@escapeJS(uploadUrl)</i:raw>',
                 this,
                 {CSRFToken: '@part(sirius.web.http.CSRFHelper.class).getCSRFToken()'},
                 <i:raw>@allowedExtensions</i:raw>,
