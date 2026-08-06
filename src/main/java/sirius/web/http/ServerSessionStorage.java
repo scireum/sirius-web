@@ -8,6 +8,8 @@
 
 package sirius.web.http;
 
+import sirius.kernel.di.std.AutoRegister;
+
 import java.util.Map;
 
 /**
@@ -25,6 +27,7 @@ import java.util.Map;
  * (which can carry a session id) instead of a session cookie. Implementations are registered via
  * {@link sirius.kernel.di.std.Register} against this interface.
  */
+@AutoRegister
 public interface ServerSessionStorage {
 
     /**
