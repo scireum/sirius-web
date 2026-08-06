@@ -15,9 +15,9 @@
                 this,
                 '@previewUrl',
                 '@imageUrl',
-                 <i:raw>@allowedExtensions</i:raw>,
-                @singleFile
-        );
+                <i:raw>@allowedExtensions</i:raw>,
+                @singleFile,
+                {CSRFToken: '@part(sirius.web.http.CSRFHelper.class).getCSRFToken()'});
         });
     });
 </script>
