@@ -42,16 +42,6 @@ public class UserInfo extends Composable {
     public static final String PERMISSION_LOGGED_IN = "flag-logged-in";
 
     /**
-     * This permission represents a user whose identity was established via an API token presented in the request
-     * (e.g. an OAuth bearer token) rather than via an ambient session cookie.
-     * <p>
-     * This has to be granted by the resolving {@link UserManager} on the user info built for the current request -
-     * it must never be stored in cached role sets, as the very same user may be resolved via a session cookie in
-     * another request.
-     */
-    public static final String PERMISSION_TOKEN_AUTHENTICATED = "flag-token-authenticated";
-
-    /**
      * Fallback user if no user is currently available. This user has no permissions.
      */
     public static final UserInfo NOBODY = Builder.createUser("ANONYMOUS").withUsername("(no user)").build();
