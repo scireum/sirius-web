@@ -318,6 +318,21 @@ class WebContextTest {
     }
 
     @Test
+    fun `a rewrite while dispatching does not change the uri of the request itself`() {
+
+        // Guards what dispatchers doing SEO url rewriting rely on: withCustomURI changes the requested uri, but the
+        // uri of the underlying request keeps telling what the client actually asked for.
+        val request = TestRequest.GET("/test/rewrite-during-dispatch?original=true")
+
+        val result = request.execute()
+
+        assertEquals(200, result.status.code())
+        assertEquals("/test/rewrite-during-dispatch?original=true", request.uri())
+        assertEquals("/test/rewritten-target", request.requestedURI)
+        assertEquals("true", request.getParameter("rewritten"))
+    }
+
+    @Test
     fun `a legacy unencrypted session cookie is read and upgraded to the encrypted format`() {
 
         // Build a legacy (unencrypted) session cookie in the "<sha512 hash>:<querystring>" format, signed with the

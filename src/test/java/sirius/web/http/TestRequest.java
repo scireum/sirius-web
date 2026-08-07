@@ -69,6 +69,7 @@ public class TestRequest extends WebContext implements HttpRequest {
     private final List<Cookie> testCookies = new ArrayList<>();
     private final Map<String, String> testSession;
     private String testUri;
+    private String customUri;
     private InputStream resource;
     private HttpMethod testMethod;
     private boolean preDispatch;
@@ -437,26 +438,29 @@ public class TestRequest extends WebContext implements HttpRequest {
     }
 
     /**
-     * Keeps the uri used for dispatching in sync when a custom uri is installed before {@link #execute()}:
-     * {@link #build()} appends the collected parameters to it and re-parses the final uri, so a custom uri must
-     * become the base of that final uri instead of being silently reset to the constructor uri.
+     * Records a custom uri so that {@link #build()} can append the collected parameters to it instead of to the
+     * uri the request was created with.
+     * <p>
+     * Note that the uri of the underlying request is deliberately left untouched, just like for a real request: a
+     * rewrite performed while the request is being dispatched must not change what the client actually asked for.
      */
     @Override
     public WebContext withCustomURI(String uri) {
-        this.testUri = uri;
+        this.customUri = uri;
         return super.withCustomURI(uri);
     }
 
     protected void build() {
-        // append GET parameters to URI
+        // append GET parameters to the uri, using a custom uri installed before execute() as the base
+        String baseUri = customUri != null ? customUri : testUri;
         String queryString = generateQueryString(parameters);
         this.testUri =
-                this.testUri + (Strings.isFilled(queryString) ? (testUri.contains("?") ? "&" : "?") + queryString : "");
+                baseUri + (Strings.isFilled(queryString) ? (baseUri.contains("?") ? "&" : "?") + queryString : "");
 
         // Re-parse the query string against the final uri: if a parameter was accessed before execute() (e.g. by
         // a part which is consulted during the lazy session initialization and happens to check for a parameter),
         // the parameterless uri would otherwise remain pinned in the cached query string.
-        withCustomURI(testUri);
+        super.withCustomURI(testUri);
 
         // send resource in body
         if (resource != null && (testMethod.equals(HttpMethod.PATCH)
