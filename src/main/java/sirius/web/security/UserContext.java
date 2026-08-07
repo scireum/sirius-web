@@ -580,6 +580,30 @@ public class UserContext implements SubContext {
         return currentScope;
     }
 
+    /**
+     * Determines the scope for the given request <b>without installing it</b>.
+     * <p>
+     * In contrast to {@link #getScope()}, this method does not call {@link #setCurrentScope(ScopeInfo)} and therefore
+     * has no side effects - most notably it does not reset an already installed {@link #getCurrentUser() current user}.
+     * It returns an already bound scope if present, otherwise it detects the scope via the {@link ScopeDetector}
+     * (falling back to {@link ScopeInfo#DEFAULT_SCOPE} if none is present) but leaves the context untouched.
+     * <p>
+     * This is useful to read scope specific settings early during request handling (e.g. the CORS configuration)
+     * without prematurely binding the scope and thereby discarding a user which was installed manually.
+     *
+     * @param webContext the request to detect the scope from
+     * @return the currently installed scope, the detected scope or {@link ScopeInfo#DEFAULT_SCOPE}
+     */
+    public ScopeInfo peekScope(WebContext webContext) {
+        if (currentScope != null) {
+            return currentScope;
+        }
+        if (detector != null && webContext != null && webContext.isValid()) {
+            return detector.detectScope(webContext);
+        }
+        return ScopeInfo.DEFAULT_SCOPE;
+    }
+
     @Override
     public SubContext fork() {
         // We return a copy which keeps the same user and scope - but which can be change independently.

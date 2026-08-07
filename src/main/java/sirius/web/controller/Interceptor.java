@@ -9,7 +9,11 @@
 package sirius.web.controller;
 
 import sirius.kernel.di.std.Priorized;
+import sirius.web.cors.AllowedOrigin;
 import sirius.web.http.WebContext;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Can be used to intercept calls to controllers ({@link Controller})
@@ -83,4 +87,44 @@ public interface Interceptor extends Priorized {
      * @return <tt>true</tt> if the route should be executed, <tt>false</tt> otherwise
      */
     boolean shouldExecuteRoute(WebContext webContext, Route route);
+
+    /**
+     * Tries to determine which CORS origins should be allowed for the given collection of {@link Route}s.
+     *
+     * <p>
+     * In order to determine the correct allowed origin for a given endpoint, this method is invoked with the current
+     * WebContext and the collection of routes matching the called URI.
+     * The interceptor may then inspect the routes and answer in one of two different ways:
+     * <ol>
+     *     <li>By returning the preferred origin</li>
+     *     <li>By returning an empty optional to signal it is not able to make a decision.</li>
+     * </ol>
+     * </p>
+     *
+     * <p>
+     * Instead of returning the raw origin directly, the choice is represented in form of a subclass of the sealed
+     * {@link AllowedOrigin} interface. The caller must then handle it accordingly, e.g. by resolving to the concrete
+     * origin.
+     * </p>
+     *
+     * <p>
+     * By <b>default</b>, this method returns an empty optional, signalling that this interceptor does not make a
+     * decision. If no interceptor decides on a strategy, the {@link ControllerDispatcher} falls back to an
+     * {@link AllowedOrigin.MatchRequest}, which resolves to the origin of the current request.
+     * </p>
+     *
+     * <p>
+     * Please note that {@code enableCors} acts as a master switch: this method is only consulted when
+     * {@link WebContext#isCorsEnabled()} returns {@code true} for the request's scope. If CORS handling is disabled,
+     * no origin is resolved at all and this method is not invoked.
+     * </p>
+     *
+     * @param webContext the current request
+     * @param routes     the routes matching the uri that has been called
+     * @return the preferred CORS allowed origin strategy, or an empty optional if this interceptor does not make a
+     * decision
+     */
+    default Optional<AllowedOrigin> determineAllowedCorsOrigin(WebContext webContext, Collection<Route> routes) {
+        return Optional.empty();
+    }
 }

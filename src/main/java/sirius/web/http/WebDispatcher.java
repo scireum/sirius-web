@@ -40,6 +40,12 @@ import sirius.kernel.di.std.Priorized;
  * absolutely no blocking operations must be performed. However, the returned <tt>Callback</tt> is executed in its own
  * thread and free of any constraints.
  * </p>
+ * <p>
+ * <b>Important note regarding CORS:</b> If a dispatcher is willing to handle CORS requests, it must set the required
+ * headers itself! There is no central handling of CORS headers except for
+ * {@link sirius.web.controller.ControllerDispatcher} which will handle CORS headers for all controllers and is
+ * extensible via the {@link sirius.web.controller.Interceptor} interface.
+ * </p>
  *
  * @see WebServerHandler
  */
