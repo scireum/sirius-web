@@ -169,7 +169,7 @@ class WebContextTest {
     fun `a server session round-trips between requests without emitting any cookie`() {
 
         // The first request writes into the server session...
-        val writeConnection = openConnection("/test/session-test", "roundtrip").apply {
+        val writeConnection = openConnectionWithServerSession("/test/session-test", "roundtrip").apply {
             requestMethod = "GET"
             connect()
         }
@@ -182,7 +182,7 @@ class WebContextTest {
         assertEquals("test", TestServerSessionStorage.getStoredSession("roundtrip")["test1"])
 
         // The second request reads the value back from the storage (value set to null is not stored).
-        val readConnection = openConnection("/test/session-test-read", "roundtrip").apply {
+        val readConnection = openConnectionWithServerSession("/test/session-test-read", "roundtrip").apply {
             requestMethod = "GET"
             connect()
         }
@@ -197,7 +197,7 @@ class WebContextTest {
     fun `a session cookie is ignored when the server session is active`() {
 
         // Obtain a valid session cookie carrying test1=test the classic way...
-        val cookieConnection = openConnection("/test/session-test").apply {
+        val cookieConnection = openConnectionWithServerSession("/test/session-test").apply {
             requestMethod = "GET"
             connect()
         }
@@ -207,7 +207,7 @@ class WebContextTest {
             .substringBefore(";")
 
         // ...and send it along with a server session id: the cookie values must be invisible.
-        val readConnection = openConnection("/test/session-test-read", "cookie-ignored").apply {
+        val readConnection = openConnectionWithServerSession("/test/session-test-read", "cookie-ignored").apply {
             requestMethod = "GET"
             setRequestProperty(HttpHeaderNames.COOKIE.toString(), sessionCookie)
             connect()
@@ -222,7 +222,7 @@ class WebContextTest {
 
         val persistCallsBefore = TestServerSessionStorage.getPersistCalls()
 
-        val connection = openConnection("/test/session-test-cacheable", "cacheable").apply {
+        val connection = openConnectionWithServerSession("/test/session-test-cacheable", "cacheable").apply {
             requestMethod = "GET"
             connect()
         }
@@ -238,7 +238,7 @@ class WebContextTest {
         val persistCallsBefore = TestServerSessionStorage.getPersistCalls()
 
         // The load fails, but the request is still answered normally (fail-open) with an empty session...
-        val connection = openConnection("/test/session-test", TestServerSessionStorage.FAILING_SESSION_ID).apply {
+        val connection = openConnectionWithServerSession("/test/session-test", TestServerSessionStorage.FAILING_SESSION_ID).apply {
             requestMethod = "GET"
             connect()
         }
@@ -253,7 +253,7 @@ class WebContextTest {
     fun `clearing a server session deletes the stored session`() {
 
         // Seed a stored session...
-        val writeConnection = openConnection("/test/session-test", "to-clear").apply {
+        val writeConnection = openConnectionWithServerSession("/test/session-test", "to-clear").apply {
             requestMethod = "GET"
             connect()
         }
@@ -261,7 +261,7 @@ class WebContextTest {
         assertTrue { TestServerSessionStorage.hasStoredSession("to-clear") }
 
         // ...and clear it: the storage receives an empty map and removes the session.
-        val clearConnection = openConnection("/test/session-test-clear", "to-clear").apply {
+        val clearConnection = openConnectionWithServerSession("/test/session-test-clear", "to-clear").apply {
             requestMethod = "GET"
             connect()
         }
@@ -277,7 +277,7 @@ class WebContextTest {
         // so they must not pay for the (potentially expensive) session initialization.
         val checksBefore = TestServerSessionStorage.getResponsibilityChecks()
 
-        val connection = openConnection("/test/redirect-target").apply {
+        val connection = openConnectionWithServerSession("/test/redirect-target").apply {
             requestMethod = "GET"
             connect()
         }
@@ -292,7 +292,7 @@ class WebContextTest {
         // Without the server session header this request yields 403 (see CSRFTokenTest): the CSRF check protects
         // ambient cookie authority. With an active server session the cookie is ignored entirely, so there is
         // nothing to protect and the check is skipped.
-        val connection = openConnection("/test/fake-delete-data", "csrf-skip").apply {
+        val connection = openConnectionWithServerSession("/test/fake-delete-data", "csrf-skip").apply {
             requestMethod = "POST"
             connect()
         }
@@ -345,9 +345,9 @@ class WebContextTest {
 
     }
 
-    private fun openConnection(path: String, sessionId: String? = null): HttpURLConnection {
+    private fun openConnectionWithServerSession(path: String, serverSessionId: String? = null): HttpURLConnection {
         val connection = URI("http://localhost:9999$path").toURL().openConnection() as HttpURLConnection
-        sessionId?.let { connection.setRequestProperty(TestServerSessionStorage.SESSION_HEADER, it) }
+        serverSessionId?.let { connection.setRequestProperty(TestServerSessionStorage.SESSION_HEADER, it) }
         return connection
     }
 }
