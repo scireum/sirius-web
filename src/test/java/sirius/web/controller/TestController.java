@@ -381,6 +381,15 @@ public class TestController extends BasicController {
         webContext.respondWith().redirectToGet("/test/redirect-target");
     }
 
+    @Routed("/test/rewrite-during-dispatch")
+    public void rewriteDuringDispatch(WebContext webContext) {
+        // Simulates what a dispatcher doing SEO url rewriting does: the requested uri is changed while the request
+        // is being handled, which must not change the uri the request was originally made for.
+        webContext.withCustomURI("/test/rewritten-target?rewritten=true");
+
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
     @Routed("/test/redirect-target")
     public void redirectTarget(WebContext webContext) {
         webContext.respondWith().direct(HttpResponseStatus.OK, "target");
