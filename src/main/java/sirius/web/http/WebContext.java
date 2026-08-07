@@ -202,7 +202,9 @@ public class WebContext implements SubContext {
 
     /**
      * Contains decoded data of the client session - this is sent back and forth using a cookie. This data
-     * will not be stored on the server.
+     * will not be stored on the server - unless a {@link ServerSessionStorage} claims responsibility for the
+     * request, in which case the data is loaded from and persisted to that storage and no session cookie is used
+     * at all.
      */
     private Map<String, String> session;
 
@@ -226,6 +228,18 @@ public class WebContext implements SubContext {
      * encrypted format, even if it was not otherwise modified during this request.
      */
     private volatile boolean sessionUpgradeRequired;
+
+    /**
+     * Determines if the session of this request is managed by the registered {@link ServerSessionStorage} rather
+     * than by the session cookie.
+     */
+    private volatile boolean serverSessionActive;
+
+    /**
+     * Set if the {@link ServerSessionStorage} failed to load the session. In this case the request proceeds with an
+     * empty session, but persisting is suppressed so that a transient error cannot overwrite the stored session.
+     */
+    private volatile boolean serverSessionLoadFailed;
 
     /**
      * Specifies the micro-timing key used for this request. If null, no micro-timing will be recorded.
@@ -429,6 +443,10 @@ public class WebContext implements SubContext {
     @Part
     @Nullable
     private static SessionSecretComputer sessionSecretComputer;
+
+    @Part
+    @Nullable
+    private static ServerSessionStorage serverSessionStorage;
 
     @Part
     private static CSRFHelper csrfHelper;
@@ -858,9 +876,15 @@ public class WebContext implements SubContext {
     }
 
     /*
-     * Loads and parses the client session (cookie)
+     * Loads the session - either from the registered server session storage (if it claims responsibility for
+     * this request) or by parsing the client session cookie.
      */
     private void initSession() {
+        if (serverSessionStorage != null && isServerSessionResponsible()) {
+            initServerSession();
+            return;
+        }
+
         String encodedSession = getCookieValue(sessionCookieName);
         if (Strings.isFilled(encodedSession)) {
             session = decodeSession(encodedSession);
@@ -873,6 +897,52 @@ public class WebContext implements SubContext {
         } else {
             session = new HashMap<>();
         }
+    }
+
+    /*
+     * Determines if the registered server session storage claims this request. A throwing storage is treated as
+     * not responsible, so that e.g. a transient database error during its token checks degrades the request to
+     * the (for token clients effectively empty) cookie session instead of failing it.
+     */
+    private boolean isServerSessionResponsible() {
+        try {
+            return serverSessionStorage.isResponsibleFor(this);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
+            return false;
+        }
+    }
+
+    /*
+     * Loads the session from the registered server session storage. Note that neither the session cookie nor the
+     * session pinning are involved for such requests - both remain cookie-only concerns.
+     */
+    private void initServerSession() {
+        serverSessionActive = true;
+        try {
+            session = new HashMap<>(serverSessionStorage.loadSession(this));
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
+            session = new HashMap<>();
+            serverSessionLoadFailed = true;
+        }
+    }
+
+    /**
+     * Determines if the session of this request is managed by a {@link ServerSessionStorage} rather than by the
+     * session cookie.
+     * <p>
+     * Note that this initializes the session if it hasn't been accessed yet, so that the decision is made
+     * deterministically (e.g. before a CSRF check consults this method).
+     *
+     * @return <tt>true</tt> if the session of this request is stored on the server, <tt>false</tt> if the
+     * session cookie is in charge
+     */
+    public boolean isServerSessionActive() {
+        if (session == null) {
+            initSession();
+        }
+        return serverSessionActive;
     }
 
     /**
@@ -1060,6 +1130,9 @@ public class WebContext implements SubContext {
      * Sets an explicit session cookie TTL (time to live).
      * <p>
      * If a non-null value is given, this will overwrite {@link #defaultSessionCookieTTL} for this request/response.
+     * <p>
+     * Note that this has no effect if the session of this request is managed by a {@link ServerSessionStorage},
+     * as no session cookie is emitted at all in this case - the storage implementation owns the session lifetime.
      *
      * @param customSessionCookieTTL the new TTL for the client session cookie.
      */
@@ -1127,7 +1200,10 @@ public class WebContext implements SubContext {
      */
     public void clearSession() {
         if (session == null) {
-            session = new HashMap<>();
+            // Properly initialize the session (which may claim a server session) before clearing it - otherwise
+            // a server side session would neither be claimed nor deleted if clearing is the first session access
+            // of the request.
+            initSession();
         }
 
         session.clear();
@@ -1523,6 +1599,11 @@ public class WebContext implements SubContext {
      * @return a list of all cookies to be sent to the client.
      */
     protected Collection<Cookie> getOutCookies(boolean cacheableRequest) {
+        if (serverSessionActive) {
+            persistServerSessionIfRequired(cacheableRequest);
+            return cookiesOut == null ? null : cookiesOut.values();
+        }
+
         if (cacheableRequest) {
             // Notify a developer that changes to the client session are discarded due to a request being marked
             // as cacheable. This is treated as info, as it might be totally fine to have this behaviour if
@@ -1537,6 +1618,33 @@ public class WebContext implements SubContext {
         }
 
         return cookiesOut == null ? null : cookiesOut.values();
+    }
+
+    /*
+     * Persists a modified server side session at response time. Mirrors the contract of the session cookie:
+     * changes on cacheable responses are discarded, and a failed load suppresses persisting entirely so that a
+     * transient error cannot overwrite the stored session. Persist errors are logged but never break the
+     * response commit.
+     */
+    private void persistServerSessionIfRequired(boolean cacheableRequest) {
+        if (!sessionModified || serverSessionLoadFailed) {
+            return;
+        }
+
+        if (cacheableRequest) {
+            if (Sirius.isDev()) {
+                WebServer.LOG.INFO("Not going to update the server session (%s) for a cacheable request: %n%s",
+                                   session,
+                                   this);
+            }
+            return;
+        }
+
+        try {
+            serverSessionStorage.persistSession(this, session);
+        } catch (Exception exception) {
+            Exceptions.handle(WebServer.LOG, exception);
+        }
     }
 
     private void buildClientSessionCookie() {
