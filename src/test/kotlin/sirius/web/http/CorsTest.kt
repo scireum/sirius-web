@@ -215,6 +215,97 @@ class CorsTest {
         assertNull(requestAllowedOrigin(requestOrigin))
     }
 
+    // --- CORS handling of the non-controller dispatchers ---
+    //
+    // Dispatchers are invoked ascending by priority: AssetsDispatcher (-10), ServiceDispatcher (-5),
+    // ControllerDispatcher (+10), HelpDispatcher (+100) and finally DefaultDispatcher (999). Since an origin may only
+    // be resolved once per request, the first dispatcher which resolves one determines the outcome for the whole
+    // request - the interceptors are only consulted if `ControllerDispatcher` gets there first.
+
+    @Test
+    fun `given enableCors is enabled when an asset is requested then the AssetsDispatcher allows any origin`() {
+        val connection = sendGetTo("/assets/test.png", "https://example.com")
+
+        assertEquals("*", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
+    }
+
+    @Test
+    fun `given an interceptor restricting the origin when an asset is requested then the AssetsDispatcher still allows any origin`() {
+        // The AssetsDispatcher runs before the ControllerDispatcher, so its `Wildcard` is resolved first and wins.
+        // Assets are public static files, hence they are deliberately not subject to the interceptors.
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
+
+        val connection = sendGetTo("/assets/test.png", "https://untrusted.example.com")
+
+        assertEquals("*", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
+    }
+
+    @Test
+    fun `given enableCors is enabled when the help system is requested then the requested origin is reflected`() {
+        // Note that the HelpDispatcher (+100) declares a `Wildcard`, but it is invoked after the ControllerDispatcher
+        // (+10), which already resolves an origin for every request carrying an `Origin` header. As only the first
+        // resolution counts, the `Wildcard` never takes effect for an actual CORS request and the requested origin is
+        // reflected instead. It only applies to requests without an `Origin` header - see the test below.
+        val connection = sendGetTo("/help", "https://example.com")
+
+        assertEquals(
+            "https://example.com",
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString())
+        )
+    }
+
+    @Test
+    fun `given enableCors is enabled when the help system is requested without an origin then the HelpDispatcher allows any origin`() {
+        // Without an `Origin` header the ControllerDispatcher skips the resolution entirely, so the HelpDispatcher is
+        // the first to resolve one and its `Wildcard` wins.
+        val connection = sendGetTo("/help", null)
+
+        assertEquals("*", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
+    }
+
+    @Test
+    fun `given enableCors is enabled when an unknown path is requested then the requested origin is reflected`() {
+        val connection = sendGetTo("/no-such-path", "https://example.com")
+
+        assertEquals(
+            "https://example.com",
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString())
+        )
+    }
+
+    @Test
+    fun `given an interceptor restricting the origin when an unknown path is requested then the DefaultDispatcher does not reflect a disallowed origin`() {
+        // The ControllerDispatcher resolves the interceptor's strategy before falling through to the DefaultDispatcher,
+        // so the latter must not be able to replace it with its own `MatchRequest`.
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
+
+        val connection = sendGetTo("/no-such-path", "https://untrusted.example.com")
+
+        assertNull(connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
+    }
+
+    @Test
+    fun `given enableCors is enabled when a service is requested then the requested origin is reflected`() {
+        val connection = sendGetTo("/service/json/no-such-service", "https://example.com")
+
+        assertEquals(
+            "https://example.com",
+            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString())
+        )
+    }
+
+    @Test
+    fun `given an interceptor restricting the origin when an unknown service is requested then a disallowed origin is not reflected`() {
+        // The ServiceDispatcher only resolves an origin once it actually handles the request. For an unknown service
+        // it continues without resolving, so the ControllerDispatcher still gets to apply the interceptor's strategy
+        // instead of the hardcoded `MatchRequest`.
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(false, specificAllowedOrigins)
+
+        val connection = sendGetTo("/service/json/no-such-service", "https://untrusted.example.com")
+
+        assertNull(connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
+    }
+
     // --- Access-Control-Allow-Credentials (CORS enabled) ---
 
     @ParameterizedTest
@@ -442,6 +533,22 @@ class CorsTest {
      */
     private fun requestAllowedOrigin(requestOrigin: String?, disableCorsAll: Boolean = false): String? =
         sendGet(requestOrigin, disableCorsAll).getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString())
+
+    /**
+     * Sends a GET request to [uri], sending [requestOrigin] as `Origin` header if given, and returns the connection so
+     * that the response headers can be inspected.
+     *
+     * In contrast to [sendGet] this also tolerates error responses (e.g. the 404 produced for an unknown path), which
+     * expose their body via `errorStream` instead of `inputStream`.
+     */
+    private fun sendGetTo(uri: String, requestOrigin: String?): HttpURLConnection {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        if (requestOrigin != null) {
+            connection.addRequestProperty(HttpHeaderNames.ORIGIN.toString(), requestOrigin)
+        }
+        runCatching { connection.inputStream.close() }.onFailure { connection.errorStream?.close() }
+        return connection
+    }
 
     /**
      * Sends a GET request to `/system/ok` and returns the connection so that the response headers can be inspected.

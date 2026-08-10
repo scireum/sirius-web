@@ -67,8 +67,6 @@ public class ServiceDispatcher implements WebDispatcher {
             return DispatchDecision.CONTINUE;
         }
 
-        corsOriginResolver.tryResolveAndStoreOrigin(ctx, new AllowedOrigin.MatchRequest());
-
         // The real dispatching is put into its own method to support inlining of this check by the JIT
         return doDispatch(ctx);
     }
@@ -80,8 +78,13 @@ public class ServiceDispatcher implements WebDispatcher {
         String uri = ctx.getRequestedURI();
         Tuple<ServiceCall, StructuredService> handler = parsePath(ctx, uri);
         if (handler.getSecond() == null) {
+            // No service handles this path, so the request is left to the remaining dispatchers. We must not resolve
+            // an origin here, as that would finalize it and thereby suppress the (potentially more restrictive)
+            // strategy which the ControllerDispatcher determines via the interceptors.
             return DispatchDecision.CONTINUE;
         }
+
+        corsOriginResolver.tryResolveAndStoreOrigin(ctx, new AllowedOrigin.MatchRequest());
 
         invokeService(ctx, handler.getFirst(), handler.getSecond());
         return DispatchDecision.DONE;
