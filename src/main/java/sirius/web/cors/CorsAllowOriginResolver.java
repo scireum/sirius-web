@@ -27,6 +27,12 @@ import java.util.function.Supplier;
  * <i>strategy</i> for the header. This helper turns that strategy into a concrete origin for the current request,
  * stores it in the request scoped {@link CorsContext}, and later writes it to the response as the actual CORS header.
  * </p>
+ * <p>
+ * As a single request may pass through several dispatchers, each of which may attempt to resolve an origin, an
+ * origin may only be resolved once per request: the first successful call to
+ * {@link #tryResolveAndStoreOrigin(WebContext, Supplier)} wins and every subsequent call for the same request is
+ * silently ignored. This prevents a later dispatcher from weakening or overriding a decision that was already made.
+ * </p>
  */
 @Register(classes = CorsAllowOriginResolver.class)
 public class CorsAllowOriginResolver {
@@ -47,6 +53,12 @@ public class CorsAllowOriginResolver {
      * stored and no {@code Access-Control-Allow-Origin} header will be emitted.
      * </p>
      * <p>
+     * <b>Note on repeated invocation:</b> An origin may only be resolved once per request. If the {@link CorsContext}
+     * has already been {@linkplain CorsContext#isFinalized() finalized} - i.e. a previous call to this method already
+     * resolved an origin - this method does nothing, regardless of what the given {@code allowedOriginSupplier} would
+     * resolve to. This ensures that the first dispatcher/interceptor to resolve an origin wins.
+     * </p>
+     * <p>
      * <b>Note on performance:</b> The supplier is only invoked when CORS handling is enabled, so an expensive
      * strategy computation (e.g. consulting interceptors) is deferred and skipped entirely when {@code enableCors}
      * is disabled. Statically known strategies may be passed directly via the overloaded variant of this method.
@@ -62,10 +74,19 @@ public class CorsAllowOriginResolver {
         }
 
         var corsContext = CorsContext.get();
+
+        // If another part of the code has already determined an origin, we do not want to override it.
+        // This is important for cases where multiple dispatchers/interceptors have been executed and the first one
+        // should win. This way, it is impossible for the origin to be weakened by a later invocation.
+        if (corsContext.isFinalized()) {
+            return;
+        }
+
         var origin = allowedOriginSupplier.get();
 
         corsContext.setConfiguredOrigin(origin);
         tryResolveOrigin(webContext, origin).ifPresent(corsContext::setResolvedOrigin);
+        corsContext.markFinalized();
     }
 
     /**

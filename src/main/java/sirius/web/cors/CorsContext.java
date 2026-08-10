@@ -20,8 +20,15 @@ import java.util.Optional;
  * {@link CorsAllowOriginResolver} determines the effective {@code Access-Control-Allow-Origin} early during dispatching
  * and stores it here, so that it can later be applied when the response is created - without having to thread it
  * through the call chain or resort to string keyed request attributes.
+ * <p>
+ * As several dispatchers/interceptors may be invoked for a single request, an origin may only ever be resolved once
+ * per request. Once this context is marked as {@linkplain #markFinalized() finalized}, {@link #setConfiguredOrigin(AllowedOrigin)}
+ * and {@link #setResolvedOrigin(String)} refuse any further modification. This guarantees that the first strategy to
+ * resolve an origin wins and can never be weakened or overridden by a later invocation.
  */
 public class CorsContext implements SubContext {
+
+    private boolean isFinalized = false;
 
     @Nullable
     private AllowedOrigin configuredOrigin;
@@ -39,11 +46,37 @@ public class CorsContext implements SubContext {
     }
 
     /**
+     * Marks this context as finalized, permanently locking in the currently stored origin.
+     * <p>
+     * Once finalized, {@link #setConfiguredOrigin(AllowedOrigin)} and {@link #setResolvedOrigin(String)} will throw
+     * an {@link IllegalStateException} instead of overriding the previously stored values. This is used to ensure
+     * that an origin can only be resolved once per request, so that later dispatchers/interceptors cannot weaken or
+     * override a decision that was already made.
+     */
+    public void markFinalized() {
+        isFinalized = true;
+    }
+
+    /**
+     * Determines whether this context has already been finalized.
+     *
+     * @return {@code true} if the origin for this request has already been resolved and finalized, {@code false}
+     * otherwise
+     */
+    public boolean isFinalized() {
+        return isFinalized;
+    }
+
+    /**
      * Stores the CORS origin strategy configured for the current request.
      *
      * @param configuredOrigin the configured origin strategy to store
+     * @throws IllegalStateException if the context has already been finalized
      */
     public void setConfiguredOrigin(@Nullable AllowedOrigin configuredOrigin) {
+        if (isFinalized) {
+            throw new IllegalStateException("Cannot modify finalized CORS context");
+        }
         this.configuredOrigin = configuredOrigin;
     }
 
@@ -51,8 +84,12 @@ public class CorsContext implements SubContext {
      * Stores the origin resolved for the current request.
      *
      * @param resolvedOrigin the resolved origin to store
+     * @throws IllegalStateException if the context has already been finalized
      */
     public void setResolvedOrigin(@Nullable String resolvedOrigin) {
+        if (isFinalized) {
+            throw new IllegalStateException("Cannot modify finalized CORS context");
+        }
         this.resolvedOrigin = resolvedOrigin;
     }
 

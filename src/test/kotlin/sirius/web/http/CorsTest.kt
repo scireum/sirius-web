@@ -18,7 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import sirius.kernel.SiriusExtension
+import sirius.kernel.di.std.Part
 import sirius.web.cors.AllowedOrigin
+import sirius.web.cors.CorsAllowOriginResolver
+import sirius.web.cors.CorsContext
 import sirius.web.security.ScopeInfo
 import sirius.web.security.UserContext
 import java.net.HttpURLConnection
@@ -44,6 +47,53 @@ class CorsTest {
     @AfterEach
     fun resetInterceptorStrategy() {
         TestCorsInterceptor.allowedOrigin = null
+    }
+
+    // --- An origin may only be resolved once per request ---
+
+    @Test
+    fun `given an origin has already been resolved when tryResolveAndStoreOrigin is called again then the first strategy wins`() {
+        val webContext = TestRequest.GET("/system/ok")
+        webContext.addHeader(HttpHeaderNames.ORIGIN, "https://first.example.com")
+
+        corsAllowOriginResolver.tryResolveAndStoreOrigin(webContext, AllowedOrigin.MatchRequest())
+        corsAllowOriginResolver.tryResolveAndStoreOrigin(webContext, AllowedOrigin.Wildcard())
+
+        assertAll(
+            { assertEquals(AllowedOrigin.MatchRequest(), corsAllowOriginResolver.getConfiguredOrigin().orElse(null)) },
+            { assertEquals("https://first.example.com", CorsContext.get().getResolvedOrigin().orElse(null)) },
+        )
+    }
+
+    @Test
+    fun `given the first strategy resolves to no origin when tryResolveAndStoreOrigin is called again then the second strategy is still ignored`() {
+        val webContext = TestRequest.GET("/system/ok")
+        webContext.addHeader(HttpHeaderNames.ORIGIN, "https://evil.example.com")
+
+        corsAllowOriginResolver.tryResolveAndStoreOrigin(webContext, AllowedOrigin.Specific(false, specificAllowedOrigins))
+        corsAllowOriginResolver.tryResolveAndStoreOrigin(webContext, AllowedOrigin.Wildcard())
+
+        assertAll(
+            {
+                assertEquals(
+                    AllowedOrigin.Specific(false, specificAllowedOrigins),
+                    corsAllowOriginResolver.getConfiguredOrigin().orElse(null)
+                )
+            },
+            { assertNull(CorsContext.get().getResolvedOrigin().orElse(null)) },
+        )
+    }
+
+    @Test
+    fun `given an origin has already been resolved when setConfiguredOrigin or setResolvedOrigin is called directly then an exception is thrown`() {
+        val corsContext = CorsContext.get()
+        corsContext.setConfiguredOrigin(AllowedOrigin.MatchRequest())
+        corsContext.markFinalized()
+
+        assertAll(
+            { assertFailsWith<IllegalStateException> { corsContext.setConfiguredOrigin(AllowedOrigin.Wildcard()) } },
+            { assertFailsWith<IllegalStateException> { corsContext.setResolvedOrigin("https://evil.example.com") } },
+        )
     }
 
     // --- enableCors master switch ---
@@ -304,6 +354,12 @@ class CorsTest {
             { assertNotNull(vary) },
             { assertContains(vary.orEmpty(), HttpHeaderNames.ORIGIN.toString(), ignoreCase = true) },
         )
+    }
+
+    companion object {
+        @JvmStatic
+        @Part
+        private lateinit var corsAllowOriginResolver: CorsAllowOriginResolver
     }
 
     private fun configuredScope(scopeType: String, enableCors: Boolean?): ScopeInfo =
