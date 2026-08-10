@@ -300,14 +300,19 @@ public class Response {
         }
 
         // Only set the `Access-Control-Allow-Credentials` header if credentials have explicitly been allowed by the
-        // interceptor determining the origin:
+        // interceptor determining the origin, a respective header is present and the credentials header has not been
+        // set before:
 
-        var shouldAllowCredentials = corsOriginResolver.getConfiguredOrigin()
-                                                       .filter(origin -> origin instanceof AllowedOrigin.Specific)
-                                                       .map(origin -> ((AllowedOrigin.Specific) origin).allowCredentials())
-                                                       .orElse(false);
+        var strategyAllowsCredentials = corsOriginResolver.getConfiguredOrigin()
+                                                          .filter(origin -> origin instanceof AllowedOrigin.Specific)
+                                                          .map(origin -> ((AllowedOrigin.Specific) origin).allowCredentials())
+                                                          .orElse(false);
 
-        if (shouldAllowCredentials && !headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
+        var shouldSetAllowCredentialsHeader = strategyAllowsCredentials
+                                              && headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN)
+                                              && !headers.contains(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS);
+
+        if (shouldSetAllowCredentialsHeader) {
             headers.set(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
         }
 

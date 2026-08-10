@@ -288,6 +288,18 @@ class CorsTest {
     }
 
     @Test
+    fun `given enableCors is enabled when the interceptor allows credentials for a Specific origin then a disallowed origin yields neither the origin nor the credentials header`() {
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(true, specificAllowedOrigins)
+
+        val connection = sendGet("https://evil.example.com")
+
+        assertAll(
+            { assertNull(connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString())) },
+            { assertNull(connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_CREDENTIALS.toString())) },
+        )
+    }
+
+    @Test
     fun `given enableCors is enabled when a preflight allows credentials for a Specific origin then origin and credentials headers are set`() {
         TestCorsInterceptor.allowedOrigin = AllowedOrigin.Specific(true, specificAllowedOrigins)
 
