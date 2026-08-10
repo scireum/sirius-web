@@ -321,8 +321,15 @@ public class Response {
         // avoid expensive evaluation of the origin for same-origin requests without an `Origin` header.
         // Also see `ControllerDispatcher#dispatch()`.
 
+        setOrAppendOriginToVaryHeader(headers);
+    }
+
+    private void setOrAppendOriginToVaryHeader(HttpHeaders headers) {
         if (!headers.contains(HttpHeaderNames.VARY)) {
-            headers.set(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
+            headers.add(HttpHeaderNames.VARY, HttpHeaderNames.ORIGIN);
+        } else {
+            var current = headers.get(HttpHeaderNames.VARY);
+            headers.set(HttpHeaderNames.VARY, String.format("%s, %s", current, HttpHeaderNames.ORIGIN));
         }
     }
 

@@ -368,6 +368,22 @@ class CorsTest {
         )
     }
 
+    @Test
+    fun `given enableCors is enabled when the route already set a Vary header then Origin is appended instead of overriding it`() {
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.MatchRequest()
+
+        val connection = URI("http://localhost:9999/test/vary").toURL().openConnection() as HttpURLConnection
+        connection.addRequestProperty(HttpHeaderNames.ORIGIN.toString(), "https://example.com")
+        connection.inputStream.close()
+        val vary = connection.getHeaderField(HttpHeaderNames.VARY.toString())
+
+        assertAll(
+            { assertNotNull(vary) },
+            { assertContains(vary.orEmpty(), HttpHeaderNames.ACCEPT_ENCODING.toString(), ignoreCase = true) },
+            { assertContains(vary.orEmpty(), HttpHeaderNames.ORIGIN.toString(), ignoreCase = true) },
+        )
+    }
+
     companion object {
         @JvmStatic
         @Part
