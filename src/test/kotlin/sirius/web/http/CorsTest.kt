@@ -24,6 +24,7 @@ import sirius.web.cors.CorsAllowOriginResolver
 import sirius.web.cors.CorsContext
 import sirius.web.security.ScopeInfo
 import sirius.web.security.UserContext
+import sirius.web.security.UserInfo
 import java.net.HttpURLConnection
 import java.net.URI
 import kotlin.test.*
@@ -381,6 +382,41 @@ class CorsTest {
             { assertNotNull(vary) },
             { assertContains(vary.orEmpty(), HttpHeaderNames.ACCEPT_ENCODING.toString(), ignoreCase = true) },
             { assertContains(vary.orEmpty(), HttpHeaderNames.ORIGIN.toString(), ignoreCase = true) },
+        )
+    }
+
+    // --- Scope peeking (must not discard a manually installed user) ---
+
+    @Test
+    fun `a manually installed user survives the CORS origin resolution`() {
+        // Resolving the origin happens very early in `ControllerDispatcher#dispatch()` - before the routes are matched
+        // and their permissions are checked - and it needs the scope to evaluate `http.enableCors`. Reading the scope
+        // via `UserContext#getScope()` would *install* it, and `setCurrentScope()` resets the current user. A user
+        // installed manually (as tests and background jobs do) would therefore be discarded before the permission
+        // check ran, turning a legitimate request into a permission error. `WebContext#isCorsEnabled()` uses
+        // `UserContext#peekScope()` instead, which detects the scope without binding it.
+        UserContext.get().setCurrentUser(
+            UserInfo.Builder.createUser("test").withPermissions(setOf("permission-system-tags")).build()
+        )
+
+        val response = TestRequest.GET("/system/tags")
+            .addHeader(HttpHeaderNames.ORIGIN, "https://example.com")
+            .execute()
+
+        // Note that the assertions below must inspect the request's own `CallContext` (via `getCallContext()`): the
+        // pipeline dispatches on a forked task, so the `CorsContext` created while dispatching never appears in this
+        // thread's context. For the same reason the surviving user cannot be asserted directly - `UserContext#fork()`
+        // hands the forked task a *copy*, so this thread's user stays installed either way. The rendered page is the
+        // observable proof that the permission check inside the request still saw the user.
+        val corsContext = response.callContext.getOrCreateSubContext(CorsContext::class.java)
+
+        assertAll(
+            // The request must actually have gone through the CORS origin resolution, otherwise this test would
+            // silently degrade into a duplicate of `PermissionsRouteTest` and no longer guard the regression.
+            { assertEquals("https://example.com", corsContext.resolvedOrigin.orElse(null)) },
+            // The permission check must have passed, rendering the real page instead of an error page.
+            { assertEquals(TestResponse.ResponseType.TEMPLATE, response.type) },
+            { assertEquals("/templates/system/tags.html.pasta", response.templateName) },
         )
     }
 
