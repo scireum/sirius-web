@@ -2,7 +2,7 @@
 <i:arg type="String" name="uploadUrl" />
 <i:arg type="String" name="imageUrl" default="" />
 <i:arg type="String" name="previewUrl" default="@imageUrl" />
-<i:arg type="String" name="allowedExtensions" default="'[]'" />
+<i:arg type="String" name="allowedExtensions" default="[]" />
 <i:arg type="boolean" name="singleFile" default="false" />
 
 <i:pragma name="description" value="Renders an image upload within a Wondergem template" />
@@ -11,13 +11,13 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $('.@name').each(function (index) {
-            imageUpload('@uploadUrl',
+            imageUpload('<i:raw>@escapeJS(uploadUrl)</i:raw>',
                 this,
                 '@previewUrl',
                 '@imageUrl',
-                 <i:raw>@allowedExtensions</i:raw>,
-                @singleFile
-        );
+                <i:raw>@allowedExtensions</i:raw>,
+                @singleFile,
+                {CSRFToken: '@part(CSRFHelper.class).getCSRFToken()'});
         });
     });
 </script>

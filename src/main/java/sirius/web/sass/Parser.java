@@ -22,6 +22,7 @@ import sirius.web.sass.ast.MixinReference;
 import sirius.web.sass.ast.NamedParameter;
 import sirius.web.sass.ast.Number;
 import sirius.web.sass.ast.Operation;
+import sirius.web.sass.ast.RawCondition;
 import sirius.web.sass.ast.Section;
 import sirius.web.sass.ast.Stylesheet;
 import sirius.web.sass.ast.Value;
@@ -43,7 +44,13 @@ public class Parser {
     private static final String KEYWORD_MIXIN = "mixin";
     private static final String KEYWORD_INCLUDE = "include";
     private static final String KEYWORD_EXTEND = "extend";
-    private static final String KEYWORD_MEDIA = "media";
+    public static final String KEYWORD_MEDIA = "media";
+
+    // Additional conditional group at-rules. These are intentionally NOT registered as tokenizer keywords:
+    // "container" is also a regular CSS property (e.g. "container-type: inline-size;"), so registering it as a
+    // keyword would break such declarations. They are detected via the '@' special identifier instead.
+    private static final String AT_RULE_CONTAINER = "container";
+    private static final String AT_RULE_SUPPORTS = "supports";
 
     /**
      * How to put that right: CSS is kind of "special gifted" - so tokenization is not always that straightforward.
@@ -170,13 +177,16 @@ public class Parser {
                 }
             } else if (tokenizer.current().isKeyword(KEYWORD_MEDIA)) {
                 // Handle @media
-                result.addSection(parseSection(true));
+                result.addSection(parseSection(KEYWORD_MEDIA));
+            } else if (isAtConditionalGroupRule()) {
+                // Handle @container / @supports
+                result.addSection(parseSection(tokenizer.current().getContents()));
             } else if (tokenizer.current().isSpecialIdentifier("$") && tokenizer.next().isSymbol(":")) {
                 // Handle variable definition
                 parseVariableDeclaration();
             } else {
                 // Everything else is a "normal" section  with selectors and attributes
-                result.addSection(parseSection(false));
+                result.addSection(parseSection(null));
             }
         }
 
@@ -189,14 +199,16 @@ public class Parser {
     }
 
     /**
-     * Parses a "section" which is either a media query or a css selector along with a set of attributes.
+     * Parses a "section" which is either a conditional group rule (@media / @container / @supports) or a css
+     * selector along with a set of attributes.
      *
-     * @param mediaQuery determines if we're about to parse a media query or a "normal" section
+     * @param conditionKeyword the at-rule keyword (without '@') if this is a conditional group rule
+     *                         ("media", "container", "supports"), or <tt>null</tt> for a "normal" section
      * @return the parsed section
      */
-    private Section parseSection(boolean mediaQuery) {
+    private Section parseSection(String conditionKeyword) {
         Section section = new Section();
-        parseSectionSelector(mediaQuery, section);
+        parseSectionSelector(conditionKeyword, section);
         tokenizer.consumeExpectedSymbol("{");
         while (tokenizer.more()) {
             if (tokenizer.current().isSymbol("}")) {
@@ -209,18 +221,35 @@ public class Parser {
                 section.addAttribute(attribute);
             } else if (tokenizer.current().isKeyword(KEYWORD_MEDIA)) {
                 // Take care of @media sub sections
-                section.addSubSection(parseSection(true));
+                section.addSubSection(parseSection(KEYWORD_MEDIA));
+            } else if (isAtConditionalGroupRule()) {
+                // Take care of @container / @supports sub sections
+                section.addSubSection(parseSection(tokenizer.current().getContents()));
             } else if (tokenizer.current().isKeyword(KEYWORD_INCLUDE)) {
                 parseInclude(section);
             } else if (tokenizer.current().isKeyword(KEYWORD_EXTEND)) {
                 parseExtend(section);
             } else {
                 // If it is neither an attribute, nor a media query or instruction - it is probably a sub section...
-                section.addSubSection(parseSection(false));
+                section.addSubSection(parseSection(null));
             }
         }
         tokenizer.consumeExpectedSymbol("}");
         return section;
+    }
+
+    /**
+     * Determines if the tokenizer is currently at the start of a conditional group at-rule which is handled like
+     * '@media' but is not a registered keyword, i.e. '@container' or '@supports'.
+     *
+     * @return <tt>true</tt> if the current token starts a '@container' or '@supports' rule
+     */
+    private boolean isAtConditionalGroupRule() {
+        if (!tokenizer.current().isSpecialIdentifier("@")) {
+            return false;
+        }
+        String name = tokenizer.current().getContents();
+        return AT_RULE_CONTAINER.equals(name) || AT_RULE_SUPPORTS.equals(name);
     }
 
     private boolean isAtAttribute() {
@@ -287,9 +316,14 @@ public class Parser {
         }
     }
 
-    private void parseSectionSelector(boolean mediaQuery, Section result) {
-        if (mediaQuery) {
-            parseMediaQuerySelector(result);
+    private void parseSectionSelector(String conditionKeyword, Section result) {
+        if (conditionKeyword != null) {
+            result.setConditionKeyword(conditionKeyword);
+            if (KEYWORD_MEDIA.equals(conditionKeyword)) {
+                parseMediaQuerySelector(result);
+            } else {
+                parseConditionalGroupSelector(conditionKeyword, result);
+            }
         } else {
             // Parse selectors like "b div.test"
             while (tokenizer.more()) {
@@ -303,6 +337,128 @@ public class Parser {
                 }
             }
         }
+    }
+
+    /**
+     * Parses the condition of a '@container' or '@supports' rule (everything between the at-rule and the opening
+     * '{'). In contrast to '@media', the connectors ('and'/'or'/'not') and an optional '@container' name are kept
+     * as explicit parts so that the condition can be reproduced faithfully.
+     *
+     * @param keyword the at-rule keyword (without '@'), i.e. "container" or "supports"
+     * @param result  the section to add the parsed condition parts to
+     */
+    private void parseConditionalGroupSelector(String keyword, Section result) {
+        // Consume the "@container" / "@supports" token
+        tokenizer.consume();
+        while (tokenizer.more() && !tokenizer.current().isSymbol("{")) {
+            if (tokenizer.current().isSymbol("(")) {
+                parseConditionalGroupFilter(result);
+            } else if (tokenizer.current().isIdentifier()) {
+                Token wordToken = tokenizer.consume();
+                String word = wordToken.getSource();
+                if (isGluedTo(wordToken, tokenizer.current())) {
+                    // A functional condition like "selector(:focus-visible)" or "style(--x: y)": the name is
+                    // glued directly to its argument. As the tokenizer drops whitespace, the source positions
+                    // tell "style(...)" (a style query) apart from "style (...)" (a container named "style").
+                    tokenizer.consumeExpectedSymbol("(");
+                    result.addMediaQuery(readRawCondition(word));
+                } else {
+                    // A bare word: a '@container' name or a connector like 'and' / 'or' / 'not' / 'only'.
+                    result.addMediaQuery(new Value(word));
+                }
+            } else {
+                // Consume the offending token to make progress towards '{' and report the problem.
+                tokenizer.addError(tokenizer.current(),
+                                   "Unexpected token in @%s condition: '%s'",
+                                   keyword,
+                                   tokenizer.consume().getSource());
+            }
+        }
+    }
+
+    /**
+     * Parses a single parenthesized condition of a '@container' / '@supports' rule. A '(feature: value)' condition
+     * is parsed into a {@link MediaFilter} (so that variables are evaluated and the output is formatted
+     * consistently), everything else (e.g. the range syntax '(width > 400px)') is captured verbatim.
+     *
+     * @param result the section to add the parsed condition to
+     */
+    private void parseConditionalGroupFilter(Section result) {
+        tokenizer.consumeExpectedSymbol("(");
+        if (tokenizer.current().isIdentifier() && tokenizer.next().isSymbol(":")) {
+            MediaFilter filter = new MediaFilter(tokenizer.consume().getContents());
+            tokenizer.consumeExpectedSymbol(":");
+            filter.setExpression(parseExpression(true));
+            result.addMediaQuery(filter);
+            tokenizer.consumeExpectedSymbol(")");
+        } else {
+            result.addMediaQuery(readRawCondition(""));
+        }
+    }
+
+    /**
+     * Reads a parenthesized condition verbatim (the opening '(' has already been consumed), balancing nested
+     * parentheses and reconstructing the original whitespace between tokens from their source positions (see
+     * {@link #areAdjacent}). This keeps significant spacing intact, e.g. "a:hover" vs "a :hover" (compound vs
+     * descendant selector) or "--x: y". Used for conditions which are not of the simple '(feature: value)' shape,
+     * e.g. the range syntax '(width > 400px)' or a functional condition's argument.
+     * <p>
+     * Embedded SASS variables are kept as {@link VariableReference} parts so they are resolved when the stylesheet
+     * is evaluated (e.g. '(width > $bp)').
+     *
+     * @param prefix a leading literal to prepend before the opening '(' (a functional condition's name like
+     *               "style", or "" for a plain parenthesized condition)
+     * @return the condition (including the surrounding parentheses and prefix) as an evaluable expression
+     */
+    private Expression readRawCondition(String prefix) {
+        RawCondition condition = new RawCondition();
+        StringBuilder literal = new StringBuilder(prefix).append("(");
+        Token previous = null;
+        int depth = 1;
+        while (tokenizer.more() && depth > 0) {
+            if (tokenizer.current().isSymbol("(")) {
+                depth++;
+            } else if (tokenizer.current().isSymbol(")")) {
+                depth--;
+                if (depth == 0) {
+                    tokenizer.consume();
+                    break;
+                }
+            }
+            Token token = tokenizer.current();
+            if (previous != null && !areAdjacent(previous, token)) {
+                literal.append(' ');
+            }
+            if (token.isSpecialIdentifier("$")) {
+                // Delegate to parseAtom() (single source of truth for variable references) so the variable is
+                // resolved during evaluation instead of leaking a literal "$name" into the generated CSS.
+                condition.add(new Value(literal.toString()));
+                literal.setLength(0);
+                condition.add(parseAtom());
+            } else {
+                literal.append(tokenizer.consume().getSource());
+            }
+            previous = token;
+        }
+        condition.add(new Value(literal.append(")").toString()));
+        return condition;
+    }
+
+    /*
+     * Determines whether the two tokens were written directly next to each other, i.e. without any separating
+     * whitespace. The tokenizer discards whitespace, so comparing source positions is the only way to reconstruct
+     * the original spacing - which is significant in e.g. "a:hover" vs "a :hover" or "style(...)" vs "style (...)".
+     */
+    private static boolean areAdjacent(Token first, Token second) {
+        return second.getLine() == first.getLine() && second.getPos() == first.getPos() + first.getSource().length();
+    }
+
+    /*
+     * Determines if the given identifier is directly followed by '(' (a functional condition like "style(...)")
+     * rather than a whitespace-separated '(' (a container name followed by a query, "style (...)").
+     */
+    private static boolean isGluedTo(Token first, Token second) {
+        return second.isSymbol("(") && areAdjacent(first, second);
     }
 
     private void parseMediaQuerySelector(Section result) {
@@ -369,7 +525,7 @@ public class Parser {
      */
     private List<String> parseSelector() {
         List<String> selector = new ArrayList<>();
-        parseSelectorPrefix(selector);
+        Token parentReference = parseSelectorPrefix(selector);
 
         while (tokenizer.more()) {
             if (tokenizer.current().isSymbol("{", ",")) {
@@ -385,6 +541,20 @@ public class Parser {
                 parseFilterInSelector(builder);
                 parseOperatorInSelector(builder);
                 selector.add(builder.toString());
+            } else if (tokenizer.current().isSymbol("[")) {
+                // Handle attribute filters attached to a parent reference or a combinator (e.g. "&[hidden]").
+                // Filters directly following an identifier (e.g. "a[href]") are handled by the branch above.
+                // "&[hidden]" (glued) is a compound selector, but "& [hidden]" (whitespace) is a descendant - and
+                // combineSelectors() always glues a part following "&". So for the descendant form drop the now
+                // redundant "&" and let the parent be prepended with a descendant combinator instead.
+                if (parentReference != null && "&".equals(selector.getLast()) && !areAdjacent(parentReference,
+                                                                                              tokenizer.current())) {
+                    selector.removeLast();
+                }
+                StringBuilder builder = new StringBuilder();
+                parseFilterInSelector(builder);
+                parseOperatorInSelector(builder);
+                selector.add(builder.toString());
             } else if (tokenizer.current().isSymbol("&") || tokenizer.current().isSymbol("*")) {
                 selector.add(tokenizer.consume().getTrigger());
             } else if (tokenizer.current().isSymbol(">", "+", "~")) {
@@ -396,7 +566,8 @@ public class Parser {
         return selector;
     }
 
-    private void parseSelectorPrefix(List<String> selector) {
+    private Token parseSelectorPrefix(List<String> selector) {
+        Token parentReference = null;
         if (tokenizer.more() && tokenizer.current().isSymbol("[")) {
             StringBuilder builder = new StringBuilder();
             parseFilterInSelector(builder);
@@ -404,6 +575,7 @@ public class Parser {
             selector.add(builder.toString());
         }
         if (tokenizer.more() && tokenizer.current().isSymbol("&")) {
+            parentReference = tokenizer.current();
             selector.add(tokenizer.consume().getTrigger());
         }
         if (tokenizer.more() && (tokenizer.current().isSymbol("&:") || tokenizer.current().isSymbol("&::"))) {
@@ -411,20 +583,40 @@ public class Parser {
         }
         if (tokenizer.more() && tokenizer.current().isSymbol("::") && tokenizer.next().is(Token.TokenType.ID)) {
             tokenizer.consume();
-            selector.add("::" + tokenizer.consume().getContents());
+            selector.add(consumePseudoChain("::" + tokenizer.consume().getContents()));
         }
         if (tokenizer.more() && tokenizer.current().isSymbol(":") && tokenizer.next().is(Token.TokenType.ID)) {
             tokenizer.consume();
-            selector.add(":" + tokenizer.consume().getContents());
+            selector.add(consumePseudoChain(":" + tokenizer.consume().getContents()));
         }
+        return parentReference;
+    }
+
+    /**
+     * Consumes the (optional) argument of the given pseudo-class/element as well as any subsequent chained
+     * pseudo-classes/elements (e.g. the ":focus" and ":not(.x)" in ":hover:focus" or ":hover:not(.x)").
+     *
+     * @param pseudo the already consumed pseudo-class/element (e.g. ":hover" or "::after")
+     * @return the full pseudo chain as a single selector part
+     */
+    private String consumePseudoChain(String pseudo) {
+        StringBuilder builder = new StringBuilder(pseudo);
+        // Consume arguments like :not(.class) or :nth-child(2)
+        if (tokenizer.current().isSymbol("(")) {
+            consumeArgument(builder);
+        }
+        // Consume further chained pseudo-classes/elements like the ":focus" in ":hover:focus"
+        parseOperatorInSelector(builder);
+        return builder.toString();
     }
 
     /**
      * Parses and consumes selector prefixes which add pseudo-classes ('&amp;:') or pseudo-elements ('&amp;::') to an existing selector,
-     * Arguments on pseudo classes like '&amp;:not(.class)' are also parsed and consumed.
-     * For valid input like e.g. '&amp;::after' , '&amp;:first-child' , '&amp;:not(.class)' two selectors are added to the given List:
+     * Arguments on pseudo classes like '&amp;:not(.class)' as well as chained pseudo-classes/elements like
+     * '&amp;:hover:focus' or '&amp;:not(.a):hover' are also parsed and consumed.
+     * For valid input like e.g. '&amp;::after' , '&amp;:first-child' , '&amp;:hover:focus' two selectors are added to the given List:
      * 1. '&amp;'
-     * 2. the pseudo-class/element e.g. '::after' , ':first-child' , ':not(.class)'
+     * 2. the pseudo chain e.g. '::after' , ':first-child' , ':hover:focus'
      *
      * @param selector the List to which the selectors are added.
      */
@@ -433,12 +625,7 @@ public class Parser {
         tokenizer.consume();
         if (tokenizer.current().is(Token.TokenType.ID)) {
             selector.add("&");
-            StringBuilder builder = new StringBuilder(pseudoOperator + tokenizer.consume().getContents());
-            // Consume arguments like :nth-child(2)
-            if (tokenizer.current().isSymbol("(")) {
-                consumeArgument(builder);
-            }
-            selector.add(builder.toString());
+            selector.add(consumePseudoChain(pseudoOperator + tokenizer.consume().getContents()));
         }
     }
 
@@ -735,7 +922,7 @@ public class Parser {
 
     private void parseMixinSubSection(Mixin mixin) {
         Section subSection = new Section();
-        parseSectionSelector(false, subSection);
+        parseSectionSelector(null, subSection);
         tokenizer.consumeExpectedSymbol("{");
         while (tokenizer.more() && !tokenizer.current().isSymbol("}")) {
             if (tokenizer.current().isIdentifier() && tokenizer.next().isSymbol(":")) {

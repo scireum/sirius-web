@@ -735,10 +735,16 @@ public class ControllerDispatcher implements WebDispatcher {
     @SuppressWarnings("java:S1067")
     @Explain("The check is complex, but that is the nature of having multiple skip options and call cases.")
     private void validateCsrfTokenUnlessSkipped(WebContext webContext, Route route) {
+        // A request whose session is managed by a ServerSessionStorage cannot be victim of CSRF: the session
+        // cookie is entirely ignored for such requests, so there is no ambient cookie authority to abuse - the
+        // identity can only come from explicitly presented credentials (e.g. a bearer token). Note that this
+        // condition is deliberately evaluated after the cheap method/exemption checks, as it forces the (lazy)
+        // session initialization - safe methods like GET must not pay for it.
         if (!skipCsrfTokens
             && !route.isSkipCsrfValidation()
             && isCsrfValidatedMethod(webContext)
             && !isExemptFromCsrfValidation(route)
+            && !webContext.isServerSessionActive()
             && !csrfHelper.hasValidCsrfToken(webContext)) {
             throw Exceptions.createHandled()
                             .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())

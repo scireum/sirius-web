@@ -362,9 +362,32 @@ public class TestController extends BasicController {
                           + webContext.getSessionValue("test2").asString("<none>"));
     }
 
+    @Routed("/test/session-test-clear")
+    public void sessionTestClear(WebContext webContext) {
+        webContext.clearSession();
+
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    @Routed("/test/session-test-cacheable")
+    public void sessionTestCacheable(WebContext webContext) {
+        webContext.setSessionValue("test1", "test");
+
+        webContext.respondWith().cached().direct(HttpResponseStatus.OK, "OK");
+    }
+
     @Routed("/test/redirect-to-get")
     public void redirect(WebContext webContext) {
         webContext.respondWith().redirectToGet("/test/redirect-target");
+    }
+
+    @Routed("/test/rewrite-during-dispatch")
+    public void rewriteDuringDispatch(WebContext webContext) {
+        // Simulates what a dispatcher doing SEO url rewriting does: the requested uri is changed while the request
+        // is being handled, which must not change the uri the request was originally made for.
+        webContext.withCustomURI("/test/rewritten-target?rewritten=true");
+
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
     }
 
     @Routed("/test/redirect-target")
