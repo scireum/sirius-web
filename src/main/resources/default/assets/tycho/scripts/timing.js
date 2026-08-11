@@ -101,21 +101,29 @@ sirius.ready(() => {
 
     // Stores the current sort state and filter so they survive a full page reload (e.g. F5 or Cmd+R)
     function persistState() {
-        sessionStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({
-            sorting: sorting.state,
-            filter: _searchInput.value
-        }));
+        try {
+            sessionStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({
+                sorting: sorting.state,
+                filter: _searchInput.value
+            }));
+        } catch (exception) {
+            console.error(exception);
+        }
     }
 
     // Restores the sort state and filter persisted before a reload, if any were stored.
     function restoreState() {
-        const stored = sessionStorage.getItem(VIEW_STORAGE_KEY);
-        if (!stored) {
-            return;
+        try {
+            const stored = sessionStorage.getItem(VIEW_STORAGE_KEY);
+            if (!stored) {
+                return;
+            }
+            const view = JSON.parse(stored);
+            sorting.state = view.sorting || {key: 'key', ascending: true};
+            _searchInput.value = view.filter || '';
+        } catch (exception) {
+            console.error(exception);
         }
-        const view = JSON.parse(stored);
-        sorting.state = view.sorting || {key: 'key', ascending: true};
-        _searchInput.value = view.filter || '';
     }
 
     // Renders one card (with a sortable table) per category into the container.
