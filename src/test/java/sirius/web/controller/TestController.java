@@ -68,6 +68,13 @@ public class TestController extends BasicController {
                   .direct(HttpResponseStatus.OK, webContext.get("value").asString());
     }
 
+    @Routed("/test/vary")
+    public void varyTest(WebContext webContext) {
+        webContext.respondWith()
+                  .addHeader(HttpHeaderNames.VARY, HttpHeaderNames.ACCEPT_ENCODING)
+                  .direct(HttpResponseStatus.OK, "OK");
+    }
+
     @InternalService
     @Routed("/test/json")
     public void testJSON(WebContext webContext, JSONStructuredOutput out) {

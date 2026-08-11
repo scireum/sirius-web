@@ -17,6 +17,8 @@ import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
+import sirius.web.cors.AllowedOrigin;
+import sirius.web.cors.CorsAllowOriginResolver;
 import sirius.web.http.Firewall;
 import sirius.web.http.Limited;
 import sirius.web.http.Unlimited;
@@ -45,6 +47,9 @@ public class ServiceDispatcher implements WebDispatcher {
     private static final String SYSTEM_SERVICE = "SERVICE";
 
     @Part
+    private static CorsAllowOriginResolver corsOriginResolver;
+
+    @Part
     private GlobalContext gc;
 
     @Part
@@ -61,6 +66,7 @@ public class ServiceDispatcher implements WebDispatcher {
         if (!ctx.getRequestedURI().startsWith("/service/")) {
             return DispatchDecision.CONTINUE;
         }
+
         // The real dispatching is put into its own method to support inlining of this check by the JIT
         return doDispatch(ctx);
     }
@@ -72,8 +78,13 @@ public class ServiceDispatcher implements WebDispatcher {
         String uri = ctx.getRequestedURI();
         Tuple<ServiceCall, StructuredService> handler = parsePath(ctx, uri);
         if (handler.getSecond() == null) {
+            // No service handles this path, so the request is left to the remaining dispatchers. We must not resolve
+            // an origin here, as that would finalize it and thereby suppress the (potentially more restrictive)
+            // strategy which the ControllerDispatcher determines via the interceptors.
             return DispatchDecision.CONTINUE;
         }
+
+        corsOriginResolver.tryResolveAndStoreOrigin(ctx, new AllowedOrigin.MatchRequest());
 
         invokeService(ctx, handler.getFirst(), handler.getSecond());
         return DispatchDecision.DONE;
