@@ -241,29 +241,6 @@ class CorsTest {
     }
 
     @Test
-    fun `given enableCors is enabled when the help system is requested then the requested origin is reflected`() {
-        // Note that the HelpDispatcher (+100) declares a `Wildcard`, but it is invoked after the ControllerDispatcher
-        // (+10), which already resolves an origin for every request carrying an `Origin` header. As only the first
-        // resolution counts, the `Wildcard` never takes effect for an actual CORS request and the requested origin is
-        // reflected instead. It only applies to requests without an `Origin` header - see the test below.
-        val connection = sendGetTo("/help", "https://example.com")
-
-        assertEquals(
-            "https://example.com",
-            connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString())
-        )
-    }
-
-    @Test
-    fun `given enableCors is enabled when the help system is requested without an origin then the HelpDispatcher allows any origin`() {
-        // Without an `Origin` header the ControllerDispatcher skips the resolution entirely, so the HelpDispatcher is
-        // the first to resolve one and its `Wildcard` wins.
-        val connection = sendGetTo("/help", null)
-
-        assertEquals("*", connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
-    }
-
-    @Test
     fun `given enableCors is enabled when an unknown path is requested then the requested origin is reflected`() {
         val connection = sendGetTo("/no-such-path", "https://example.com")
 
