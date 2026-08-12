@@ -24,7 +24,21 @@ import java.util.stream.Collectors;
  * </p>
  */
 public sealed interface AllowedOrigin
-        permits AllowedOrigin.MatchRequest, AllowedOrigin.Specific, AllowedOrigin.Wildcard {
+        permits AllowedOrigin.Denied, AllowedOrigin.MatchRequest, AllowedOrigin.Specific, AllowedOrigin.Wildcard {
+
+    /**
+     * No origin is allowed at all, so no {@code Access-Control-Allow-Origin} header is set and the response stays
+     * unreadable for every foreign origin.
+     * <p>
+     * This is <b>not</b> the same as an interceptor abstaining: an interceptor which returns an empty optional from
+     * {@link Interceptor#determineAllowedCorsOrigin(WebContext, Collection)} states that it does not decide, and
+     * {@link sirius.web.controller.ControllerDispatcher} then falls back to a {@link MatchRequest} - which reflects
+     * the origin of the request. An interceptor that wants a route to remain unreachable cross-origin therefore has
+     * to say so by returning this record.
+     * </p>
+     */
+    record Denied() implements AllowedOrigin {
+    }
 
     /**
      * The {@code Access-Control-Allow-Origin} header should be set to the origin of the request.

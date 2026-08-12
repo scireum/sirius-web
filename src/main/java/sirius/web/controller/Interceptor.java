@@ -114,6 +114,12 @@ public interface Interceptor extends Priorized {
      * </p>
      *
      * <p>
+     * <b>Abstaining is therefore not the same as refusing.</b> As the fallback reflects the origin of the request,
+     * an empty optional leaves a route readable cross-origin. An interceptor which wants a route to stay unreachable
+     * for foreign origins must say so by returning an {@link AllowedOrigin.Denied}.
+     * </p>
+     *
+     * <p>
      * Please note that {@code enableCors} acts as a master switch: this method is only consulted when
      * {@link WebContext#isCorsEnabled()} returns {@code true} for the request's scope. If CORS handling is disabled,
      * no origin is resolved at all and this method is not invoked.

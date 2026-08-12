@@ -156,6 +156,9 @@ public class CorsAllowOriginResolver {
         @Nullable String requestOrigin = webContext.getHeader(HttpHeaderNames.ORIGIN);
 
         return switch (origin) {
+            // Resolving to no origin is what makes the refusal effective: no header is set, so the response stays
+            // unreadable cross-origin. The strategy is still recorded, hence the `Vary` header remains correct.
+            case AllowedOrigin.Denied _ -> Optional.empty();
             // Using `Optional.ofNullable()` implicitly handles cases where no `Origin` header is available (e.g.
             // due to the browser not sending it for same-origin requests). Returning an empty optional results in no
             // header being set, which is the expected behavior in such a case.
