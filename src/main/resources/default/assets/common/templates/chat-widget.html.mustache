@@ -1,0 +1,29 @@
+<div class="sci-chat-widget sci-enable-font sci-text sci-d-flex sci-flex-column sci-align-items-end sci-position-relative">
+    <div class="sci-chat-widget-panel sci-font sci-shadow-elevated sci-bg-white sci-d-flex sci-flex-column sci-overflow-hidden sci-border-radius-25"
+         role="dialog"
+         aria-label="{{title}}">
+        <div class="sci-chat-widget-header sci-d-flex sci-align-items-center sci-justify-content-space-between sci-flex-shrink-0 sci-p-1 sci-pl-2 sci-border-grey sci-border-bottom-solid-0.5">
+            <div class="sci-chat-widget-title sci-text-ellipsis sci-text-grey-dark">{{title}}</div>
+            <div class="sci-chat-widget-header-buttons sci-d-flex sci-align-items-center">
+                <a role="button"
+                   tabindex="0"
+                   title="{{minimizeLabel}}"
+                   aria-label="{{minimizeLabel}}"
+                   class="sci-cursor-pointer sci-icon-small sci-icon-down sci-chat-widget-button-minimize-js"></a>
+                {{#closable}}
+                    <a role="button"
+                       tabindex="0"
+                       title="{{closeLabel}}"
+                       aria-label="{{closeLabel}}"
+                       class="sci-cursor-pointer sci-icon-small sci-icon-close sci-ml-2 sci-chat-widget-button-close-js"></a>
+                {{/closable}}
+            </div>
+        </div>
+        <div class="sci-chat-widget-content sci-chat-widget-content-js sci-d-flex sci-flex-column sci-flex-grow-1 sci-min-height-0">{{{content}}}</div>
+    </div>
+    <div class="sci-chat-widget-bubble sci-shadow-elevated sci-bg-white sci-cursor-pointer sci-chat-widget-bubble-js sci-d-flex sci-align-items-center sci-justify-content-center"
+         role="button"
+         tabindex="0"
+         title="{{title}}"
+         aria-label="{{title}}">{{{bubbleContent}}}</div>
+</div>

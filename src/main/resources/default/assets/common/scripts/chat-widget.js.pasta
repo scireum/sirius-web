@@ -1,0 +1,236 @@
+/**@
+ * Unlike the components in components.js.pasta, this one is written in modern JS and is therefore included by the
+ * products which use it (like toast.js is), not by the shared bundle - a single modern token in that bundle would
+ * break its parsing, and with it every component in it, in browsers as old as IE11.
+ */
+window.sirius.chatWidget = (function () {
+
+    const template = '@escapeJS(inlineResource("/assets/common/templates/chat-widget.html.mustache"))';
+
+    /**@
+     * Holds the transparent start value of the opening animation.
+     */
+    const CLASS_ENTERING = 'sci-chat-widget-entering';
+
+    /**@
+     * Marks a widget which is fading out before it is removed from the DOM.
+     */
+    const CLASS_CLOSING = 'sci-chat-widget-closing';
+
+    /**@
+     * Marks a widget which is reduced to its bubble.
+     */
+    const CLASS_MINIMIZED = 'sci-chat-widget-minimized';
+
+    /**@
+     * Runs the given callback once the transition of the given element finished.
+     *
+     * The callback runs right away if the element does not animate at all - which is the case when the user asked for
+     * reduced motion. We read the duration off the element instead of repeating it here, so that the stylesheet stays
+     * the single place defining it.
+     *
+     * @param {HTMLElement} _element the element being transitioned
+     * @param {function} callback invoked once the transition finished
+     */
+    function runAfterTransition(_element, callback) {
+        const seconds = parseFloat(window.getComputedStyle(_element).transitionDuration) || 0;
+        if (seconds <= 0) {
+            callback();
+            return;
+        }
+        setTimeout(callback, seconds * 1000);
+    }
+
+    /**@
+     * Represents a single floating chat widget.
+     *
+     * A widget is either open (the panel is visible) or minimized (only a round bubble remains). Unlike a dialog or an
+     * overlay it is not modal: the page below stays scrollable and clickable, and several widgets may live side by side.
+     * Which part of the chrome is on screen follows from the state class alone - the stylesheet fades the two into each
+     * other, so the widget animates without being driven from here.
+     *
+     * A widget reports `sci-chat-widget-minimized`, `sci-chat-widget-restored` and `sci-chat-widget-destroyed` via
+     * `addEventListener`. These events do not bubble, as a listener always belongs to one specific widget.
+     *
+     * Instances are created via `sirius.chatWidget.create` and are never constructed directly.
+     */
+    class ChatWidget {
+        static defaults = {
+            title: '',
+            content: '',
+            bubbleContent: '',
+            closable: true,
+            minimized: false,
+            minimizeLabel: 'Minimize',
+            closeLabel: 'Close'
+        };
+
+        constructor(manager, options) {
+            this.manager = manager;
+            this.options = sirius.deepExtend({}, ChatWidget.defaults, options);
+            this.#render();
+        }
+
+        #render() {
+            const isStringContent = typeof this.options.content === 'string';
+            const isStringBubbleContent = typeof this.options.bubbleContent === 'string';
+
+            const _container = document.createElement('div');
+            _container.innerHTML = Mustache.render(template, {
+                title: this.options.title,
+                content: isStringContent ? this.options.content : undefined,
+                bubbleContent: isStringBubbleContent ? this.options.bubbleContent : undefined,
+                closable: this.options.closable,
+                minimizeLabel: this.options.minimizeLabel,
+                closeLabel: this.options.closeLabel
+            });
+            this._widget = _container.firstChild;
+
+            if (!isStringContent) {
+                this._widget.querySelector('.sci-chat-widget-content-js').appendChild(this.options.content);
+            }
+            if (!isStringBubbleContent) {
+                this._widget.querySelector('.sci-chat-widget-bubble-js').appendChild(this.options.bubbleContent);
+            }
+
+            const _minimizeButton = this._widget.querySelector('.sci-chat-widget-button-minimize-js');
+            sirius.addClickOrEnterListener(_minimizeButton, () => this.minimize());
+
+            if (this.options.closable) {
+                const _closeButton = this._widget.querySelector('.sci-chat-widget-button-close-js');
+                sirius.addClickOrEnterListener(_closeButton, () => this.destroy());
+            }
+
+            const _bubble = this._widget.querySelector('.sci-chat-widget-bubble-js');
+            sirius.addClickOrEnterListener(_bubble, () => this.restore());
+
+            // Escape is bound on the widget itself, not on the window: the widget is non-modal, so it must not
+            // swallow the Escape key of the page it floats above.
+            this._widget.addEventListener('keyup', event => {
+                if (event.key === 'Escape' && !this.isMinimized()) {
+                    this.minimize();
+                }
+            });
+
+            this._widget.classList.toggle(CLASS_MINIMIZED, !!this.options.minimized);
+            // A widget always animates into view, no matter which state it starts in.
+            this._widget.classList.add(CLASS_ENTERING);
+            this.manager._container.appendChild(this._widget);
+
+            if (isStringContent) {
+                sirius.executeEmbeddedScripts(this._widget);
+            }
+
+            // Forces a reflow, so the browser registers the transparent start value before it is removed again - a
+            // transition only runs if the browser got to see the start value at least once.
+            void this._widget.offsetWidth;
+            this._widget.classList.remove(CLASS_ENTERING);
+        }
+
+        /**@
+         * Determines whether this widget is minimized, i.e. reduced to its bubble.
+         *
+         * @returns {boolean} true if the widget is minimized, false otherwise
+         */
+        isMinimized() {
+            return !!this._widget && this._widget.classList.contains(CLASS_MINIMIZED);
+        }
+
+        /**@
+         * Returns the element the content was rendered into.
+         *
+         * @returns {HTMLElement|null} the content element or null if the widget was destroyed
+         */
+        getContentElement() {
+            return this._widget ? this._widget.querySelector('.sci-chat-widget-content-js') : null;
+        }
+
+        /**@
+         * Registers a listener for one of the `sci-chat-widget-*` events of this widget.
+         *
+         * @param {...*} args the arguments to pass on to `addEventListener` of the underlying element
+         */
+        addEventListener(...args) {
+            this._widget.addEventListener(...args);
+        }
+
+        /**@
+         * Reduces the widget to its bubble.
+         *
+         * The content stays in the DOM (it is only hidden), so an embedded iframe keeps its state and is not reloaded
+         * when the widget is restored.
+         */
+        minimize() {
+            if (!this._widget || this.isMinimized()) {
+                return;
+            }
+            this._widget.classList.add(CLASS_MINIMIZED);
+            sirius.dispatchEvent('sci-chat-widget-minimized', this._widget, {widget: this});
+        }
+
+        /**@
+         * Shows the panel of a minimized widget again.
+         */
+        restore() {
+            if (!this._widget || !this.isMinimized()) {
+                return;
+            }
+            this._widget.classList.remove(CLASS_MINIMIZED);
+            sirius.dispatchEvent('sci-chat-widget-restored', this._widget, {widget: this});
+        }
+
+        /**@
+         * Removes the widget (panel and bubble) from the DOM.
+         */
+        destroy() {
+            if (!this._widget) {
+                return;
+            }
+            const _widget = this._widget;
+            this._widget = null;
+
+            // Only the node lingers until it faded out. The event fires right away, as a consumer may create the next
+            // widget immediately, and that one must not be touched by the one leaving the screen.
+            sirius.dispatchEvent('sci-chat-widget-destroyed', _widget, {widget: this});
+
+            _widget.classList.add(CLASS_CLOSING);
+            runAfterTransition(_widget, () => _widget.parentElement.removeChild(_widget));
+        }
+    }
+
+    /**@
+     * Creates the floating chat widgets and hosts them in a shared container.
+     */
+    class ChatWidgetManager {
+
+        /**@
+         * Creates a new chat widget and attaches it to the page.
+         *
+         * The widget reports its state changes as events, see `ChatWidget.addEventListener`.
+         *
+         * @param {object} options the options of the widget
+         * @param {string} [options.title=''] the title shown in the header and used as the label of the bubble
+         * @param {string|HTMLElement} [options.content=''] the content rendered into the panel
+         * @param {string|HTMLElement} [options.bubbleContent=''] the content of the bubble, commonly an icon
+         * @param {boolean} [options.closable=true] whether the header renders a close button
+         * @param {boolean} [options.minimized=false] whether the widget starts out minimized
+         * @param {string} [options.minimizeLabel='Minimize'] the label of the minimize button
+         * @param {string} [options.closeLabel='Close'] the label of the close button
+         * @returns {ChatWidget} the created widget
+         */
+        create(options) {
+            if (!this._container) {
+                this.#createContainer();
+            }
+            return new ChatWidget(this, options || {});
+        }
+
+        #createContainer() {
+            this._container = document.createElement('div');
+            this._container.id = 'sci-chat-widgets-container';
+            document.body.appendChild(this._container);
+        }
+    }
+
+    return new ChatWidgetManager();
+})();

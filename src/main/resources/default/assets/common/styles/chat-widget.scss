@@ -1,0 +1,117 @@
+#sci-chat-widgets-container {
+  --sci-chat-widget-base-unit: var(--sci-base-unit, 16px);
+  /* Duration of the opening and closing animations. The script reads the effective duration off the element, so
+     changing it here needs no counterpart in chat-widget.js.pasta. */
+  --sci-chat-widget-transition: 200ms;
+  /* Above the overlay and the dialog, below the toasts - a toast must remain readable above an open widget. */
+  z-index: 11500;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  gap: var(--sci-chat-widget-base-unit);
+  padding: var(--sci-chat-widget-base-unit);
+  /* The container spans only its widgets, but it must never swallow clicks meant for the page below it. */
+  pointer-events: none;
+
+  .sci-chat-widget {
+    pointer-events: auto;
+    transition: opacity var(--sci-chat-widget-transition) ease;
+  }
+
+  /* Start value of the opening animation and end value of the closing one. The script adds the entering class, forces
+     the browser to see it, and removes it again - which is what makes the transition run.
+
+     A widget appears and leaves by fading only. It must not be transformed as a whole: a transformed element becomes
+     the containing block of its fixed descendants, which would tear the full-screen panel of a phone out of the
+     viewport for the duration of the animation. The scaling happens one level down, on the panel and the bubble. */
+  .sci-chat-widget-entering,
+  .sci-chat-widget-closing {
+    opacity: 0;
+  }
+
+  /* A widget on its way out leaves the layout at once, so that a widget opening right behind it - as it happens when
+     the assistant switches to another context - is not pushed aside for the duration of the fade-out. */
+  .sci-chat-widget-closing {
+    position: absolute;
+    right: var(--sci-chat-widget-base-unit);
+    bottom: var(--sci-chat-widget-base-unit);
+    pointer-events: none;
+  }
+
+  .sci-chat-widget-panel {
+    width: 400px;
+    max-width: calc(100vw - 2 * var(--sci-chat-widget-base-unit));
+    height: calc(100vh - 2 * var(--sci-chat-widget-base-unit));
+    max-height: 720px;
+    /* The panel grows out of, and shrinks back into, the corner the bubble sits in. */
+    transform-origin: bottom right;
+    transition: opacity var(--sci-chat-widget-transition) ease, transform var(--sci-chat-widget-transition) ease,
+    visibility var(--sci-chat-widget-transition);
+  }
+
+  .sci-chat-widget-bubble {
+    width: calc(3.5 * var(--sci-chat-widget-base-unit));
+    height: calc(3.5 * var(--sci-chat-widget-base-unit));
+    border-radius: 50%;
+    transition: opacity var(--sci-chat-widget-transition) ease, transform var(--sci-chat-widget-transition) ease,
+    visibility var(--sci-chat-widget-transition);
+  }
+
+  /* Only one part of the chrome is on screen, which part follows from the minimized state alone. The other one fades
+     out, drops out of the flow so that it stops pushing its sibling around, and leaves the accessibility tree - but
+     never the DOM, so an embedded iframe keeps its state. Visibility transitions in discrete steps, so it only flips
+     to hidden once the fade-out finished, and back to visible right when the fade-in starts. */
+  .sci-chat-widget-minimized .sci-chat-widget-panel,
+  .sci-chat-widget:not(.sci-chat-widget-minimized) .sci-chat-widget-bubble {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .sci-chat-widget-minimized .sci-chat-widget-panel {
+    transform: translateY(calc(0.5 * var(--sci-chat-widget-base-unit))) scale(0.98);
+  }
+
+  .sci-chat-widget:not(.sci-chat-widget-minimized) .sci-chat-widget-bubble {
+    transform: scale(0.8);
+  }
+}
+
+/* Users who ask for reduced motion get the plain state switch. The script reads the duration off the element, so it
+   drops the waiting as well and applies the end state at once. */
+@media (prefers-reduced-motion: reduce) {
+  #sci-chat-widgets-container .sci-chat-widget,
+  #sci-chat-widgets-container .sci-chat-widget-panel,
+  #sci-chat-widgets-container .sci-chat-widget-bubble {
+    transition: none;
+  }
+}
+
+/* On small viewports an open panel takes the whole viewport, just like a dialog does. The bubble stays small. The
+   second selector keeps a minimized panel full-screen as well, so that it fades out where it stands instead of
+   snapping into the corner on its way. */
+@media (max-width: 576px) {
+  #sci-chat-widgets-container .sci-chat-widget-panel,
+  #sci-chat-widgets-container .sci-chat-widget-minimized .sci-chat-widget-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  /* A full-screen panel only slides - scaling it would reveal the page along its edges. */
+  #sci-chat-widgets-container .sci-chat-widget-minimized .sci-chat-widget-panel {
+    transform: translateY(var(--sci-chat-widget-base-unit));
+  }
+}
