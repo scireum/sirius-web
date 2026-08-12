@@ -22,40 +22,35 @@ sirius.ready(() => {
     let rows = [];
 
     const sorting = {
-        state: {},
+        // A single sort state shared by all tables so that sorting one table sorts all of them the same way.
+        state: {key: 'key', ascending: true},
 
         // Toggles the order if the same key is clicked again, otherwise starts
         // sorting by the newly selected key.
-        toggle: function (category, key) {
-            const current = this.state[category];
-            if (current && current.key === key) {
-                current.ascending = !current.ascending;
+        toggle: function (key) {
+            if (this.state.key === key) {
+                this.state.ascending = !this.state.ascending;
             } else {
-                this.state[category] = {key: key, ascending: false};
+                this.state = {key: key, ascending: false};
             }
         },
 
-        // Returns a sorted copy of the rows for the category (or the input if unsorted).
-        apply: function (category, entries) {
-            const state = this.state[category];
-            if (!state) {
-                return entries;
-            }
+        // Returns a sorted copy of the given rows according to the current sort state.
+        apply: function (entries) {
             return [...entries].sort((a, b) => {
-                const valueA = a[state.key];
-                const valueB = b[state.key];
+                const valueA = a[this.state.key];
+                const valueB = b[this.state.key];
                 const comparison = typeof valueA === 'string' ? valueA.localeCompare(valueB) : valueA - valueB;
-                return state.ascending ? comparison : -comparison;
+                return this.state.ascending ? comparison : -comparison;
             });
         },
 
-        // Determines which sort icon a column header should show for its current state.
-        icon: function (category, key) {
-            const state = this.state[category];
-            if (!state || state.key !== key) {
+        // Determines which sort icon a column header should show for the current state.
+        icon: function (key) {
+            if (this.state.key !== key) {
                 return 'fa-sort text-muted';
             }
-            return state.ascending ? 'fa-sort-up' : 'fa-sort-down';
+            return this.state.ascending ? 'fa-sort-up' : 'fa-sort-down';
         }
     };
 
@@ -101,6 +96,36 @@ sirius.ready(() => {
         return _row;
     }
 
+    // sessionStorage key under which the current view (sort state and filter) is kept so it survives a full reload.
+    const VIEW_STORAGE_KEY = 'system-timing-view';
+
+    // Stores the current sort state and filter so they survive a full page reload (e.g. F5 or Cmd+R)
+    function persistState() {
+        try {
+            sessionStorage.setItem(VIEW_STORAGE_KEY, JSON.stringify({
+                sorting: sorting.state,
+                filter: _searchInput.value
+            }));
+        } catch (exception) {
+            console.error(exception);
+        }
+    }
+
+    // Restores the sort state and filter persisted before a reload, if any were stored.
+    function restoreState() {
+        try {
+            const stored = sessionStorage.getItem(VIEW_STORAGE_KEY);
+            if (!stored) {
+                return;
+            }
+            const view = JSON.parse(stored);
+            sorting.state = view.sorting || {key: 'key', ascending: true};
+            _searchInput.value = view.filter || '';
+        } catch (exception) {
+            console.error(exception);
+        }
+    }
+
     // Renders one card (with a sortable table) per category into the container.
     function render() {
         const search = _searchInput.value.toLowerCase();
@@ -108,17 +133,12 @@ sirius.ready(() => {
 
         _container.innerHTML = '';
         groups.forEach((entries, category) => {
-            if (!sorting.state[category]) {
-                sorting.state[category] = {key: 'key', ascending: true};
-            }
-
-            const sorted = sorting.apply(category, entries);
+            const sorted = sorting.apply(entries);
 
             const _card = _cardTemplate.content.cloneNode(true);
             _card.querySelector('.card-title').textContent = category;
             _card.querySelectorAll('th[data-sort]').forEach((_header) => {
-                _header.dataset.category = category;
-                _header.querySelector('i').className = 'fa-solid ' + sorting.icon(category, _header.dataset.sort);
+                _header.querySelector('i').className = 'fa-solid ' + sorting.icon(_header.dataset.sort);
             });
 
             const _tbody = _card.querySelector('tbody');
@@ -128,6 +148,8 @@ sirius.ready(() => {
 
             _container.appendChild(_card);
         });
+
+        persistState();
     }
 
     // Fetches the timing data from the server and renders it.
@@ -174,9 +196,9 @@ sirius.ready(() => {
         _reloadButton.classList.toggle('disabled', !enabled);
     }
 
-    // Sorting: clicking or pressing Enter/Space on a sortable column header toggles the sort order for its category.
+    // Sorting: clicking or pressing Enter/Space on a sortable column header toggles the sort order for all tables.
     function toggleSortFor(_header) {
-        sorting.toggle(_header.dataset.category, _header.dataset.sort);
+        sorting.toggle(_header.dataset.sort);
         render();
     }
 
@@ -207,5 +229,6 @@ sirius.ready(() => {
     _reloadButton.classList.toggle('disabled', _toggleButton.dataset.enabled !== 'true');
     sirius.addClickOrEnterListener(_toggleButton, toggleTiming);
 
+    restoreState();
     loadData();
 });
