@@ -42,6 +42,21 @@ window.sirius.chatWidget = (function () {
     }
 
     /**@
+     * Describes the options which shape a chat widget. They are all optional - the defaults below are used for the
+     * ones the caller leaves out.
+     *
+     * @typedef {object} ChatWidgetOptions
+     * @property {string} [title=''] the title shown in the header, also used as the label of the bubble
+     * @property {string|HTMLElement} [content=''] the content rendered into the panel - a string is inserted as HTML
+     *                                             and its embedded scripts are executed, an element is appended as is
+     * @property {string|HTMLElement} [bubbleContent=''] the content of the bubble, commonly an icon
+     * @property {boolean} [closable=true] whether the header renders a close button
+     * @property {boolean} [minimized=false] whether the widget starts out as a bubble instead of an open panel
+     * @property {string} [minimizeLabel='Minimize'] the label of the minimize button, shown as its tooltip
+     * @property {string} [closeLabel='Close'] the label of the close button, shown as its tooltip
+     */
+
+    /**@
      * Represents a single floating chat widget.
      *
      * A widget is either open (the panel is visible) or minimized (only a round bubble remains). Unlike a dialog or an
@@ -55,6 +70,12 @@ window.sirius.chatWidget = (function () {
      * Instances are created via `sirius.chatWidget.create` and are never constructed directly.
      */
     class ChatWidget {
+
+        /**@
+         * Holds the value used for each option which the caller did not supply.
+         *
+         * @type {ChatWidgetOptions}
+         */
         static defaults = {
             title: '',
             content: '',
@@ -148,6 +169,9 @@ window.sirius.chatWidget = (function () {
         /**@
          * Registers a listener for one of the `sci-chat-widget-*` events of this widget.
          *
+         * The listener receives a `CustomEvent` whose target is the element of the widget and which carries the widget
+         * itself as `event.detail.widget`.
+         *
          * @param {...*} args the arguments to pass on to `addEventListener` of the underlying element
          */
         addEventListener(...args) {
@@ -208,14 +232,7 @@ window.sirius.chatWidget = (function () {
          *
          * The widget reports its state changes as events, see `ChatWidget.addEventListener`.
          *
-         * @param {object} options the options of the widget
-         * @param {string} [options.title=''] the title shown in the header and used as the label of the bubble
-         * @param {string|HTMLElement} [options.content=''] the content rendered into the panel
-         * @param {string|HTMLElement} [options.bubbleContent=''] the content of the bubble, commonly an icon
-         * @param {boolean} [options.closable=true] whether the header renders a close button
-         * @param {boolean} [options.minimized=false] whether the widget starts out minimized
-         * @param {string} [options.minimizeLabel='Minimize'] the label of the minimize button
-         * @param {string} [options.closeLabel='Close'] the label of the close button
+         * @param {ChatWidgetOptions} [options] the options of the widget
          * @returns {ChatWidget} the created widget
          */
         create(options) {
