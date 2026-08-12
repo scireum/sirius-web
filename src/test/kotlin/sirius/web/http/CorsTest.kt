@@ -215,6 +215,47 @@ class CorsTest {
         assertNull(requestAllowedOrigin(requestOrigin))
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["https://example.com", "http://localhost:3000"])
+    fun `given enableCors is enabled when the interceptor returns a Denied strategy then no 'Access-Control-Allow-Origin' header is set`(
+        requestOrigin: String
+    ) {
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Denied()
+
+        assertNull(requestAllowedOrigin(requestOrigin))
+    }
+
+    /**
+     * The refusal has to reach the preflight as well, as a preflight answered with an origin would let the browser
+     * proceed with the actual request.
+     */
+    @Test
+    fun `given enableCors is enabled when the interceptor returns a Denied strategy then a preflight is answered without an origin`() {
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Denied()
+
+        val connection = sendPreflight(origin = "https://example.com")
+
+        assertNull(connection.getHeaderField(HttpHeaderNames.ACCESS_CONTROL_ALLOW_ORIGIN.toString()))
+    }
+
+    /**
+     * Abstaining and refusing must not be confused: an interceptor which cannot decide leaves the route readable for
+     * the requesting origin, while a refusal keeps it unreadable.
+     */
+    @Test
+    fun `given enableCors is enabled then a Denied strategy differs from an interceptor which does not decide`() {
+        TestCorsInterceptor.allowedOrigin = null
+        val whenAbstaining = requestAllowedOrigin("https://example.com")
+
+        TestCorsInterceptor.allowedOrigin = AllowedOrigin.Denied()
+        val whenDenied = requestAllowedOrigin("https://example.com")
+
+        assertAll(
+            { assertEquals("https://example.com", whenAbstaining) },
+            { assertNull(whenDenied) },
+        )
+    }
+
     // --- CORS handling of the non-controller dispatchers ---
     //
     // Dispatchers are invoked ascending by priority: AssetsDispatcher (-10), ServiceDispatcher (-5),
