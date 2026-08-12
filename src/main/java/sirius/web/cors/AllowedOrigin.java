@@ -33,8 +33,13 @@ public sealed interface AllowedOrigin
      * This is <b>not</b> the same as an interceptor abstaining: an interceptor which returns an empty optional from
      * {@link Interceptor#determineAllowedCorsOrigin(WebContext, Collection)} states that it does not decide, and
      * {@link sirius.web.controller.ControllerDispatcher} then falls back to a {@link MatchRequest} - which reflects
-     * the origin of the request. An interceptor that wants a route to remain unreachable cross-origin therefore has
-     * to say so by returning this record.
+     * the origin of the request. An interceptor that wants the response of a route to stay unreadable cross-origin
+     * therefore has to say so by returning this record.
+     * </p>
+     * <p>
+     * Note that this withholds the <i>response</i> from the calling script rather than keeping the request away from
+     * the route: a simple request is still sent and still executed, and only a failing preflight stops one from
+     * arriving at all. Refusing an origin is therefore no substitute for CSRF protection.
      * </p>
      */
     record Denied() implements AllowedOrigin {
