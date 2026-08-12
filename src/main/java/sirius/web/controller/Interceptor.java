@@ -115,7 +115,7 @@ public interface Interceptor extends Priorized {
      *
      * <p>
      * <b>Abstaining is therefore not the same as refusing.</b> As the fallback reflects the origin of the request,
-     * an empty optional leaves a route readable cross-origin. An interceptor which wants a route to stay unreachable
+     * an empty optional leaves a route readable cross-origin. An interceptor which wants a route to stay unreadable
      * for foreign origins must say so by returning an {@link AllowedOrigin.Denied}.
      * </p>
      *
