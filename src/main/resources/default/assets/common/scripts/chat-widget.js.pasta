@@ -217,6 +217,12 @@ window.sirius.chatWidget = (function () {
             // widget immediately, and that one must not be touched by the one leaving the screen.
             sirius.dispatchEvent('sci-chat-widget-destroyed', _widget, {widget: this});
 
+            // Pins the widget where it currently stands before it is taken out of the layout, so that it fades out in
+            // place while its siblings close the gap at once. Leaving the offsets to the stylesheet would not do: an
+            // absolutely positioned child of a flex container is placed as if it were the only item in it, which is
+            // the corner of the container - no matter which of several widgets side by side is closing.
+            _widget.style.left = _widget.offsetLeft + 'px';
+            _widget.style.top = _widget.offsetTop + 'px';
             _widget.classList.add(CLASS_CLOSING);
             runAfterTransition(_widget, () => _widget.parentElement.removeChild(_widget));
         }

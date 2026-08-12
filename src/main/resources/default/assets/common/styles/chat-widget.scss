@@ -33,11 +33,10 @@
   }
 
   /* A widget on its way out leaves the layout at once, so that a widget opening right behind it - as it happens when
-     the assistant switches to another context - is not pushed aside for the duration of the fade-out. */
+     the assistant switches to another context - is not pushed aside for the duration of the fade-out. The script pins
+     it to the spot it occupied, see destroy() in chat-widget.js.pasta. */
   .sci-chat-widget-closing {
     position: absolute;
-    right: var(--sci-chat-widget-base-unit);
-    bottom: var(--sci-chat-widget-base-unit);
     pointer-events: none;
   }
 
