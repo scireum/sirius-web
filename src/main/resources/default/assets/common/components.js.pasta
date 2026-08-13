@@ -1,3 +1,12 @@
+/**@
+ * Every component listed here ends up in one script, so a syntax error in any of them takes all the others down with
+ * it. Browsers as old as IE11 are still being served, and those reject modern syntax (classes, arrow functions,
+ * template literals, private fields, spread) while parsing - long before anyone could have used the component. Keep
+ * the files below on ES5 syntax, even the ones which are never rendered in such a browser.
+ *
+ * A component which wants modern syntax stays out of this list and is included by the products which use it, the way
+ * scripts/toast.js and scripts/chat-widget.js.pasta are.
+ */
 ___invoke("/assets/common/common.js.pasta");
 ___invoke("/assets/common/scripts/overlay.js.pasta");
 ___invoke("/assets/common/scripts/sidebar-overlay.js.pasta");

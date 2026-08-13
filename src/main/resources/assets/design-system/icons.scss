@@ -141,6 +141,11 @@
   background-color: currentColor;
 }
 
+.sci-icon-down {
+  mask-image: url(svgResource('/assets/images/icons/navigation/down.svg'));
+  background-color: currentColor;
+}
+
 .sci-icon-copy {
   mask-image: url(svgResource('/assets/images/icons/fontawesome/copy.svg'));
   background-color: currentColor;
