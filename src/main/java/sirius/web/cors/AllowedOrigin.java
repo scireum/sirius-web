@@ -24,7 +24,33 @@ import java.util.stream.Collectors;
  * </p>
  */
 public sealed interface AllowedOrigin
-        permits AllowedOrigin.MatchRequest, AllowedOrigin.Specific, AllowedOrigin.Wildcard {
+        permits AllowedOrigin.Denied, AllowedOrigin.MatchRequest, AllowedOrigin.Specific, AllowedOrigin.Wildcard {
+
+    /**
+     * No origin is allowed at all, so no {@code Access-Control-Allow-Origin} header is set and the response stays
+     * unreadable for every foreign origin.
+     * <p>
+     * This is <b>not</b> the same as an interceptor abstaining: an interceptor which returns an empty optional from
+     * {@link Interceptor#determineAllowedCorsOrigin(WebContext, Collection)} states that it does not decide, and
+     * {@link sirius.web.controller.ControllerDispatcher} then falls back to a {@link MatchRequest} - which reflects
+     * the origin of the request. An interceptor that wants the response of a route to stay unreadable cross-origin
+     * therefore has to say so by returning this record.
+     * </p>
+     * <p>
+     * Refusing every origin does not restrict the application's own frontend: a request issued by the origin which
+     * served the page is same-origin, and the same-origin policy permits it without any
+     * {@code Access-Control-Allow-Origin} header. Only <i>foreign</i> origins are affected. Where an application is
+     * served from several hosts and one of them legitimately calls another, that is a genuine cross-origin case and
+     * belongs into a {@link Specific} allow-list rather than here.
+     * </p>
+     * <p>
+     * Note that this withholds the <i>response</i> from the calling script rather than keeping the request away from
+     * the route: a simple request is still sent and still executed, and only a failing preflight stops one from
+     * arriving at all. Refusing an origin is therefore no substitute for CSRF protection.
+     * </p>
+     */
+    record Denied() implements AllowedOrigin {
+    }
 
     /**
      * The {@code Access-Control-Allow-Origin} header should be set to the origin of the request.
