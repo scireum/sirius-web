@@ -276,6 +276,11 @@
   background-color: currentColor;
 }
 
+.sci-icon-circle-exclamation {
+  mask-image: url(svgResource('/assets/images/icons/fontawesome/circle-exclamation.svg'));
+  background-color: currentColor;
+}
+
 /**
  * LEGACY: Following are legacy icons with explicit color definitions. Please use the icons defined above.
  */
