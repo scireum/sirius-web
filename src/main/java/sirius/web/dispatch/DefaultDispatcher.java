@@ -27,7 +27,7 @@ import java.util.Optional;
 /**
  * Sends a 404 (not found) for all unhandled URIs.
  * <p>
- * Also handles some special static URIs if enabled, like /robots.txt.
+ * Also handles some special static URIs if enabled, like /robots.txt or /favicon.ico.
  * <p>
  * If no other dispatcher jumps in, this will take care of handing the request by sending an HTTP/404.
  */
@@ -47,6 +47,9 @@ public class DefaultDispatcher implements WebDispatcher {
 
     @ConfigValue("http.robots.txt.disallow")
     private boolean robotsDisallowAll;
+
+    @ConfigValue("http.favicon")
+    private String favicon;
 
     @Override
     public int getPriority() {
@@ -82,6 +85,19 @@ public class DefaultDispatcher implements WebDispatcher {
                                   Disallow:
                                   """);
             }
+        } else if ("/favicon.ico".equals(webContext.getRequestedURI()) && Strings.isFilled(favicon)) {
+            // Browsers and many other clients request /favicon.ico on their own, even if no HTML document points
+            // there. Without a handler each of these requests ends up as an HTTP/404, which floods the logs and
+            // makes tools like fail2ban treat harmless clients as attackers.
+            //
+            // We only rewrite the URI here and restart the pipeline instead of serving the file ourselves. This way
+            // the AssetsDispatcher applies its usual caching and zero-copy delivery, and the configured path has to
+            // pass its /assets check - therefore no other file than an asset can ever be served this way.
+            //
+            // As this dispatcher runs last, an application can still handle /favicon.ico itself (e.g. to serve a
+            // tenant specific icon) without being shadowed by the framework.
+            webContext.withCustomURI(favicon);
+            return DispatchDecision.RESTART;
         } else if ("/".equals(webContext.getRequestedURI())) {
             // If there is no controller and no other dispatcher which is willing to handle a "/" request, we
             // re-start the pipeline with "/admin". This will at least be picked up by the DashboardController
