@@ -85,14 +85,17 @@ public class DefaultDispatcher implements WebDispatcher {
                                   Disallow:
                                   """);
             }
-        } else if ("/favicon.ico".equals(webContext.getRequestedURI()) && Strings.isFilled(favicon)) {
+        } else if ("/favicon.ico".equals(webContext.getRequestedURI())
+                   && Strings.isFilled(favicon)
+                   && favicon.startsWith("/assets/")) {
             // Browsers and many other clients request /favicon.ico on their own, even if no HTML document points
             // there. Without a handler each of these requests ends up as an HTTP/404, which floods the logs and
             // makes tools like fail2ban treat harmless clients as attackers.
             //
-            // We only rewrite the URI here and restart the pipeline instead of serving the file ourselves. This way
-            // the AssetsDispatcher applies its usual caching and zero-copy delivery, and the configured path has to
-            // pass its /assets check - therefore no other file than an asset can ever be served this way.
+            // We only rewrite the URI here and restart the pipeline instead of serving the file ourselves, so that
+            // the AssetsDispatcher applies its usual caching and zero-copy delivery. We deliberately only do so for
+            // a path below /assets: a value pointing back to /favicon.ico would restart the pipeline until it is
+            // aborted, and any other value would silently remap the request to a completely unrelated route.
             //
             // As this dispatcher runs last, an application can still handle /favicon.ico itself (e.g. to serve a
             // tenant specific icon) without being shadowed by the framework.
