@@ -120,7 +120,7 @@ public class AutocompleteHelper {
                 output.property("fieldLabel", fieldLabel);
                 output.property("completionLabel", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 output.property("completionDescription", completionDescription);
-                output.property("imageUrl", imageUrl);
+                output.propertyIfFilled("imageUrl", imageUrl);
 
                 // LEGACY SUPPORT....
                 output.property("id", value);
