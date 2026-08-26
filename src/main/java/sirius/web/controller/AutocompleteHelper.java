@@ -44,6 +44,7 @@ public class AutocompleteHelper {
         private String fieldLabel;
         private String completionLabel;
         private String completionDescription;
+        private String imageUrl;
         private boolean disabled = false;
 
         /**
@@ -90,6 +91,19 @@ public class AutocompleteHelper {
         }
 
         /**
+         * Specifies an image to be shown alongside the suggestion.
+         * <p>
+         * Note that it is up to the autocomplete in JavaScript whether and how the image is rendered.
+         *
+         * @param imageUrl the URL of the image to show
+         * @return the completion itself for fluent method calls
+         */
+        public Completion withImageUrl(String imageUrl) {
+            this.imageUrl = imageUrl;
+            return this;
+        }
+
+        /**
          * Marks the suggestion as disabled.
          *
          * @return the completion itself for fluent method calls
@@ -106,6 +120,7 @@ public class AutocompleteHelper {
                 output.property("fieldLabel", fieldLabel);
                 output.property("completionLabel", Strings.isFilled(completionLabel) ? completionLabel : fieldLabel);
                 output.property("completionDescription", completionDescription);
+                output.propertyIfFilled("imageUrl", imageUrl);
 
                 // LEGACY SUPPORT....
                 output.property("id", value);
