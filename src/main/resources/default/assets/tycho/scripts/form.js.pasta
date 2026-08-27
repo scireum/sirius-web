@@ -41,9 +41,8 @@ sirius.ready(function () {
     document.querySelectorAll('.confirm-link-js').forEach(_node => {
         _node.addEventListener('click', event => {
             try {
-                const href = _node.getAttribute('href');
                 if (_node.hasAttribute('href')) {
-                    _confirmForm.setAttribute('action', href);
+                    _confirmForm.setAttribute('action', _node.getAttribute('href'));
                     _targetForm = _confirmForm;
 
                     if (_node.dataset.sciSubmitFormId) {
