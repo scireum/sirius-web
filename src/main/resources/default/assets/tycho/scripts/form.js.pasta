@@ -28,8 +28,10 @@ sirius.ready(function () {
     const _modalElement = document.getElementById('link-confirm-modal-js');
     const _confirmForm = _modalElement.querySelector(".confirm-form-js");
     const _submitBtn = _modalElement.querySelector("button[type='submit']");
+
+    let _targetForm = _confirmForm;
     _submitBtn.addEventListener('click', () => {
-        sirius.requestSubmitForm(_confirmForm);
+        sirius.requestSubmitForm(_targetForm);
     });
 
     const modal = new bootstrap.Modal(_modalElement, {
@@ -39,20 +41,28 @@ sirius.ready(function () {
     document.querySelectorAll('.confirm-link-js').forEach(_node => {
         _node.addEventListener('click', event => {
             try {
-                _confirmForm.setAttribute('action', _node.getAttribute('href'));
+                if (_node.hasAttribute('href')) {
+                    _confirmForm.setAttribute('action', _node.getAttribute('href'));
+                    _targetForm = _confirmForm;
 
-                if (_node.dataset.sciSubmitFormId) {
-                    [..._confirmForm.children].forEach(_child => _child.name !== "CSRFToken" && _confirmForm.removeChild(_child));
-                    const _form = document.getElementById(_node.dataset.sciSubmitFormId);
-                    if (_form != null) {
-                        const _userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
-                        _userIdInputs.forEach(_input => {
-                            const _inputHidden = document.createElement('input');
-                            _inputHidden.type = 'hidden';
-                            _inputHidden.name = _input.name;
-                            _inputHidden.value = _input.value;
-                            _confirmForm.appendChild(_inputHidden);
-                        });
+                    if (_node.dataset.sciSubmitFormId) {
+                        [..._confirmForm.children].forEach(_child => _child.name !== "CSRFToken" && _confirmForm.removeChild(_child));
+                        const _form = document.getElementById(_node.dataset.sciSubmitFormId);
+                        if (_form != null) {
+                            const _userIdInputs = _form.querySelectorAll('input[name]:not([name="CSRFToken"])');
+                            _userIdInputs.forEach(_input => {
+                                const _inputHidden = document.createElement('input');
+                                _inputHidden.type = 'hidden';
+                                _inputHidden.name = _input.name;
+                                _inputHidden.value = _input.value;
+                                _confirmForm.appendChild(_inputHidden);
+                            });
+                        }
+                    }
+                } else {
+                    _targetForm = _node.closest('form');
+                    if (_targetForm == null) {
+                        throw new Error('confirm-link-js requires either an href or an enclosing form: ' + _node.outerHTML);
                     }
                 }
 

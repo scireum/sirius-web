@@ -14,8 +14,9 @@
 <i:pragma name="description" value="Renders menu entry within a tycho template"/>
 
 <!--@
-Note: Do not declare both the 'confirm-link-js' class and 'sendPostRequest=true' at the same time as they clash with
-each other. TODO SIRI-1223: Fix this.
+Note: With sendPostRequest=true, the item renders a <form> containing a <button>. The 'class' attribute is applied
+to the button, while 'data' attributes are applied to the surrounding form. Do not place such an item inside another
+form, as nested forms are dropped by the HTML parser.
 -->
 
 <i:local name="dataSerialized"
