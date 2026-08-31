@@ -537,8 +537,14 @@ public class Parser {
             } else if (tokenizer.current().isIdentifier()
                        || tokenizer.current().isSpecialIdentifier("#", "@")
                        || tokenizer.current().isNumber()) {
-                StringBuilder builder = new StringBuilder(tokenizer.consume().getSource());
-                parseFilterInSelector(builder);
+                Token identifier = tokenizer.consume();
+                StringBuilder builder = new StringBuilder(identifier.getSource());
+                // "a[href]" (glued) is a compound selector, but "a [href]" (whitespace) is a descendant.
+                // Only append the filter if it directly follows the identifier - otherwise it is picked up
+                // as a separate selector part by the "[" branch below.
+                if (areAdjacent(identifier, tokenizer.current())) {
+                    parseFilterInSelector(builder);
+                }
                 parseOperatorInSelector(builder);
                 selector.add(builder.toString());
             } else if (tokenizer.current().isSymbol("[")) {
