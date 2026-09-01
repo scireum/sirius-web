@@ -23,6 +23,11 @@ input[type="radio"]:checked + span {
   font-family: 'OpenSansSemibold';
 }
 
+.nav-list-self[class^="icon-"],
+.nav-list-self[class*=" icon-"] {
+  margin-right: 5px;
+}
+
 .nav-list [class^="icon-"],
 .nav-list [class*=" icon-"] {
   margin-right: 5px;
@@ -106,4 +111,8 @@ div {
   & [hidden] {
     display: none;
   }
+}
+
+.tabs[hidden], .tabs [hidden] {
+  display: none;
 }
