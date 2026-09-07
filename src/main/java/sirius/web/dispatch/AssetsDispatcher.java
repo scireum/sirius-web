@@ -21,6 +21,7 @@ import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.info.Product;
+import sirius.kernel.nls.NLS;
 import sirius.kernel.settings.Extension;
 import sirius.pasta.noodle.compiler.CompileException;
 import sirius.pasta.tagliatelle.Tagliatelle;
@@ -33,6 +34,7 @@ import sirius.web.http.WebDispatcher;
 import sirius.web.resources.Resource;
 import sirius.web.resources.Resources;
 import sirius.web.sass.Output;
+import sirius.web.security.ScopeInfo;
 import sirius.web.security.UserContext;
 import sirius.web.templates.Templates;
 
@@ -59,14 +61,15 @@ import java.util.regex.Pattern;
  * an appropriate <tt>SASS</tt> file and compile it down into proper CSS. Otherwise, we check if an appropriate pasta
  * template is present and compile this into the expected outputs. This can be used to combine multiple JavaScript
  * sources into a single output file. Also note, that we support cachable i18n content, but also resolving a file
- * named <tt>my-script_de.js</tt> into <tt>my-script.js.pasta</tt>.
+ * named <tt>my-script_de.js</tt> into <tt>my-script.js.pasta</tt>, which is then rendered using the language
+ * given by the suffix.
  */
 @Register(classes = {AssetsDispatcher.class, WebDispatcher.class})
 public class AssetsDispatcher implements WebDispatcher {
 
     private static final String ASSETS_PREFIX = "/assets/";
     private static final Pattern INTERNATIONALIZED_TEMPLATE_URI =
-            Pattern.compile("(?<path>.*)_[a-z]{2}\\.(?<extension>.*)");
+            Pattern.compile("(?<path>.*)_(?<language>[a-z]{2})\\.(?<extension>.*)");
     private static final String PASTA_SUFFIX = ".pasta";
 
     @ConfigValue("http.generated-directory")
@@ -203,6 +206,7 @@ public class AssetsDispatcher implements WebDispatcher {
                                                               + i18nMatcher.group("extension")
                                                               + PASTA_SUFFIX);
             if (template.isPresent()) {
+                CallContext.getCurrent().setLanguage(determineLanguage(i18nMatcher.group("language")));
                 updateResponseCacheSettings(response, uri, template.get().isConstant());
                 if (!handleUnmodifiedTemplate(template.get(), response)) {
                     response.template(HttpResponseStatus.OK, template.get());
@@ -213,6 +217,24 @@ public class AssetsDispatcher implements WebDispatcher {
         }
 
         return DispatchDecision.CONTINUE;
+    }
+
+    /**
+     * Determines the language to use when rendering an internationalized template.
+     * <p>
+     * An unknown suffix is not treated as a language, as the two-letter pattern also matches names like
+     * <tt>grid_md.css</tt>. Such a request falls back to the default language instead of keeping none, so that the
+     * cached response does not depend on whoever requested it first.
+     *
+     * @param language the two-letter language code taken from the requested URI
+     * @return the given language if it is known to the system, the default language otherwise
+     */
+    private String determineLanguage(String language) {
+        if (ScopeInfo.isKnownLanguage(language)) {
+            return language;
+        }
+
+        return NLS.getDefaultLanguage();
     }
 
     private boolean handleUnmodifiedTemplate(Template template, Response response) {
