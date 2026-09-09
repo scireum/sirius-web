@@ -3,7 +3,7 @@
  * by scireum in Stuttgart, Germany
  *
  * Copyright by scireum GmbH
- * http://www.scireum.de - info@scireum.de
+ * https://www.scireum.de - info@scireum.de
  */
 
 @file:Suppress("DANGEROUS_CHARACTERS")
