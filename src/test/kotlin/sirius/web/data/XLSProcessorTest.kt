@@ -20,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import sirius.kernel.SiriusExtension
+import sirius.kernel.async.BasicTaskContextAdapter
+import sirius.kernel.async.TaskContext
 import sirius.kernel.commons.Values
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -30,6 +32,7 @@ import java.util.TimeZone
 import java.util.function.Predicate
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 /**
  * Verifies that [XLSProcessor] and [XLSXProcessor] read the same file contents in the same way.
@@ -195,6 +198,27 @@ class XLSProcessorTest {
         assertEquals(listOf(1 to listOf("beta-1"), 1 to listOf("alpha-1"), 2 to listOf("alpha-2")), rows.toList())
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["xls", "xlsx"])
+    fun `runForSheets reports a missing sheet and keeps processing`(format: String) {
+
+        val rows = mutableListOf<Pair<Int, List<Any?>>>()
+
+        val messages = captureTaskLog {
+            sheetProcessorFor(format).runForSheets(
+                collectingSheetProcessor("Missing", rows),
+                collectingSheetProcessor("Alpha", rows)
+            )
+        }
+
+        assertEquals(listOf(1 to listOf("alpha-1"), 2 to listOf("alpha-2")), rows.toList())
+        assertEquals(1, messages.size)
+        assertTrue(
+            messages.single().contains("Missing"),
+            "The absent sheet should be named in the log, but the log read: ${messages.single()}"
+        )
+    }
+
     /**
      * Writes the rows which cover the cell types and row shapes an import has to cope with.
      *
@@ -339,6 +363,19 @@ class XLSProcessorTest {
             sheetName
         )
 
+    private fun captureTaskLog(block: () -> Unit): List<String> {
+        val context = TaskContext.get()
+        val previous = context.adapter
+        val capturing = CapturingTaskContextAdapter(context)
+        context.adapter = capturing
+        try {
+            block()
+        } finally {
+            context.adapter = previous
+        }
+        return capturing.messages.toList()
+    }
+
     private fun <T> withTimeZone(zone: String, block: () -> T): T {
         val previous = TimeZone.getDefault()
         TimeZone.setDefault(TimeZone.getTimeZone(zone))
@@ -349,4 +386,15 @@ class XLSProcessorTest {
         }
     }
 
+    /**
+     * Records what a processor reports to its [TaskContext], so that a test can assert on it.
+     */
+    private class CapturingTaskContextAdapter(context: TaskContext) : BasicTaskContextAdapter(context) {
+
+        val messages = mutableListOf<String>()
+
+        override fun log(message: String) {
+            messages.add(message)
+        }
+    }
 }
