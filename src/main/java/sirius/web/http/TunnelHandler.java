@@ -30,6 +30,7 @@ import sirius.kernel.async.CallContext;
 import sirius.kernel.commons.Explain;
 import sirius.kernel.commons.Processor;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.commons.ValueHolder;
 import sirius.kernel.commons.Watch;
 import sirius.kernel.health.Exceptions;
@@ -208,7 +209,9 @@ public class TunnelHandler implements AsyncHandler<String> {
     public State onHeadersReceived(HttpHeaders httpHeaders) throws Exception {
         CallContext.setCurrent(callContext);
 
-        installBackpressureBridge();
+        if (shouldApplyBackpressure(httpHeaders)) {
+            installBackpressureBridge();
+        }
 
         if (webContext.responseCommitted) {
             if (WebServer.LOG.isFINE()) {
@@ -421,6 +424,32 @@ public class TunnelHandler implements AsyncHandler<String> {
         // Authoritative restore: the removal above happens on the client's event loop and therefore
         // possibly after the connection was pooled. Hand it back readable right now instead.
         releaseUpstream();
+    }
+
+    /**
+     * Determines whether this response is worth applying back-pressure to.
+     * <p>
+     * Back-pressure exists to stop a slow consumer from making us buffer an arbitrarily large download in
+     * memory. For a response which fits into a buffer or two that gains nothing, while still exposing the
+     * request to the pause/resume machinery - so small responses skip it entirely. A response whose length we
+     * do not know (chunked) is treated as large, because those are precisely the ones which can grow without
+     * bound.
+     *
+     * @param httpHeaders the upstream response headers
+     * @return <tt>true</tt> if the back-pressure bridge should be installed
+     */
+    private boolean shouldApplyBackpressure(HttpHeaders httpHeaders) {
+        if (!WebServer.isTunnelBackpressureEnabled()) {
+            return false;
+        }
+
+        long minResponseSize = WebServer.getTunnelBackpressureMinResponseSize();
+        if (minResponseSize <= 0) {
+            return true;
+        }
+
+        long contentLength = Value.of(httpHeaders.get(HttpHeaderNames.CONTENT_LENGTH)).asLong(-1);
+        return contentLength < 0 || contentLength >= minResponseSize;
     }
 
     /**
