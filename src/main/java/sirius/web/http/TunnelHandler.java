@@ -100,7 +100,6 @@ public class TunnelHandler implements AsyncHandler<String> {
              + "required cross-thread visibility.")
     private volatile Channel upstreamChannel;
 
-
     private volatile boolean failed;
 
     TunnelHandler(Response response,
@@ -150,8 +149,7 @@ public class TunnelHandler implements AsyncHandler<String> {
         // to a new request.
         if (!connection.config().isAutoRead()) {
             WebServer.LOG.WARN("Tunnel: re-enabled reading on a pooled upstream connection which was"
-                               + " left paused by a previous request. Target: %s",
-                               webContext.getRequestedURI());
+                               + " left paused by a previous request. Target: %s", webContext.getRequestedURI());
             mirrorWritabilityToUpstream(true);
         }
     }
@@ -488,7 +486,7 @@ public class TunnelHandler implements AsyncHandler<String> {
      * Sets {@code autoRead} on the given channel, making sure the mutation happens on that channel's own
      * event loop.
      *
-     * @param channel the channel to modify
+     * @param channel  the channel to modify
      * @param autoRead whether the channel should read on its own
      */
     @SuppressWarnings("resource")
