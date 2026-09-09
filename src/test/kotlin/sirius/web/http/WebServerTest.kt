@@ -69,17 +69,26 @@ import kotlin.test.assertTrue
 class WebServerTest {
     companion object {
         /**
-         * Asserts that the given response body is `assets/test_large.css` in compressed form.
+         * Asserts that the given response body is `assets/test_large.css`, compressed, and correctly so.
          *
-         * Decompressing and comparing is both stronger and steadier than pinning the length of the
-         * compressed body. It rejects a body which is truncated, corrupted or not compressed at all,
-         * while staying indifferent to the exact output of [java.util.zip.Deflater] - which shifts
-         * whenever the asset is edited or the JDK's compression changes, neither of which is a defect.
+         * Both halves are needed: the size shows that compression took place, the comparison shows that
+         * it produced the asset. Together they reject a body which is truncated, corrupted, uncompressed
+         * or merely stored, while staying indifferent to the exact output of [java.util.zip.Deflater] -
+         * which shifts whenever the asset is edited or the JDK's compression changes, neither of which
+         * is a defect.
          */
         fun assertGzippedTestLargeCss(data: ByteArray) {
-            val decompressed = GZIPInputStream(ByteArrayInputStream(data)).use { it.readBytes() }
+            val asset = testLargeCss()
 
-            assertContentEquals(testLargeCss(), decompressed)
+            // decompressing alone would not show that anything was compressed: a gzip stream written with
+            // compression level zero stores its input verbatim, decompresses to the asset just as happily
+            // and is in fact a few bytes larger than it. Hence the size is asserted as well - and it needs
+            // no threshold, as any actual compression of this asset undercuts it by a factor of forty
+            assertTrue(
+                data.size < asset.size,
+                "Expected a compressed response, but its ${data.size} bytes exceed the ${asset.size} of the raw asset"
+            )
+            assertContentEquals(asset, GZIPInputStream(ByteArrayInputStream(data)).use { it.readBytes() })
         }
 
         private fun testLargeCss(): ByteArray =
