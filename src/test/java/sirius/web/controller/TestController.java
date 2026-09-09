@@ -114,8 +114,7 @@ public class TestController extends BasicController {
                                     JSONStructuredOutput output,
                                     String parameter1,
                                     String parameter2) {
-        output.property("param1", parameter1);
-        output.property("param2", parameter2);
+        testJSONParams(webContext, output, parameter1, parameter2);
     }
 
     @InternalService

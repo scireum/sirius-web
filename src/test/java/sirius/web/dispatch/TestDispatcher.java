@@ -17,6 +17,9 @@ import sirius.web.http.WebDispatcher;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * A test dispatcher used to verify the behavior of the web server and its tunnel.
+ */
 @Register
 public class TestDispatcher implements WebDispatcher {
 
@@ -75,9 +78,8 @@ public class TestDispatcher implements WebDispatcher {
             // control. Without it, the dispatcher would dump the entire payload into its own Netty
             // outbound buffer on the same JVM, masking any back-pressure applied on the tunnel
             // side.
-            ChunkedOutputStream out = ctx.respondWith()
-                                         .outputStream(HttpResponseStatus.OK, "text/plain")
-                                         .enableContentionControl();
+            ChunkedOutputStream out =
+                    ctx.respondWith().outputStream(HttpResponseStatus.OK, "text/plain").enableContentionControl();
             byte[] chunk = "THISISLARGECONTENT".getBytes(StandardCharsets.UTF_8);
             for (int i = 0; i < STREAMING_PAYLOAD_CHUNKS; i++) {
                 out.write(chunk);
