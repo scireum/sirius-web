@@ -44,6 +44,7 @@ import sirius.kernel.health.Log
 import sirius.kernel.health.LogHelper
 import sirius.web.controller.ControllerDispatcher
 import sirius.web.dispatch.TestDispatcher
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.Socket
@@ -52,6 +53,8 @@ import java.nio.charset.StandardCharsets
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
+import java.util.zip.GZIPInputStream
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -65,18 +68,51 @@ import kotlin.test.assertTrue
 @ExtendWith(SiriusExtension::class)
 class WebServerTest {
     companion object {
+        /**
+         * Asserts that the given response body is `assets/test_large.css` in compressed form.
+         *
+         * Decompressing and comparing is both stronger and steadier than pinning the length of the
+         * compressed body. It rejects a body which is truncated, corrupted or not compressed at all,
+         * while staying indifferent to the exact output of [java.util.zip.Deflater] - which shifts
+         * whenever the asset is edited or the JDK's compression changes, neither of which is a defect.
+         */
+        fun assertGzippedTestLargeCss(data: ByteArray) {
+            val decompressed = GZIPInputStream(ByteArrayInputStream(data)).use { it.readBytes() }
+
+            assertContentEquals(testLargeCss(), decompressed)
+        }
+
+        private fun testLargeCss(): ByteArray =
+            checkNotNull(WebServerTest::class.java.getResourceAsStream("/assets/test_large.css")) {
+                "The asset backing the compression tests is missing"
+            }.use { it.readBytes() }
+
         fun callAndRead(
             uri: String,
             outHeaders: Map<String, String?>? = null,
             expectedHeaders: Map<String, String?>? = null,
             requestMethod: String = "GET"
-        ): String {
+        ): String = String(callAndReadBytes(uri, outHeaders, expectedHeaders, requestMethod), StandardCharsets.UTF_8)
+
+        /**
+         * Requests the given URI and hands back the response body as it arrived.
+         *
+         * [callAndRead] decodes the body as UTF-8, which is lossy for anything but text: a gzipped body
+         * comes out of it as a string full of replacement characters whose length says nothing about the
+         * bytes on the wire. Such a body has to be read here instead.
+         */
+        fun callAndReadBytes(
+            uri: String,
+            outHeaders: Map<String, String?>? = null,
+            expectedHeaders: Map<String, String?>? = null,
+            requestMethod: String = "GET"
+        ): ByteArray {
             val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
             connection.setRequestMethod(requestMethod)
 
             outHeaders?.forEach { (key, value) -> connection.addRequestProperty(key, value) }
             connection.connect()
-            val result = String(Streams.toByteArray(connection.inputStream), StandardCharsets.UTF_8)
+            val result = Streams.toByteArray(connection.inputStream)
             expectedHeaders?.forEach { (key, value) ->
                 if ("*" == value) {
                     if (Strings.isEmpty(connection.getHeaderField(key))) {
@@ -152,10 +188,9 @@ class WebServerTest {
         val headers = mapOf("accept-encoding" to "gzip")
         val expectedHeaders = mapOf("content-encoding" to "gzip")
 
-        val data = callAndRead(uri, headers, expectedHeaders)
+        val data = callAndReadBytes(uri, headers, expectedHeaders)
 
-        // URLConnection does not understand GZIP and therefore does not unzip... :-(
-        assertEquals(1317, data.length)
+        assertGzippedTestLargeCss(data)
     }
 
     @Test
@@ -165,10 +200,9 @@ class WebServerTest {
         val headers = mapOf("accept-encoding" to "gzip")
         val expectedHeaders = mapOf("content-encoding" to "gzip")
 
-        val data = callAndRead(uri, headers, expectedHeaders)
+        val data = callAndReadBytes(uri, headers, expectedHeaders)
 
-        // URLConnection does not understand GZIP and therefore does not unzip... :-(
-        assertEquals(1317, data.length)
+        assertGzippedTestLargeCss(data)
     }
 
     @Test
