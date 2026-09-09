@@ -99,6 +99,7 @@ public class TunnelHandler implements AsyncHandler<String> {
              + "required cross-thread visibility.")
     private volatile Channel upstreamChannel;
 
+
     private volatile boolean failed;
 
     TunnelHandler(Response response,
@@ -129,7 +130,7 @@ public class TunnelHandler implements AsyncHandler<String> {
     @Override
     public void onTcpConnectSuccess(InetSocketAddress remoteAddress, Channel connection) {
         this.timeToConnect = watch.elapsedMillis();
-        this.upstreamChannel = connection;
+        adoptUpstream(connection);
     }
 
     @Override
@@ -137,7 +138,21 @@ public class TunnelHandler implements AsyncHandler<String> {
         // Pooled connections never trigger onTcpConnectSuccess, but we still need a reference
         // to the upstream channel to apply back-pressure (toggling autoRead) once the response
         // headers have been received.
-        this.upstreamChannel = connection;
+        adoptUpstream(connection);
+
+        // A pause applied by a previous user of this connection can outlive that request:
+        // mirrorWritabilityToUpstream only verifies that the channel is open, and a connection
+        // sitting in the pool is open. Such a connection can never deliver a response, because
+        // installBackpressureBridge - which is what would re-apply the current writability - is
+        // only reached from onHeadersReceived, and no headers can arrive while reading is off.
+        // Reading is therefore restored here, at the one point where a pooled connection is handed
+        // to a new request.
+        if (!connection.config().isAutoRead()) {
+            WebServer.LOG.WARN("Tunnel: re-enabled reading on a pooled upstream connection which was"
+                               + " left paused by a previous request. Target: %s",
+                               webContext.getRequestedURI());
+            mirrorWritabilityToUpstream(true);
+        }
     }
 
     @Override
@@ -402,28 +417,99 @@ public class TunnelHandler implements AsyncHandler<String> {
                 mirrorWritabilityToUpstream(true);
             }
         });
+
+        // Authoritative restore: the removal above happens on the client's event loop and therefore
+        // possibly after the connection was pooled. Hand it back readable right now instead.
+        releaseUpstream();
+    }
+
+    /**
+     * Takes ownership of the given upstream connection.
+     * <p>
+     * A single handler can see more than one connection: AsyncHttpClient retries failed attempts, and each
+     * attempt reports its own channel. Whatever we did to the previous one has to be undone before we forget
+     * about it, otherwise a pause applied for this request outlives it on a connection which is about to be
+     * handed to somebody else.
+     *
+     * @param connection the connection this request will use from now on
+     */
+    private void adoptUpstream(Channel connection) {
+        Channel previous = upstreamChannel;
+        upstreamChannel = connection;
+        if (previous != null && previous != connection) {
+            applyAutoRead(previous, true);
+        }
+    }
+
+    /**
+     * Gives up the upstream connection, restoring its ability to read.
+     * <p>
+     * From here on the connection is no longer ours - most likely it goes straight back into
+     * AsyncHttpClient's pool - so it must be left in a state in which the next request can use it.
+     */
+    private void releaseUpstream() {
+        Channel released = upstreamChannel;
+        upstreamChannel = null;
+        if (released != null) {
+            applyAutoRead(released, true);
+        }
+    }
+
+    /**
+     * Sets {@code autoRead} on the given channel, making sure the mutation happens on that channel's own
+     * event loop.
+     *
+     * @param channel the channel to modify
+     * @param autoRead whether the channel should read on its own
+     */
+    @SuppressWarnings("resource")
+    @Explain("The eventLoop gets managed by Netty.")
+    private void applyAutoRead(Channel channel, boolean autoRead) {
+        if (!channel.isOpen()) {
+            return;
+        }
+        if (channel.eventLoop().inEventLoop()) {
+            if (mayApplyAutoRead(channel, autoRead)) {
+                channel.config().setAutoRead(autoRead);
+            }
+        } else {
+            channel.eventLoop().execute(() -> {
+                if (channel.isOpen() && mayApplyAutoRead(channel, autoRead)) {
+                    channel.config().setAutoRead(autoRead);
+                }
+            });
+        }
+    }
+
+    /**
+     * Decides whether a pending {@code autoRead} change may still be applied.
+     * <p>
+     * Pausing and releasing can be issued from different event loops - a writability change arrives on the
+     * client's loop, while completion arrives on the upstream's - so a pause can still be queued when the
+     * connection is given up, and would then take effect on a connection which is already back in the pool.
+     * Ownership is therefore re-checked at the moment the change is applied, not when it is issued. Re-enabling
+     * reading is always safe and always allowed.
+     *
+     * @param channel  the channel about to be modified
+     * @param autoRead the value about to be set
+     * @return <tt>true</tt> if the change may be applied
+     */
+    private boolean mayApplyAutoRead(Channel channel, boolean autoRead) {
+        return autoRead || channel == upstreamChannel;
     }
 
     /**
      * Mirrors the given writability state onto the upstream channel's {@code autoRead} flag,
      * making sure the mutation happens on the upstream channel's own event loop.
      */
-    @SuppressWarnings("resource")
-    @Explain("The upstream eventLoop gets managed by Netty.")
     private void mirrorWritabilityToUpstream(boolean writable) {
         Channel upstream = upstreamChannel;
-        if (upstream == null || !upstream.isOpen()) {
+        if (upstream == null) {
+            // Either no attempt is in flight, or this request has already given the connection up.
+            // Pausing it in that state would strand whichever request picks it up next.
             return;
         }
-        if (upstream.eventLoop().inEventLoop()) {
-            upstream.config().setAutoRead(writable);
-        } else {
-            upstream.eventLoop().execute(() -> {
-                if (upstream.isOpen()) {
-                    upstream.config().setAutoRead(writable);
-                }
-            });
-        }
+        applyAutoRead(upstream, writable);
     }
 
     private void commitAndCompleteResponse(HttpResponseBodyPart bodyPart, ByteBuf data) {

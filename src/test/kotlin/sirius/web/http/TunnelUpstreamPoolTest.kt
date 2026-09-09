@@ -16,7 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Wait
 import sirius.kernel.commons.Watch
+import sirius.web.dispatch.TestDispatcher
+import java.net.HttpURLConnection
+import java.net.URI
 import java.time.Duration
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -46,6 +50,72 @@ class TunnelUpstreamPoolTest {
     @AfterEach
     fun restoreTunnelClient() {
         TunnelPoolProbe.restore()
+    }
+
+    /**
+     * Reads a response in small blocks with a pause between them, so the server side runs out of
+     * writable buffer, and the bridge has to pause the upstream repeatedly.
+     */
+    private fun drainSlowly(uri: String, blockSize: Int = 8 * 1024, pauseMillis: Int = 1): Int {
+        val connection = URI("http://localhost:9999$uri").toURL().openConnection() as HttpURLConnection
+        connection.connect()
+
+        var totalBytes = 0
+        val block = ByteArray(blockSize)
+        var read: Int
+        try {
+            connection.inputStream.use { input ->
+                while (input.read(block).also { read = it } > 0) {
+                    totalBytes += read
+                    Wait.millis(pauseMillis)
+                }
+            }
+        } finally {
+            connection.disconnect()
+        }
+
+        return totalBytes
+    }
+
+    /**
+     * Asserts the invariant directly: a pooled upstream connection must always be readable.
+     *
+     * This is the assertion a fix has to satisfy, and it does not depend on any timing threshold.
+     */
+    @Test
+    fun `Pooled upstream connections are never left with reading disabled`() {
+        TunnelPoolProbe.install(1, Duration.ofSeconds(5))
+
+        repeat(ROUNDS) {
+            // The contention-controlled endpoint exercises the bridge across many pause/resume
+            // cycles, the burst endpoint completes its upstream response (and pools the
+            // connection) while this client is still draining.
+            assertEquals(TestDispatcher.STREAMING_PAYLOAD_TOTAL_BYTES, drainSlowly(STREAMING_TUNNEL))
+            assertEquals(TestDispatcher.BURST_PAYLOAD_TOTAL_BYTES, drainSlowly(BURST_TUNNEL, 4 * 1024, 4))
+            WebServerTest.callAndRead(SMALL_TUNNEL)
+        }
+
+        assertTrue(
+            TunnelPoolProbe.reusedConnections() > 0,
+            "The test never re-used a pooled connection, so it cannot have exercised the bug."
+        )
+        assertTrue(
+            TunnelPoolProbe.stuckWhileIdle().isEmpty(),
+            "Pooled upstream connections were still unable to read 2s after being pooled, so they"
+                    + " are unusable for any future request:\n"
+                    + TunnelPoolProbe.stuckWhileIdle().joinToString("\n")
+                    + "\n(transient observations: ${TunnelPoolProbe.pausedWhileIdle().size})"
+        )
+        assertTrue(
+            TunnelPoolProbe.pausedOnPoll().isEmpty(),
+            "Paused upstream connections were handed out to new requests, which can only end in a"
+                    + " read timeout:\n" + TunnelPoolProbe.pausedOnPoll().joinToString("\n")
+        )
+        assertTrue(
+            TunnelPoolProbe.pausedOnOffer().isEmpty(),
+            "Upstream connections were returned to the pool while still paused:\n"
+                    + TunnelPoolProbe.pausedOnOffer().joinToString("\n")
+        )
     }
 
     /**
@@ -102,7 +172,17 @@ class TunnelUpstreamPoolTest {
         )
     }
 
+    // Note: a test that reproduces the *whole* chain end to end - a real back-pressure pause
+    // leaking onto a pooled connection AND a second request then stalling on it - cannot be built
+    // in-process. Keeping a consumer unwritable needs a payload of several MiB, but at that size
+    // the bridge pauses the upstream before its response completes, so the connection is never
+    // pooled; a payload small enough to complete in one burst vanishes into the loopback socket
+    // buffers, which makes the consumer writable again and undoes the pause. The two tests above
+    // therefore split the chain: the first shows the state occurs, the second shows it is fatal.
+
     companion object {
+        private const val STREAMING_TUNNEL = "/tunnel/streaming-payload"
+        private const val BURST_TUNNEL = "/tunnel/burst-payload"
         private const val SMALL_TUNNEL = "/tunnel/test"
 
         /**
