@@ -154,7 +154,7 @@
         <dependency>
             <groupId>com.github.pjfanning</groupId>
             <artifactId>excel-streaming-reader</artifactId>
-            <version>5.2.0</version>
+            <version>5.3.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.h2database</groupId>
