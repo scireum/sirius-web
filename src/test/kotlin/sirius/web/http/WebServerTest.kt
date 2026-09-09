@@ -112,7 +112,7 @@ class WebServerTest {
 
             outHeaders?.forEach { (key, value) -> connection.addRequestProperty(key, value) }
             connection.connect()
-            val result = Streams.toByteArray(connection.inputStream)
+            val result = connection.inputStream.use { Streams.toByteArray(it) }
             expectedHeaders?.forEach { (key, value) ->
                 if ("*" == value) {
                     if (Strings.isEmpty(connection.getHeaderField(key))) {
