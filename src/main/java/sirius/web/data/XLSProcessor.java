@@ -67,28 +67,51 @@ public class XLSProcessor extends LineBasedProcessor {
     }
 
     /**
-     * Processes the XLS (MS Excel) file using the given {@link SheetBasedRowProcessor sheetProcessors}.
+     * Processes the workbook using the given {@link SheetBasedRowProcessor sheetProcessors}.
+     * <p>
+     * Note that {@link XLSXProcessor} inherits this, so the workbook is an XLS or an XLSX file.
+     * <p>
+     * A sheet which is not present in the workbook is reported to the {@link TaskContext} as an info message
+     * and skipped, and the sheet processors behind it are still run. Note that this is all a caller learns
+     * about an absent sheet: the import is not marked as erroneous, as a sheet processor cannot state whether
+     * its sheet is mandatory.
+     * <p>
+     * A row which fails and whose error handler declines to handle it still aborts the whole run, and the
+     * {@code importAllSheets} flag given to the constructor has no effect here, as the sheets to process are
+     * named by the given processors.
      *
      * @param sheetProcessors one or more sheet processors to use
-     * @throws Exception                             in case an error occurred while processing.
-     * @throws IOException                           if the stream providing the given workbook cannot be read.
-     * @throws sirius.kernel.health.HandledException if workbook does not contain a sheet with the given name.
+     * @throws Exception   in case an error occurred while processing.
+     * @throws IOException if the stream providing the given workbook cannot be read.
      */
     public void runForSheets(SheetBasedRowProcessor... sheetProcessors) throws Exception {
         try (Workbook workbook = openWorkbook()) {
             for (SheetBasedRowProcessor processor : sheetProcessors) {
                 try {
                     Sheet sheet = workbook.getSheet(processor.sheetName());
+                    if (sheet == null) {
+                        // HSSFWorkbook reports an unknown sheet by returning null, whereas the streaming
+                        // reader used for XLSX raises a MissingSheetException
+                        reportMissingSheet(processor.sheetName());
+                        continue;
+                    }
                     importSheet(processor.rowProcessor(), processor.errorHandler(), sheet);
                 } catch (MissingSheetException missingSheetException) {
-                    TaskContext.get()
-                               .log(NLS.fmtr("XLSProcessor.info.missingSheet")
-                                       .set("sheet", processor.sheetName())
-                                       .format());
+                    reportMissingSheet(processor.sheetName());
                     Exceptions.ignore(missingSheetException);
                 }
             }
         }
+    }
+
+    /**
+     * Reports a sheet requested via {@link #runForSheets(SheetBasedRowProcessor...)} which the workbook does
+     * not contain.
+     *
+     * @param sheetName the name of the absent sheet
+     */
+    private void reportMissingSheet(String sheetName) {
+        TaskContext.get().log(NLS.fmtr("XLSProcessor.info.missingSheet").set("sheet", sheetName).format());
     }
 
     protected Workbook openWorkbook() throws IOException {
