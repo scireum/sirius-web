@@ -137,6 +137,29 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     private static long maxTimeToFirstByte;
 
     /**
+     * Config value determining whether tunneled responses apply back-pressure to their upstream
+     * (<tt>http.tunnel.backpressure.enabled</tt>).
+     * <p>
+     * This exists as an operational escape hatch, so the mechanism can be ruled in or out during an incident
+     * without a custom build. Turning it off re-introduces unbounded outbound buffering for slow consumers on
+     * large tunneled downloads, so it is not a safe permanent setting - use
+     * <tt>http.tunnel.backpressure.minResponseSize</tt> to limit <i>where</i> it applies instead.
+     */
+    @ConfigValue("http.tunnel.backpressure.enabled")
+    private static boolean tunnelBackpressureEnabled;
+
+    /**
+     * Config value of the response size from which on tunneled responses apply back-pressure
+     * (<tt>http.tunnel.backpressure.minResponseSize</tt>).
+     * <p>
+     * Below this size the whole body fits into a buffer or two anyway, so pausing the upstream achieves
+     * nothing while still exposing the request to the pause/resume machinery. Responses of unknown length
+     * (chunked) always apply back-pressure, as they are the ones that can be arbitrarily large.
+     */
+    @ConfigValue("http.tunnel.backpressure.minResponseSize")
+    private static long tunnelBackpressureMinResponseSize;
+
+    /**
      * Contains a list of IP ranges which are permitted to access this server. Access from unauthorized IPs will be
      * blocked at the lowest level possible (probably no connection will be accepted). The format accepted by this
      * field is defined by {@link IPRange#parseRangeSet(String)}.
@@ -394,6 +417,24 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
      */
     protected static long getMaxTimeToFirstByte() {
         return maxTimeToFirstByte;
+    }
+
+    /**
+     * Determines whether tunneled responses should apply back-pressure to their upstream at all.
+     *
+     * @return <tt>true</tt> if back-pressure is enabled, <tt>false</tt> to disable it entirely
+     */
+    protected static boolean isTunnelBackpressureEnabled() {
+        return tunnelBackpressureEnabled;
+    }
+
+    /**
+     * Returns the response size from which on back-pressure is applied to a tunneled upstream.
+     *
+     * @return the minimal response size in bytes
+     */
+    protected static long getTunnelBackpressureMinResponseSize() {
+        return tunnelBackpressureMinResponseSize;
     }
 
     /**

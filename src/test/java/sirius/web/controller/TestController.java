@@ -114,8 +114,7 @@ public class TestController extends BasicController {
                                     JSONStructuredOutput output,
                                     String parameter1,
                                     String parameter2) {
-        output.property("param1", parameter1);
-        output.property("param2", parameter2);
+        testJSONParams(webContext, output, parameter1, parameter2);
     }
 
     @InternalService
@@ -180,6 +179,11 @@ public class TestController extends BasicController {
     @Routed("/tunnel/streaming-payload")
     public void tunnelStreamingPayload(WebContext webContext) {
         webContext.respondWith().tunnel("http://localhost:9999/test/streaming-payload");
+    }
+
+    @Routed("/tunnel/burst-payload")
+    public void tunnelBurstPayload(WebContext webContext) {
+        webContext.respondWith().tunnel("http://localhost:9999/test/burst-payload");
     }
 
     @Routed("/tunnel/test_transform")
