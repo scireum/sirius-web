@@ -16,9 +16,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
+import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -34,7 +32,7 @@ public class ReceivedTokensTest {
 
     @Test
     public void readsRefreshTokenExpiryFromJwtBearerToken() {
-        Instant expiry = Instant.now().plus(30, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
+        Instant expiry = Instant.parse("2039-01-15T12:34:56Z");
         ObjectNode response =
                 bearerResponse().put(OAuth.REFRESH_TOKEN, jwtExpiringAt(expiry)).put(OAuth.EXPIRES_IN, 3600);
 
@@ -42,13 +40,29 @@ public class ReceivedTokensTest {
 
         assertEquals("the-access-token", tokens.accessToken());
         assertEquals(OAuth.TOKEN_TYPE_BEARER, tokens.type());
-        assertEquals(LocalDateTime.ofInstant(expiry, ZoneOffset.UTC), tokens.refreshTokenExpiresAt());
+        assertEquals(expiry, tokens.refreshTokenExpiresAt());
         assertCloseToNowPlusSeconds(3600, tokens.accessTokenExpiresAt());
     }
 
     @Test
+    public void readsRefreshTokenExpiryIndependentlyOfTheSystemTimeZone() {
+        Instant expiry = Instant.parse("2039-01-15T12:34:56Z");
+        TimeZone originalTimeZone = TimeZone.getDefault();
+        try {
+            TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+            ObjectNode response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtExpiringAt(expiry));
+
+            ReceivedTokens tokens = ReceivedTokens.fromJson(response);
+
+            assertEquals(expiry, tokens.refreshTokenExpiresAt());
+        } finally {
+            TimeZone.setDefault(originalTimeZone);
+        }
+    }
+
+    @Test
     public void ignoresJwtRefreshTokenOfOtherTokenTypes() {
-        Instant expiry = Instant.now().plus(30, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
+        Instant expiry = Instant.parse("2039-01-15T12:34:56Z");
         ObjectNode response = Json.createObject()
                                   .put(OAuth.ACCESS_TOKEN, "the-access-token")
                                   .put(OAuth.TOKEN_TYPE, "MAC")
@@ -155,8 +169,8 @@ public class ReceivedTokensTest {
      * @param seconds the number of seconds the given date is expected to lie in the future
      * @param actual  the date to check
      */
-    private static void assertCloseToNowPlusSeconds(long seconds, LocalDateTime actual) {
-        Duration deviation = Duration.between(LocalDateTime.now().plusSeconds(seconds), actual).abs();
+    private static void assertCloseToNowPlusSeconds(long seconds, Instant actual) {
+        Duration deviation = Duration.between(Instant.now().plusSeconds(seconds), actual).abs();
         assertTrue(deviation.compareTo(MAXIMUM_DEVIATION) < 0,
                    "Expected a date in " + seconds + "s, but was off by " + deviation + ": " + actual);
     }
