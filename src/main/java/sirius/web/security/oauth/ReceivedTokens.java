@@ -13,8 +13,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import tools.jackson.databind.node.ObjectNode;
 import sirius.kernel.commons.Strings;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Represents the tokens received from an OAuth authorization server. This is used to read the token in a standard
@@ -24,13 +24,15 @@ import java.time.ZoneOffset;
  * @param refreshToken          the refresh token received from the authorization server, might be null if the server
  *                              response contains no refresh token (e.g. when refreshing an access token)
  * @param type                  the type of the tokens received from the authorization server, e.g. "Bearer" or "MAC"
- * @param accessTokenExpiresAt  the date at which the access token expires, might be null if the server response
+ * @param accessTokenExpiresAt  the instant at which the access token expires, might be null if the server response
  *                              contains no information
- * @param refreshTokenExpiresAt the date at which the refresh token expires, might be null if no refresh token was
+ * @param refreshTokenExpiresAt the instant at which the refresh token expires, might be null if no refresh token was
  *                              returned or estimated if no JWT bearer token is given
+ * @apiNote The expiries are instants, not local dates. Rendering one for a user or storing it in a date column
+ * requires an explicit time zone, which is a decision only the caller can make.
  */
-public record ReceivedTokens(String accessToken, String refreshToken, String type, LocalDateTime accessTokenExpiresAt,
-                             LocalDateTime refreshTokenExpiresAt) {
+public record ReceivedTokens(String accessToken, String refreshToken, String type, Instant accessTokenExpiresAt,
+                             Instant refreshTokenExpiresAt) {
 
     private static final long TWO_DAYS_IN_SECONDS = 2 * 24 * 60 * 60L;
     private static final int MINIMUM_REFRESH_EXPIRES_DAYS = 1;
@@ -46,8 +48,8 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
         String refreshToken = response.path(OAuth.REFRESH_TOKEN).asString("");
         String type = response.required(OAuth.TOKEN_TYPE).asString("");
         long accessTokenExpiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
-        LocalDateTime accessTokenExpiresAt =
-                accessTokenExpiresIn > 0 ? LocalDateTime.now().plusSeconds(accessTokenExpiresIn) : null;
+        Instant accessTokenExpiresAt =
+                accessTokenExpiresIn > 0 ? Instant.now().plusSeconds(accessTokenExpiresIn) : null;
 
         if (Strings.isEmpty(refreshToken)) {
             return new ReceivedTokens(accessToken, null, type, accessTokenExpiresAt, null);
@@ -56,9 +58,11 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
         if (OAuth.TOKEN_TYPE_BEARER.equalsIgnoreCase(type)) {
             try {
                 // Try to read the exact refresh token expiration date from the JWT token itself
-                LocalDateTime refreshTokenExpiresAt =
-                        JWT.decode(refreshToken).getExpiresAtAsInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
-                return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, refreshTokenExpiresAt);
+                Instant expiry = JWT.decode(refreshToken).getExpiresAtAsInstant();
+                if (expiry != null) {
+                    return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, expiry);
+                }
+                // The JWT carries no expiration date, fall back to the estimates below
             } catch (JWTDecodeException _) {
                 // No valid JWT, fall back to implementation from OAuth expires_in or the default value
             }
@@ -71,7 +75,7 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
         }
 
         // Use default value tomorrow, we expect a refresh token to be valid at least for one more day
-        LocalDateTime expiresDate = LocalDateTime.now().plusDays(MINIMUM_REFRESH_EXPIRES_DAYS);
+        Instant expiresDate = Instant.now().plus(MINIMUM_REFRESH_EXPIRES_DAYS, ChronoUnit.DAYS);
         return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, expiresDate);
     }
 }
