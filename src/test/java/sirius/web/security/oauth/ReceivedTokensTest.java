@@ -61,6 +61,17 @@ public class ReceivedTokensTest {
     }
 
     @Test
+    public void fallsBackToTomorrowForJwtRefreshTokensWithoutExpiry() {
+        String jwtWithoutExpiry = JWT.create().sign(Algorithm.none());
+        ObjectNode response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtWithoutExpiry).put(OAuth.EXPIRES_IN, 3600);
+
+        ReceivedTokens tokens = ReceivedTokens.fromJson(response);
+
+        assertEquals(jwtWithoutExpiry, tokens.refreshToken());
+        assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt());
+    }
+
+    @Test
     public void fallsBackToTomorrowForOpaqueRefreshTokens() {
         ObjectNode response =
                 bearerResponse().put(OAuth.REFRESH_TOKEN, "an-opaque-refresh-token").put(OAuth.EXPIRES_IN, 3600);

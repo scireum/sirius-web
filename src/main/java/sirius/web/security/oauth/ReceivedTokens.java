@@ -13,6 +13,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import tools.jackson.databind.node.ObjectNode;
 import sirius.kernel.commons.Strings;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -56,9 +57,15 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
         if (OAuth.TOKEN_TYPE_BEARER.equalsIgnoreCase(type)) {
             try {
                 // Try to read the exact refresh token expiration date from the JWT token itself
-                LocalDateTime refreshTokenExpiresAt =
-                        JWT.decode(refreshToken).getExpiresAtAsInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
-                return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, refreshTokenExpiresAt);
+                Instant expiry = JWT.decode(refreshToken).getExpiresAtAsInstant();
+                if (expiry != null) {
+                    return new ReceivedTokens(accessToken,
+                                              refreshToken,
+                                              type,
+                                              accessTokenExpiresAt,
+                                              expiry.atZone(ZoneOffset.UTC).toLocalDateTime());
+                }
+                // The JWT carries no expiration date, fall back to the estimates below
             } catch (JWTDecodeException _) {
                 // No valid JWT, fall back to implementation from OAuth expires_in or the default value
             }
