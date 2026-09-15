@@ -426,6 +426,9 @@ var TokenAutocomplete = /** @class */ (function () {
         }
         return null;
     };
+    TokenAutocomplete.prototype.findOptionWithText = function (optionText) {
+        return TokenAutocomplete.findElementWithData(this.hiddenSelect.options, 'text', optionText);
+    };
     TokenAutocomplete.prototype.addHiddenEmptyOption = function () {
         var _emptyToken = this.hiddenSelect.querySelector('.empty-token');
         if (_emptyToken) {
@@ -501,6 +504,17 @@ var TokenAutocomplete = /** @class */ (function () {
         this.container.addEventListener('animationend', function () {
             _this.container.classList.remove(markerClass);
         }, { once: true });
+    };
+    TokenAutocomplete.findElementWithData = function (elements, attribute, value) {
+        var trimmedValue = value ? value.trim() : '';
+        for (var i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            var elementValue = element.dataset[attribute];
+            if (elementValue !== undefined && elementValue.trim() === trimmedValue) {
+                return element;
+            }
+        }
+        return null;
     };
     TokenAutocomplete.escapeQuotes = function (text) {
         var _c;
@@ -724,7 +738,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (silent === void 0) { silent = false; }
                 this.tokenContainer.removeChild(token);
                 var tokenText = token.dataset.text;
-                var hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
+                var hiddenOption = this.parent.findOptionWithValue(token.dataset.value || '');
                 (_c = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.parentElement) === null || _c === void 0 ? void 0 : _c.removeChild(hiddenOption);
                 var addedToken = {
                     value: token.dataset.value,
@@ -749,7 +763,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (tokenText === null) {
                     return;
                 }
-                var token = this.tokenContainer.querySelector('.token-autocomplete-token[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
+                var token = TokenAutocomplete.findElementWithData(this.tokenContainer.querySelectorAll('.token-autocomplete-token'), 'text', tokenText);
                 if (token !== null) {
                     this.removeToken(token);
                 }
@@ -814,7 +828,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 return;
             }
             var tokenText = this.parent.textInput.textContent;
-            var hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
+            var hiddenOption = this.parent.findOptionWithText(tokenText);
             this.container.classList.remove('token-autocomplete-has-value');
             var previousValue = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.value;
             var previousText = hiddenOption === null || hiddenOption === void 0 ? void 0 : hiddenOption.dataset.text;
@@ -1195,7 +1209,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         }
                     });
                     if (value.length >= this.parent.options.minCharactersForSuggestion) {
-                        var hasExactMatch = this.suggestions.querySelector("li[data-value='".concat(value, "']:not([data-type='_no_match_']),li[data-text='").concat(value, "']:not([data-type='_no_match_'])"));
+                        var hasExactMatch = this.findSuggestionWithValueOrText(value);
                         if (!hasExactMatch && this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
                             this.addSuggestion({
                                 id: null,
@@ -1378,7 +1392,7 @@ var TokenAutocomplete = /** @class */ (function () {
                         answer.completions.forEach(function (suggestion) { return _this.addSuggestion(suggestion); });
                         var value = _this.parent.getCurrentInput();
                         if (value.length >= _this.parent.options.minCharactersForSuggestion) {
-                            var hasExactMatch = _this.suggestions.querySelector("li[data-value='".concat(value, "']:not([data-type='_no_match_']),li[data-text='").concat(value, "']:not([data-type='_no_match_'])"));
+                            var hasExactMatch = _this.findSuggestionWithValueOrText(value);
                             if (!hasExactMatch && _this.parent.options.allowCustomEntries && _this.parent.options.noMatchesCustomEntriesDescription) {
                                 _this.addSuggestion({
                                     id: null,
@@ -1409,6 +1423,19 @@ var TokenAutocomplete = /** @class */ (function () {
                 this.request.responseType = 'json';
                 this.request.setRequestHeader('Content-type', 'application/json');
                 this.request.send();
+            };
+            class_4.prototype.findSuggestionWithValueOrText = function (value) {
+                var candidates = this.suggestions.children;
+                for (var i = 0; i < candidates.length; i++) {
+                    var candidate = candidates[i];
+                    if (candidate.dataset.type === '_no_match_') {
+                        continue;
+                    }
+                    if (candidate.dataset.value === value || candidate.dataset.text === value) {
+                        return candidate;
+                    }
+                }
+                return null;
             };
             /**
              * Adds a suggestion with the given text matching the users input to the dropdown.
@@ -1465,7 +1492,7 @@ var TokenAutocomplete = /** @class */ (function () {
                 if (suggestion.disabled) {
                     element.classList.add('token-autocomplete-suggestion-disabled');
                 }
-                if (this.parent.tokenContainer.querySelector('.token-autocomplete-token[data-value="' + value + '"]') !== null) {
+                if (TokenAutocomplete.findElementWithData(this.parent.tokenContainer.querySelectorAll('.token-autocomplete-token'), 'value', value) !== null) {
                     element.classList.add('token-autocomplete-suggestion-active');
                 }
                 this.suggestions.appendChild(element);
