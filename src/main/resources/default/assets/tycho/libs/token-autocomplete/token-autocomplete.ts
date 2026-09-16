@@ -441,6 +441,28 @@ class TokenAutocomplete {
         return null;
     }
 
+    /**
+     * Finds the hidden option carrying the given token text.
+     *
+     * @param {string | null | undefined} optionText - the token text to look for
+     * @returns {HTMLOptionElement | null} the matching option or null if there is none
+     */
+    findOptionWithText(optionText: string | null | undefined) {
+        return TokenAutocomplete.findElementWithData(this.hiddenSelect.options, 'text', optionText);
+    }
+
+    /**
+     * Finds the token carrying the given value in the given data attribute.
+     *
+     * @param {string} attribute - the name of the data attribute to compare, without the data- prefix
+     * @param {string | null | undefined} value - the value to look for
+     * @returns {HTMLElement | null} the matching token or null if there is none
+     */
+    findTokenWithData(attribute: string, value: string | null | undefined) {
+        return TokenAutocomplete.findElementWithData(
+            this.tokenContainer.querySelectorAll<HTMLElement>('.token-autocomplete-token'), attribute, value);
+    }
+
     addHiddenEmptyOption() {
         let _emptyToken = this.hiddenSelect.querySelector('.empty-token');
         if (_emptyToken) {
@@ -758,7 +780,7 @@ class TokenAutocomplete {
             this.tokenContainer.removeChild(token);
 
             let tokenText = token.dataset.text;
-            let hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]');
+            let hiddenOption = this.parent.findOptionWithText(tokenText);
             hiddenOption?.parentElement?.removeChild(hiddenOption);
 
             let addedToken = {
@@ -789,7 +811,7 @@ class TokenAutocomplete {
             if (tokenText === null) {
                 return;
             }
-            let token = this.tokenContainer.querySelector('.token-autocomplete-token[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]') as HTMLElement;
+            let token = this.parent.findTokenWithData('text', tokenText);
             if (token !== null) {
                 this.removeToken(token);
             }
@@ -867,7 +889,7 @@ class TokenAutocomplete {
                 return;
             }
             let tokenText = this.parent.textInput.textContent;
-            let hiddenOption = this.parent.hiddenSelect.querySelector('option[data-text="' + TokenAutocomplete.escapeQuotes(tokenText) + '"]') as HTMLElement;
+            let hiddenOption = this.parent.findOptionWithText(tokenText);
 
             this.container.classList.remove('token-autocomplete-has-value');
 
@@ -1267,7 +1289,7 @@ class TokenAutocomplete {
                     }
                 });
                 if (value.length >= this.parent.options.minCharactersForSuggestion) {
-                    const hasExactMatch = this.suggestions.querySelector(`li[data-value='${value}']:not([data-type='_no_match_']),li[data-text='${value}']:not([data-type='_no_match_'])`);
+                    const hasExactMatch = this.hasExactMatchingSuggestion(value);
                     if (!hasExactMatch && this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
                         this.addSuggestion({
                             id: null,
@@ -1464,7 +1486,7 @@ class TokenAutocomplete {
 
                     const value = this.parent.getCurrentInput();
                     if (value.length >= this.parent.options.minCharactersForSuggestion) {
-                        const hasExactMatch = this.suggestions.querySelector(`li[data-value='${value}']:not([data-type='_no_match_']),li[data-text='${value}']:not([data-type='_no_match_'])`);
+                        const hasExactMatch = this.hasExactMatchingSuggestion(value);
                         if (!hasExactMatch && this.parent.options.allowCustomEntries && this.parent.options.noMatchesCustomEntriesDescription) {
                             this.addSuggestion({
                                 id: null,
@@ -1494,6 +1516,30 @@ class TokenAutocomplete {
             this.request.responseType = 'json';
             this.request.setRequestHeader('Content-type', 'application/json');
             this.request.send();
+        }
+
+        /**
+         * Determines whether a displayed suggestion carries exactly the given input as its value or text.
+         *
+         * The check iterates instead of building an attribute selector, as the input is whatever the user
+         * typed: an apostrophe alone would already break the CSS string and throw a SyntaxError.
+         * Placeholder suggestions are skipped, they never count as a match.
+         *
+         * @param {string} value - the input to compare against
+         * @returns {boolean} whether a suggestion matches the input exactly
+         */
+        hasExactMatchingSuggestion(value: string): boolean {
+            const candidates = this.suggestions.children;
+            for (let i = 0; i < candidates.length; i++) {
+                const candidate = candidates[i] as HTMLElement;
+                if (candidate.dataset.type === '_no_match_') {
+                    continue;
+                }
+                if (candidate.dataset.value === value || candidate.dataset.text === value) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**
@@ -1551,7 +1597,7 @@ class TokenAutocomplete {
                 element.classList.add('token-autocomplete-suggestion-disabled');
             }
 
-            if (this.parent.tokenContainer.querySelector('.token-autocomplete-token[data-value="' + value + '"]') !== null) {
+            if (this.parent.findTokenWithData('value', value) !== null) {
                 element.classList.add('token-autocomplete-suggestion-active');
             }
 
@@ -1576,6 +1622,32 @@ class TokenAutocomplete {
 
             return option;
         }
+    }
+
+    /**
+     * Finds the first of the given elements whose data attribute carries the given value.
+     *
+     * The lookup iterates and compares plain strings instead of building an attribute selector, as token texts
+     * and values are free-form data: a line break is illegal inside a CSS string and would make querySelector
+     * throw a SyntaxError, aborting whatever handler attempted the lookup. Both sides are trimmed, as addToken
+     * and addHiddenOption store their data trimmed while a caller may pass whatever the user left in the input.
+     *
+     * @param {ArrayLike<T>} elements  - the elements to search
+     * @param {string}       attribute - the name of the data attribute to compare, without the data- prefix
+     * @param {string | null | undefined} value - the value to look for
+     * @returns {T | null} the first matching element or null if there is none
+     */
+    static findElementWithData<T extends HTMLElement>(elements: ArrayLike<T>,
+                                                      attribute: string,
+                                                      value: string | null | undefined): T | null {
+        const trimmedValue = value?.trim() ?? '';
+        for (let i = 0; i < elements.length; i++) {
+            const element = elements[i];
+            if (element.dataset[attribute]?.trim() === trimmedValue) {
+                return element;
+            }
+        }
+        return null;
     }
 
     static escapeQuotes(text: string | null | undefined): string {
