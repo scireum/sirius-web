@@ -107,7 +107,9 @@ class TunnelUpstreamPoolTest {
             // cycles, the burst endpoint completes its upstream response (and pools the
             // connection) while this client is still draining.
             assertEquals(TestDispatcher.STREAMING_PAYLOAD_TOTAL_BYTES, drainSlowly(STREAMING_TUNNEL))
+            awaitReusableConnection()
             assertEquals(TestDispatcher.BURST_PAYLOAD_TOTAL_BYTES, drainSlowly(BURST_TUNNEL, 4 * 1024, 4))
+            awaitReusableConnection()
             WebServerTest.callAndRead(SMALL_TUNNEL)
             awaitReusableConnection()
         }
