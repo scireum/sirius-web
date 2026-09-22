@@ -78,6 +78,22 @@ class TunnelUpstreamPoolTest {
     }
 
     /**
+     * Blocks until the connection used by the previous request is back in the pool.
+     *
+     * With the pool pinned to a single connection, a request started before that happened cannot get one and is
+     * aborted once the connect timeout expires - a failure which says nothing about what is being tested. The
+     * pooling runs on the upstream event loop, so how long it lags behind the response depends entirely on how
+     * busy the machine is, which is why this waits for the state rather than for a duration.
+     */
+    private fun awaitReusableConnection() {
+        assertTrue(
+            TunnelPoolProbe.awaitPooledConnection(POOL_HANDOVER_TIMEOUT),
+            "No upstream connection returned to the pool within ${POOL_HANDOVER_TIMEOUT.toMillis()}ms, so the"
+                    + " next request would have to compete for the single connection the pool is pinned to."
+        )
+    }
+
+    /**
      * Asserts the invariant directly: a pooled upstream connection must always be readable.
      *
      * This is the assertion a fix has to satisfy, and it does not depend on any timing threshold.
@@ -93,6 +109,7 @@ class TunnelUpstreamPoolTest {
             assertEquals(TestDispatcher.STREAMING_PAYLOAD_TOTAL_BYTES, drainSlowly(STREAMING_TUNNEL))
             assertEquals(TestDispatcher.BURST_PAYLOAD_TOTAL_BYTES, drainSlowly(BURST_TUNNEL, 4 * 1024, 4))
             WebServerTest.callAndRead(SMALL_TUNNEL)
+            awaitReusableConnection()
         }
 
         assertTrue(
@@ -135,9 +152,15 @@ class TunnelUpstreamPoolTest {
 
         // Establishes and pools a connection, then leaves it behind in the broken state.
         WebServerTest.callAndRead(SMALL_TUNNEL)
+        awaitReusableConnection()
         TunnelPoolProbe.poisonPooledConnections(true)
         WebServerTest.callAndRead(SMALL_TUNNEL)
-        Wait.millis(POISON_SETTLE_MILLIS)
+        assertTrue(
+            TunnelPoolProbe.awaitPoisonedIdleConnection(POISON_SETTLE_TIMEOUT),
+            "Precondition not reached: no pooled connection was left with reading disabled within"
+                    + " ${POISON_SETTLE_TIMEOUT.toMillis()}ms, so there is nothing for the timed request to"
+                    + " re-use."
+        )
 
         val reusedBefore = TunnelPoolProbe.reusedConnections()
         val watch = Watch.start()
@@ -199,8 +222,16 @@ class TunnelUpstreamPoolTest {
          */
         private const val STALL_THRESHOLD_MILLIS = 2_000L
 
-        /** Must outlast the probe's injection delay, so the pause is in place before we measure. */
-        private const val POISON_SETTLE_MILLIS = 800
+        /**
+         * Upper bound for waiting on a connection to come back to the pool. Only reached if it never does,
+         * which is a broken harness rather than a slow machine.
+         */
+        private val POOL_HANDOVER_TIMEOUT: Duration = Duration.ofSeconds(10)
 
+        /**
+         * Upper bound for waiting on the injected pause. Generous on purpose: it is only reached when the
+         * injection never lands, which is a real precondition failure rather than a slow machine.
+         */
+        private val POISON_SETTLE_TIMEOUT: Duration = Duration.ofSeconds(5)
     }
 }

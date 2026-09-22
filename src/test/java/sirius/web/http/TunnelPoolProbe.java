@@ -17,6 +17,7 @@ import org.asynchttpclient.Dsl;
 import org.asynchttpclient.channel.ChannelPool;
 import org.asynchttpclient.netty.channel.DefaultChannelPool;
 import sirius.kernel.commons.Explain;
+import sirius.kernel.commons.Wait;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -144,6 +145,55 @@ public final class TunnelPoolProbe {
     }
 
     /**
+     * Waits until a connection is back in the pool and ready to be re-used.
+     * <p>
+     * A request is finished from the caller's point of view once its response has been read, but the upstream
+     * connection is pooled - and its slot in AsyncHttpClient's per-host semaphore released - on the upstream
+     * event loop, which can lag behind by an unbounded amount on a busy machine. Starting the next request
+     * before that happened makes it compete for a slot the pool size (deliberately pinned to one) cannot give
+     * it, and it is then aborted with a {@code TooManyConnectionsPerHostException} once the connect timeout
+     * expires. Tests which hand a connection from one request to the next have to wait for this.
+     *
+     * @param timeout how long to wait before giving up
+     * @return <tt>true</tt> if a re-usable connection was observed within the timeout
+     */
+    public static boolean awaitPooledConnection(Duration timeout) {
+        return await(timeout, channel -> channel.isOpen() && channel.config().isAutoRead());
+    }
+
+    /**
+     * Waits until an idle pooled connection has actually been poisoned.
+     * <p>
+     * The injection is scheduled when a connection enters the pool, which happens on the upstream event loop and
+     * therefore not at a point the test thread can observe. Waiting for the state instead of for a fixed delay is
+     * what keeps the test independent of how fast the machine running it is.
+     *
+     * @param timeout how long to wait before giving up
+     * @return <tt>true</tt> if a pooled connection with reading disabled was observed within the timeout
+     */
+    public static boolean awaitPoisonedIdleConnection(Duration timeout) {
+        return await(timeout, channel -> channel.isOpen() && !channel.config().isAutoRead());
+    }
+
+    /**
+     * Samples the pool until one of its connections matches, or the timeout expires.
+     *
+     * @param timeout   how long to wait before giving up
+     * @param predicate the state to wait for
+     * @return <tt>true</tt> if a matching connection was observed within the timeout
+     */
+    private static boolean await(Duration timeout, Predicate<Channel> predicate) {
+        long deadline = System.currentTimeMillis() + timeout.toMillis();
+        while (System.currentTimeMillis() < deadline) {
+            if (pool != null && pool.hasPooledConnection(predicate)) {
+                return true;
+            }
+            Wait.millis(POLL_INTERVAL_MILLIS);
+        }
+        return pool != null && pool.hasPooledConnection(predicate);
+    }
+
+    /**
      * Lists the upstream connections which were observed <b>sitting idle in the pool</b> with
      * reading disabled. This is the defect state itself: the connection belongs to nobody, yet it
      * will not read, so whichever request picks it up next cannot make progress.
@@ -192,6 +242,11 @@ public final class TunnelPoolProbe {
     private static final int POISON_DELAY_MILLIS = 400;
 
     /**
+     * How often {@link #await(Duration, Predicate)} re-samples the pool.
+     */
+    private static final int POLL_INTERVAL_MILLIS = 20;
+
+    /**
      * The probe delay beyond which a pause is considered stuck rather than transient.
      */
     private static final int STUCK_THRESHOLD_MILLIS = 2_000;
@@ -238,8 +293,17 @@ public final class TunnelPoolProbe {
                 // Deliberately delayed: the finishing request's bridge removal restores autoRead
                 // *after* the connection was pooled, so injecting immediately would simply be
                 // overwritten by it. This lands once the connection is genuinely idle.
-                channel.eventLoop()
-                       .schedule(() -> channel.config().setAutoRead(false), POISON_DELAY_MILLIS, TimeUnit.MILLISECONDS);
+                //
+                // The membership check at fire time is what keeps it idle: a connection can be
+                // polled back out well within the delay, and pausing one which a request is
+                // already using stalls that request instead of seeding the pool - which is not
+                // what this injects, and shows up as an unrelated failure in whichever request
+                // happened to hold it.
+                channel.eventLoop().schedule(() -> {
+                    if (pooled.contains(channel)) {
+                        channel.config().setAutoRead(false);
+                    }
+                }, POISON_DELAY_MILLIS, TimeUnit.MILLISECONDS);
             }
             // A pause queued by the finishing request can only land on the upstream event loop
             // after it was pooled, so sampling once at offer time is not enough. These checks
@@ -258,6 +322,10 @@ public final class TunnelPoolProbe {
                     pausedWhileIdle.add(describe("idle in pool after " + delayMillis + "ms", channel, partitionKey));
                 }
             }, delayMillis, TimeUnit.MILLISECONDS);
+        }
+
+        private boolean hasPooledConnection(Predicate<Channel> predicate) {
+            return pooled.stream().anyMatch(predicate);
         }
 
         @Override
