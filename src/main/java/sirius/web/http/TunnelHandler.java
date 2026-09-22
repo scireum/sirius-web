@@ -140,18 +140,32 @@ public class TunnelHandler implements AsyncHandler<String> {
         // headers have been received.
         adoptUpstream(connection);
 
-        // A pause applied by a previous user of this connection can outlive that request:
-        // mirrorWritabilityToUpstream only verifies that the channel is open, and a connection
-        // sitting in the pool is open. Such a connection can never deliver a response, because
-        // installBackpressureBridge - which is what would re-apply the current writability - is
-        // only reached from onHeadersReceived, and no headers can arrive while reading is off.
-        // Reading is therefore restored here, at the one point where a pooled connection is handed
-        // to a new request.
+        // Backstop for a pause which outlived the request that applied it. onConnectionOffer below
+        // releases the connection before it enters the pool, and the ownership re-check in
+        // mayApplyAutoRead keeps a late pause off a connection we no longer own - but a channel can
+        // reach the pool without either taking effect, and one that does can never deliver a
+        // response: installBackpressureBridge, which is what would re-apply the current writability,
+        // is only reached from onHeadersReceived, and no headers can arrive while reading is off.
+        // This is the last point at which such a connection can still be salvaged, so the warning
+        // below is the signal that something released it in the wrong state.
         if (!connection.config().isAutoRead()) {
             WebServer.LOG.WARN("Tunnel: re-enabled reading on a pooled upstream connection which was"
                                + " left paused by a previous request. Target: %s", webContext.getRequestedURI());
             mirrorWritabilityToUpstream(true);
         }
+    }
+
+    @Override
+    public void onConnectionOffer(Channel connection) {
+        // AsyncHttpClient hands the connection back to its pool before it reports the request as completed:
+        // AsyncHttpClientHandler.finishUpdate offers the channel first and only then calls future.done(), which
+        // is what invokes onCompleted. Restoring reading from there alone therefore leaves a window in which the
+        // connection is already visible in the pool while still paused, and any request which polls it during
+        // that window has to be repaired by onConnectionPooled above.
+        //
+        // This callback is invoked synchronously, on the connection's own event loop, immediately before the
+        // pool offer - so giving the connection up here closes that window instead of repairing it afterwards.
+        releaseUpstream();
     }
 
     @Override
@@ -420,7 +434,9 @@ public class TunnelHandler implements AsyncHandler<String> {
         });
 
         // Authoritative restore: the removal above happens on the client's event loop and therefore
-        // possibly after the connection was pooled. Hand it back readable right now instead.
+        // possibly after the connection was pooled. Hand it back readable right now instead. For a
+        // connection that goes back into the pool this has already happened in onConnectionOffer
+        // this still covers the paths which never offer it, such as a connection being closed.
         releaseUpstream();
     }
 

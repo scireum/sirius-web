@@ -66,6 +66,24 @@ class TunnelHandlerOwnershipTest {
     }
 
     @Test
+    void pausedConnectionIsRestoredBeforeItIsOfferedToThePool() {
+        TunnelHandler handler = createHandler();
+        EmbeddedChannel connection = new EmbeddedChannel();
+
+        handler.onConnectionPooled(connection);
+        connection.config().setAutoRead(false);
+
+        // AsyncHttpClient offers the connection to its pool before it reports completion, so this is the last
+        // callback that runs while the connection is still ours alone.
+        handler.onConnectionOffer(connection);
+
+        assertTrue(connection.config().isAutoRead(),
+                   "The connection was handed to the pool unable to read. Restoring it in onCompleted is too late:"
+                   + " AsyncHttpClientHandler.finishUpdate offers the channel to the pool first and only then calls"
+                   + " future.done(), so another request can already have polled it in that state.");
+    }
+
+    @Test
     void pausedConnectionIsRestoredWhenAFreshConnectionReplacesIt() {
         TunnelHandler handler = createHandler();
         EmbeddedChannel firstAttempt = new EmbeddedChannel();
