@@ -1,0 +1,31 @@
+name: SonarQube Analysis
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+  workflow_dispatch:
+
+jobs:
+  sonarqube:
+    runs-on: [self-hosted, Linux, X64]
+
+    container:
+      image: scireum/sirius-build-jdk26
+      volumes:
+        - /root/.m2:/root/.m2
+      credentials:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Replace version in pom.xml
+        run: sed -i "s/DEVELOPMENT-SNAPSHOT/${{ github.ref_type == 'tag' && github.ref_name || 'sonar-test' }}/g" pom.xml
+
+      - name: Analyze project with SonarQube
+        run: mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent test org.jacoco:jacoco-maven-plugin:report sonar:sonar -Dsonar.projectKey=${{ github.event.repository.name }} -Dsonar.token=${{ secrets.SONAR_TOKEN }} -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} -Dsonar.organization=scireum -Dsun.net.http.allowRestrictedHeaders=true
