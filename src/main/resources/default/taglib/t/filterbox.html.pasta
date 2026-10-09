@@ -17,7 +17,7 @@
                                 @item.getTitle()
                             </span>
                                 <i:if test="item.getCount() >= 0">
-                                    <span class="badge badge-light">@item.getCount()</span>
+                                    <span class="badge badge-light">@formatNumber(item.getCount())</span>
                                 </i:if>
                             </div>
                         </t:navboxLink>
