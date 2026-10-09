@@ -7,7 +7,8 @@
  */
 
 
-.form-group.admin-only label span::after {
+// Attached to the label rather than its span, so that it does not compete with the marker of required fields
+.form-group.admin-only label.form-label::after {
   font-family: "Font Awesome 7 Free";
   font-weight: 900;
   font-size: .6em;
