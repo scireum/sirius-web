@@ -718,6 +718,19 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     }
 
     /**
+     * Counts the uploads which are currently in progress.
+     * <p>
+     * An upload is a POST or PUT request carrying a body, from its first byte until its response has been completed.
+     * The number is computed live from the open connections, so that it can be used to decide whether a node can be
+     * stopped without interrupting a user's upload.
+     *
+     * @return the number of open connections which are currently handling an upload
+     */
+    public static long countActiveUploads() {
+        return openConnections.keySet().stream().filter(WebServerHandler::isUploading).count();
+    }
+
+    /**
      * Returns the number of currently open websockets
      *
      * @return the number of currently open websockets
@@ -868,6 +881,11 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
                          "http-open-connections",
                          "HTTP Open Connections",
                          openConnections.size(),
+                         null);
+        collector.metric("http_active_uploads",
+                         "http-active-uploads",
+                         "HTTP Active Uploads",
+                         countActiveUploads(),
                          null);
         collector.metric("http_response_time",
                          "http-response-time",

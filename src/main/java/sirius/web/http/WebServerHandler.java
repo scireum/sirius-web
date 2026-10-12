@@ -117,6 +117,28 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         lastBandwidthUpdate.set(now);
     }
 
+    /**
+     * Called by {@link WebServer#countActiveUploads()} to determine if this connection is currently handling an
+     * upload.
+     * <p>
+     * This is the case for a POST or PUT request carrying a body, from its first byte until its response has been
+     * completed. The time after the last byte is deliberately included, as the uploaded data is usually still being
+     * processed and stored then, so that terminating the node would lose it all the same.
+     *
+     * @return <tt>true</tt> if an upload is in progress, <tt>false</tt> otherwise
+     */
+    protected boolean isUploading() {
+        // This is invoked from outside the event loop, therefore we read the context only once...
+        WebContext webContext = currentContext;
+        if (webContext == null || !webContext.isValid() || webContext.responseCompleted) {
+            return false;
+        }
+
+        HttpRequest request = webContext.getRequest();
+        return (HttpMethod.POST.equals(request.method()) || HttpMethod.PUT.equals(request.method()))
+               && (HttpUtil.getContentLength(request, 0L) > 0 || HttpUtil.isTransferEncodingChunked(request));
+    }
+
     /*
      * Used when this handler is bound to an incoming connection
      */
