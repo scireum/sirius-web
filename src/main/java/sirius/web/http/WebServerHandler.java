@@ -59,6 +59,11 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
     private int numKeepAlive = maxKeepalive;
     private HttpRequest currentRequest;
     private WebContext currentContext;
+    /**
+     * Contains the context of the current request if it is an upload. It is only written by the event loop, but read
+     * by {@link #isUploading()} from other threads, therefore it is volatile.
+     */
+    private volatile WebContext currentUpload;
     private CallContext currentCall;
     private final long connected;
     private final AtomicLong bytesIn = new AtomicLong(0);
@@ -121,22 +126,18 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Called by {@link WebServer#countActiveUploads()} to determine if this connection is currently handling an
      * upload.
      * <p>
-     * This is the case for a POST or PUT request carrying a body, from its first byte until its response has been
-     * completed. The time after the last byte is deliberately included, as the uploaded data is usually still being
-     * processed and stored then, so that terminating the node would lose it all the same.
+     * This is the case for a POST or PUT request carrying a body, from the moment its headers have been received until
+     * its response has been completed. The time after the last byte is deliberately included, as the uploaded data is
+     * usually still being processed and stored then, so that terminating the node would lose it all the same.
+     * <p>
+     * As this is invoked from outside the event loop, it only reads volatile state: the upload context recorded by
+     * the event loop and its {@code responseCompleted} flag.
      *
      * @return <tt>true</tt> if an upload is in progress, <tt>false</tt> otherwise
      */
     protected boolean isUploading() {
-        // This is invoked from outside the event loop, therefore we read the context only once...
-        WebContext webContext = currentContext;
-        if (webContext == null || !webContext.isValid() || webContext.responseCompleted) {
-            return false;
-        }
-
-        HttpRequest request = webContext.getRequest();
-        return (HttpMethod.POST.equals(request.method()) || HttpMethod.PUT.equals(request.method()))
-               && (HttpUtil.getContentLength(request, 0L) > 0 || HttpUtil.isTransferEncodingChunked(request));
+        WebContext upload = currentUpload;
+        return upload != null && !upload.responseCompleted;
     }
 
     /*
@@ -446,6 +447,9 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     private void processRequestMethod(HttpRequest request) throws Exception {
         if (HttpMethod.POST.equals(request.method()) || HttpMethod.PUT.equals(request.method())) {
+            if (HttpUtil.getContentLength(request, 0L) > 0 || HttpUtil.isTransferEncodingChunked(request)) {
+                currentUpload = currentContext;
+            }
             preDispatched = preDispatch();
             if (!preDispatched) {
                 setupContentReceiver(request);
@@ -546,6 +550,7 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * Releases the last context (request) which was processed by this handler.
      */
     private void cleanup() {
+        currentUpload = null;
         if (currentContext != null) {
             currentContext.release();
             currentContext = null;

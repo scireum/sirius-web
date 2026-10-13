@@ -720,9 +720,9 @@ public class WebServer implements Startable, Stoppable, Killable, MetricProvider
     /**
      * Counts the uploads which are currently in progress.
      * <p>
-     * An upload is a POST or PUT request carrying a body, from its first byte until its response has been completed.
-     * The number is computed live from the open connections, so that it can be used to decide whether a node can be
-     * stopped without interrupting a user's upload.
+     * An upload is a POST or PUT request carrying a body, from the moment its headers have been received until its
+     * response has been completed. The number is computed live from the open connections, so that it can be used to
+     * decide whether a node can be stopped without interrupting a user's upload.
      *
      * @return the number of open connections which are currently handling an upload
      */
