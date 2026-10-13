@@ -34,6 +34,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -41,6 +43,16 @@ import java.util.zip.GZIPInputStream;
  */
 @Register
 public class TestController extends BasicController {
+
+    /**
+     * Receives a permit as soon as a delayed upload route has received the whole body and holds back its response.
+     */
+    public static final Semaphore DELAYED_UPLOAD_RECEIVED = new Semaphore(0);
+
+    /**
+     * Has to be given a permit by the test to let a delayed upload route send its response.
+     */
+    public static final Semaphore DELAYED_UPLOAD_RELEASED = new Semaphore(0);
 
     @Part
     private Tasks tasks;
@@ -257,6 +269,32 @@ public class TestController extends BasicController {
             throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(upload)))) {
             output.property("lines", reader.lines().count());
+        }
+    }
+
+    @Routed(value = "/upload-delayed", preDispatchable = true, skipCsrfValidation = true)
+    public void uploadDelayedTest(WebContext webContext, InputStreamHandler upload)
+            throws IOException, InterruptedException {
+        try (upload) {
+            Streams.exhaust(upload);
+        }
+        holdBackResponse();
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    @Routed(value = "/upload-delayed-buffered", skipCsrfValidation = true)
+    public void uploadDelayedBufferedTest(WebContext webContext) throws InterruptedException {
+        holdBackResponse();
+        webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    /**
+     * Simulates the processing of an upload whose body has been received completely.
+     */
+    private void holdBackResponse() throws InterruptedException {
+        DELAYED_UPLOAD_RECEIVED.release();
+        if (!DELAYED_UPLOAD_RELEASED.tryAcquire(10, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("The delayed upload has not been released by the test.");
         }
     }
 

@@ -14,10 +14,12 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Wait
+import sirius.web.controller.TestController
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.Socket
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -75,6 +77,24 @@ class ActiveUploadsTest {
             // The connection is kept alive, so that only the completed response can end the upload...
             awaitActiveUploads(0)
             assertTrue(WebServer.getOpenConnections().any { it.url == "$uri (completed)" })
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["/upload-delayed", "/upload-delayed-buffered"])
+    fun `an upload is still counted while it is processed after its last byte`(uri: String) {
+        Socket("localhost", 9999).use { socket ->
+            sendPostHeader(socket, uri, 1024)
+            sendBody(socket, 1024)
+
+            // The route has received the whole body and now holds back its response...
+            assertTrue(TestController.DELAYED_UPLOAD_RECEIVED.tryAcquire(5, TimeUnit.SECONDS))
+            assertEquals(1L, WebServer.countActiveUploads())
+
+            TestController.DELAYED_UPLOAD_RELEASED.release()
+            val statusLine = readStatusLine(socket)
+            assertTrue(statusLine.contains("200"), statusLine)
+            awaitActiveUploads(0)
         }
     }
 
