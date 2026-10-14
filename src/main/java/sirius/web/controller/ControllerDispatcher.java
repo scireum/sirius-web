@@ -344,8 +344,8 @@ public class ControllerDispatcher implements WebDispatcher {
      */
     private void determineAndStoreAllowedOriginForUri(WebContext webContext, String uri) {
         corsOriginResolver.tryResolveAndStoreOrigin(webContext, () -> {
-            Collection<Route> routes = collectMatchingRoutes(webContext, uri);
-            return determineAllowedOriginForRoutes(webContext, routes);
+            Collection<Route> matchingRoutes = collectMatchingRoutes(uri);
+            return determineAllowedOriginForRoutes(webContext, matchingRoutes);
         });
     }
 
@@ -375,11 +375,10 @@ public class ControllerDispatcher implements WebDispatcher {
     /**
      * Collects all routes matching the given URI, regardless of their HTTP method.
      *
-     * @param webContext the current request
      * @param uri        the effective request URI
      * @return the routes matching the URI
      */
-    private Collection<Route> collectMatchingRoutes(WebContext webContext, String uri) {
+    private Collection<Route> collectMatchingRoutes(String uri) {
         return getRoutes().stream().filter(route -> route.matchesUri(uri)).collect(Collectors.toSet());
     }
 
