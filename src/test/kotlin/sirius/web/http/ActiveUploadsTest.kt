@@ -29,39 +29,6 @@ import kotlin.test.assertTrue
 @ExtendWith(SiriusExtension::class)
 class ActiveUploadsTest {
 
-    companion object {
-        private fun sendPostHeader(socket: Socket, uri: String, contentLength: Int) {
-            socket.getOutputStream().apply {
-                write(
-                    ("POST $uri HTTP/1.1\r\n" +
-                            "Host: localhost\r\n" +
-                            "Content-Type: application/octet-stream\r\n" +
-                            "Content-Length: $contentLength\r\n\r\n").toByteArray(StandardCharsets.US_ASCII)
-                )
-                flush()
-            }
-        }
-
-        private fun sendBody(socket: Socket, length: Int) {
-            socket.getOutputStream().apply {
-                write(ByteArray(length))
-                flush()
-            }
-        }
-
-        private fun readStatusLine(socket: Socket): String {
-            return BufferedReader(InputStreamReader(socket.getInputStream(), StandardCharsets.US_ASCII)).readLine()
-        }
-
-        private fun awaitActiveUploads(expected: Long) {
-            val deadline = System.currentTimeMillis() + 5_000
-            while (WebServer.countActiveUploads() != expected && System.currentTimeMillis() < deadline) {
-                Wait.millis(25)
-            }
-            assertEquals(expected, WebServer.countActiveUploads())
-        }
-    }
-
     @ParameterizedTest
     @ValueSource(strings = ["/upload-test", "/test/fake-delete-data-unsafe"])
     fun `an upload is counted until its response is completed`(uri: String) {
@@ -99,6 +66,23 @@ class ActiveUploadsTest {
     }
 
     @Test
+    fun `an upload is still counted while its response is being written`() {
+        Socket("localhost", 9999).use { socket ->
+            sendPostHeader(socket, "/upload-large-response", 1024, close = true)
+            sendBody(socket, 1024)
+
+            // The response has been handed over to netty, but as nothing is read yet, it cannot be written completely...
+            assertTrue(TestController.LARGE_RESPONSE_HANDED_OVER.tryAcquire(5, TimeUnit.SECONDS))
+            assertEquals(1L, WebServer.countActiveUploads())
+
+            val response = socket.getInputStream().readAllBytes()
+            assertTrue(response.size > TestController.LARGE_RESPONSE_SIZE)
+            assertTrue(String(response, 0, 12, StandardCharsets.US_ASCII).startsWith("HTTP/1.1 200"))
+            awaitActiveUploads(0)
+        }
+    }
+
+    @Test
     fun `an aborted upload is no longer counted`() {
         // A buffered route is used here, as a pre-dispatched one would keep its worker waiting for the missing
         // data until the read timeout of the InputStreamHandler expires...
@@ -109,5 +93,39 @@ class ActiveUploadsTest {
         }
 
         awaitActiveUploads(0)
+    }
+
+    companion object {
+        private fun sendPostHeader(socket: Socket, uri: String, contentLength: Int, close: Boolean = false) {
+            socket.getOutputStream().apply {
+                write(
+                    ("POST $uri HTTP/1.1\r\n" +
+                            "Host: localhost\r\n" +
+                            "Content-Type: application/octet-stream\r\n" +
+                            (if (close) "Connection: close\r\n" else "") +
+                            "Content-Length: $contentLength\r\n\r\n").toByteArray(StandardCharsets.US_ASCII)
+                )
+                flush()
+            }
+        }
+
+        private fun sendBody(socket: Socket, length: Int) {
+            socket.getOutputStream().apply {
+                write(ByteArray(length))
+                flush()
+            }
+        }
+
+        private fun readStatusLine(socket: Socket): String {
+            return BufferedReader(InputStreamReader(socket.getInputStream(), StandardCharsets.US_ASCII)).readLine()
+        }
+
+        private fun awaitActiveUploads(expected: Long) {
+            val deadline = System.currentTimeMillis() + 5_000
+            while (WebServer.countActiveUploads() != expected && System.currentTimeMillis() < deadline) {
+                Wait.millis(25)
+            }
+            assertEquals(expected, WebServer.countActiveUploads())
+        }
     }
 }

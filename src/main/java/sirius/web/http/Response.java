@@ -520,6 +520,7 @@ public class Response {
     }
 
     private void onCompleteCompleted(CallContext callContext, boolean keepalive, ChannelFuture future) {
+        webContext.responseFinished = true;
         if (webContext.completionCallback != null) {
             try {
                 webContext.completionCallback.invoke(callContext);

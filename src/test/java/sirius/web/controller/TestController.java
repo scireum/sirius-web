@@ -54,6 +54,17 @@ public class TestController extends BasicController {
      */
     public static final Semaphore DELAYED_UPLOAD_RELEASED = new Semaphore(0);
 
+    /**
+     * Contains the size of the response sent by {@link #uploadLargeResponseTest}, which has to exceed the socket
+     * buffers so that it cannot be written completely as long as the client does not read it.
+     */
+    public static final int LARGE_RESPONSE_SIZE = 32 * 1024 * 1024;
+
+    /**
+     * Receives a permit as soon as {@link #uploadLargeResponseTest} has handed its response over to netty.
+     */
+    public static final Semaphore LARGE_RESPONSE_HANDED_OVER = new Semaphore(0);
+
     @Part
     private Tasks tasks;
 
@@ -286,6 +297,15 @@ public class TestController extends BasicController {
     public void uploadDelayedBufferedTest(WebContext webContext) throws InterruptedException {
         holdBackResponse();
         webContext.respondWith().direct(HttpResponseStatus.OK, "OK");
+    }
+
+    @Routed(value = "/upload-large-response", preDispatchable = true, skipCsrfValidation = true)
+    public void uploadLargeResponseTest(WebContext webContext, InputStreamHandler upload) throws IOException {
+        try (upload) {
+            Streams.exhaust(upload);
+        }
+        webContext.respondWith().direct(HttpResponseStatus.OK, "x".repeat(LARGE_RESPONSE_SIZE));
+        LARGE_RESPONSE_HANDED_OVER.release();
     }
 
     /**

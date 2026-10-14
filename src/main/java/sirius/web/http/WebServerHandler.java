@@ -127,17 +127,18 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
      * upload.
      * <p>
      * This is the case for a POST or PUT request carrying a body, from the moment its headers have been received until
-     * its response has been completed. The time after the last byte is deliberately included, as the uploaded data is
-     * usually still being processed and stored then, so that terminating the node would lose it all the same.
+     * the final write of its response has finished. The time after the last byte is deliberately included, as the
+     * uploaded data is usually still being processed and stored then, so that terminating the node would lose it all
+     * the same. Likewise, a user whose response gets lost would consider the upload as failed.
      * <p>
      * As this is invoked from outside the event loop, it only reads volatile state: the upload context recorded by
-     * the event loop and its {@code responseCompleted} flag.
+     * the event loop and its {@code responseFinished} flag.
      *
      * @return <tt>true</tt> if an upload is in progress, <tt>false</tt> otherwise
      */
     protected boolean isUploading() {
         WebContext upload = currentUpload;
-        return upload != null && !upload.responseCompleted;
+        return upload != null && !upload.responseFinished;
     }
 
     /*
