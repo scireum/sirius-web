@@ -43,6 +43,7 @@ import sirius.web.http.WebDispatcher;
 import sirius.web.security.MaintenanceInfo;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
+import sirius.web.security.oauth.OAuth;
 import sirius.web.services.ApiPayloadCodec;
 import sirius.web.services.Format;
 import sirius.web.templates.ClosedChannelHelper;
@@ -85,6 +86,25 @@ public class ControllerDispatcher implements WebDispatcher {
      */
     public static final Set<HttpMethod> CSRF_VALIDATED_METHODS =
             Set.of(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE);
+
+    /**
+     * Contains the {@link Controller#ERROR_CODE error code} reported if the CSRF token validation fails.
+     */
+    public static final String ERROR_CODE_INVALID_CSRF_TOKEN = "invalid_csrf_token";
+
+    /**
+     * Contains the config key which exempts requests presenting a bearer token without carrying the session cookie
+     * from the CSRF token validation.
+     * <p>
+     * The key can be overridden per security scope. See <tt>component-065-web.conf</tt> for the assumptions an
+     * application has to meet before enabling it.
+     */
+    public static final String CONFIG_KEY_EXEMPT_BEARER_REQUESTS = "http.exemptBearerRequestsFromCsrfValidation";
+
+    private static final String BEARER_PREFIX = OAuth.TOKEN_TYPE_BEARER + " ";
+
+    @ConfigValue(CONFIG_KEY_EXEMPT_BEARER_REQUESTS)
+    private static boolean exemptBearerRequests;
 
     private static final String SYSTEM_MVC = "MVC";
 
@@ -735,22 +755,68 @@ public class ControllerDispatcher implements WebDispatcher {
     @SuppressWarnings("java:S1067")
     @Explain("The check is complex, but that is the nature of having multiple skip options and call cases.")
     private void validateCsrfTokenUnlessSkipped(WebContext webContext, Route route) {
+        if (skipCsrfTokens
+            || route.isSkipCsrfValidation()
+            || !isCsrfValidatedMethod(webContext)
+            || isExemptFromCsrfValidation(route)
+            || isExemptBearerRequest(webContext)) {
+            return;
+        }
+
         // A request whose session is managed by a ServerSessionStorage cannot be victim of CSRF: the session
         // cookie is entirely ignored for such requests, so there is no ambient cookie authority to abuse - the
         // identity can only come from explicitly presented credentials (e.g. a bearer token). Note that this
         // condition is deliberately evaluated after the cheap method/exemption checks, as it forces the (lazy)
         // session initialization - safe methods like GET must not pay for it.
-        if (!skipCsrfTokens
-            && !route.isSkipCsrfValidation()
-            && isCsrfValidatedMethod(webContext)
-            && !isExemptFromCsrfValidation(route)
-            && !webContext.isServerSessionActive()
-            && !csrfHelper.hasValidCsrfToken(webContext)) {
-            throw Exceptions.createHandled()
-                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
-                            .withNLSKey("WebContext.invalidCSRFToken")
-                            .handle();
+        if (webContext.isServerSessionActive() || csrfHelper.hasValidCsrfToken(webContext)) {
+            return;
         }
+
+        throw Exceptions.createHandled()
+                        .hint(Controller.HTTP_STATUS, HttpResponseStatus.FORBIDDEN.code())
+                        .hint(Controller.ERROR_CODE, ERROR_CODE_INVALID_CSRF_TOKEN)
+                        .withNLSKey("WebContext.invalidCSRFToken")
+                        .handle();
+    }
+
+    /**
+     * Determines if the given request presents a bearer token but no session cookie, and the scope of the request
+     * exempts such requests from the CSRF token validation.
+     * <p>
+     * Such a request cannot be forged by a foreign page: a browser never attaches a bearer token on its own, and a
+     * page can only set the <tt>Authorization</tt> header via a CORS preflight. Without the session cookie, the
+     * request carries no ambient authority either, so its identity can only stem from the presented credential.
+     * <p>
+     * Both conditions are required: the bearer token alone does not suffice, as the identity of a request which
+     * also carries the session cookie may well stem from the cookie. And the missing cookie alone does not suffice
+     * either, as a forged request without any cookie may still cause harm - e.g. a login via parameters, an
+     * anonymous form submission or an application trusting the client IP. Other authorization schemes (e.g.
+     * <tt>Basic</tt>) do not count, as browsers attach their credentials automatically, and neither does a bearer
+     * header without a credential.
+     * <p>
+     * As this relies on assumptions only the application can confirm (the session cookie being the only ambient
+     * credential, and no foreign origin being permitted to send the <tt>Authorization</tt> header via CORS), the
+     * exemption has to be enabled explicitly via {@link #CONFIG_KEY_EXEMPT_BEARER_REQUESTS}.
+     *
+     * @param webContext the request to check
+     * @return <tt>true</tt> if the request is exempt as a bearer request without session cookie, <tt>false</tt>
+     * otherwise
+     */
+    private boolean isExemptBearerRequest(WebContext webContext) {
+        return hasBearerCredential(webContext)
+               && !webContext.hasSessionCookie()
+               && UserContext.get()
+                             .peekScope(webContext)
+                             .getSettings()
+                             .get(CONFIG_KEY_EXEMPT_BEARER_REQUESTS)
+                             .asBoolean(exemptBearerRequests);
+    }
+
+    private boolean hasBearerCredential(WebContext webContext) {
+        String authorization = webContext.getHeader(HttpHeaderNames.AUTHORIZATION);
+        return authorization != null
+               && authorization.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())
+               && Strings.isFilled(authorization.substring(BEARER_PREFIX.length()).trim());
     }
 
     private boolean isCsrfValidatedMethod(WebContext webContext) {
