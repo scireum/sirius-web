@@ -41,6 +41,7 @@ import sirius.web.http.Unlimited;
 import sirius.web.http.WebContext;
 import sirius.web.http.WebDispatcher;
 import sirius.web.security.MaintenanceInfo;
+import sirius.web.security.ScopeInfo;
 import sirius.web.security.UserContext;
 import sirius.web.security.UserInfo;
 import sirius.web.security.oauth.OAuth;
@@ -805,11 +806,16 @@ public class ControllerDispatcher implements WebDispatcher {
     private boolean isExemptBearerRequest(WebContext webContext) {
         return hasBearerCredential(webContext)
                && !webContext.hasSessionCookie()
-               && UserContext.get()
-                             .peekScope(webContext)
-                             .getSettings()
-                             .get(CONFIG_KEY_EXEMPT_BEARER_REQUESTS)
-                             .asBoolean(exemptBearerRequests);
+               && isBearerExemptionEnabled(webContext);
+    }
+
+    /**
+     * Reads the setting of the scope of the request without installing the scope, just like
+     * {@link WebContext#isCorsEnabled()} does.
+     */
+    private boolean isBearerExemptionEnabled(WebContext webContext) {
+        ScopeInfo scope = UserContext.get().peekScope(webContext);
+        return scope.getSettings().get(CONFIG_KEY_EXEMPT_BEARER_REQUESTS).asBoolean(exemptBearerRequests);
     }
 
     private boolean hasBearerCredential(WebContext webContext) {
