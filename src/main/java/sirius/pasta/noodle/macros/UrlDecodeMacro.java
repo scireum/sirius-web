@@ -21,6 +21,12 @@ import java.util.List;
 
 /**
  * Represents <tt>urlDecode(String)</tt> which is a call to {@link Urls#decode(String)}.
+ * <p>
+ * Note that both <tt>%20</tt> and <tt>+</tt> are decoded into a space. This follows the
+ * <tt>application/x-www-form-urlencoded</tt> format used for query strings, which is also what
+ * <tt>urlEncode</tt> produces (a space becomes <tt>+</tt>, a literal <tt>+</tt> becomes <tt>%2B</tt>).
+ * Therefore, this macro is meant for query parameters and must not be used for paths, where a <tt>+</tt> is a
+ * literal character.
  */
 @Register
 @NoodleSandbox(NoodleSandbox.Accessibility.GRANTED)
