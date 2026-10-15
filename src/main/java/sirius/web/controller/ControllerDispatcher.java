@@ -817,6 +817,21 @@ public class ControllerDispatcher implements WebDispatcher {
         return scope.getSettings().get(CONFIG_KEY_EXEMPT_BEARER_REQUESTS).asBoolean(exemptBearerRequests);
     }
 
+    /**
+     * Determines if the given request presents a bearer token in the <tt>Authorization</tt> header.
+     * <p>
+     * Only the <tt>Bearer</tt> scheme counts (case-insensitively), and the header has to carry a non-empty credential.
+     * Other schemes such as <tt>Basic</tt> don't count either, as browsers attach their credentials automatically.
+     * A token passed as parameter (e.g. <tt>access_token</tt>) is ignored, as a foreign page can put it into any URL
+     * or form.
+     * <p>
+     * This only checks that a credential is present, not that it is valid. An invalid token still yields a request
+     * without a user, which the route rejects if it requires a login.
+     *
+     * @param webContext the request to check
+     * @return <tt>true</tt> if the request presents a bearer credential in the <tt>Authorization</tt> header,
+     * <tt>false</tt> otherwise
+     */
     private boolean hasBearerCredential(WebContext webContext) {
         String authorization = webContext.getHeader(HttpHeaderNames.AUTHORIZATION);
         return authorization != null
