@@ -15,7 +15,9 @@
                     <i:if test="linkAndQueryString.getSecond() != null">
                         <i:for type="String" var="pair" items="toList(linkAndQueryString.getSecond().split('&'))">
                             <i:local name="nameAndValue" value="@Strings.split(pair,'=')" />
-                            <input type="hidden" name="@nameAndValue.getFirst()" value="@nameAndValue.getSecond()"/>
+                            <input type="hidden"
+                                   name="@urlDecode(nameAndValue.getFirst())"
+                                   value="@urlDecode(nameAndValue.getSecond())"/>
                         </i:for>
                     </i:if>
                     <i:for type="sirius.web.controller.Facet" var="facet" items="page.getFacets()">
