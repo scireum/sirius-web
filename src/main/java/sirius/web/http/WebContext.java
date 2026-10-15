@@ -257,6 +257,13 @@ public class WebContext implements SubContext {
     protected volatile boolean responseCompleted;
 
     /**
+     * Set by Response once the final write of the response has finished, successfully or not. Other than
+     * {@link #responseCompleted}, which is set as soon as the response has been handed over to netty, this marks the
+     * moment when nothing is left to be sent.
+     */
+    protected volatile boolean responseFinished;
+
+    /**
      * Invoked once the call is completely handled
      */
     protected Callback<CallContext> completionCallback;
