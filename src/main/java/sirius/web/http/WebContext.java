@@ -957,6 +957,19 @@ public class WebContext implements SubContext {
     }
 
     /**
+     * Determines if the client sent a session cookie along with this request.
+     * <p>
+     * This only checks the presence of the cookie, not whether it carries a valid session. As a browser attaches
+     * the cookie to every request sent to the server - including one issued by a foreign page - this tells whether
+     * the request may carry ambient session authority at all.
+     *
+     * @return <tt>true</tt> if the request carries the session cookie, <tt>false</tt> otherwise
+     */
+    public boolean hasSessionCookie() {
+        return getCookie(sessionCookieName) != null;
+    }
+
+    /**
      * Checks if the session pin matches the one stored in the session (if session pinning is active).
      * <p>
      * The idea of session pinning is to use a separate cookie which is updated way less frequently
