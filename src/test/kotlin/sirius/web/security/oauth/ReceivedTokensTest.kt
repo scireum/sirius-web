@@ -13,8 +13,10 @@ import com.auth0.jwt.algorithms.Algorithm
 import org.junit.jupiter.api.Test
 import sirius.kernel.commons.Json
 import tools.jackson.databind.node.ObjectNode
+import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.time.Instant
+import java.util.Base64
 import java.util.TimeZone
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -77,6 +79,78 @@ class ReceivedTokensTest {
         val tokens = ReceivedTokens.fromJson(response)
 
         assertEquals(jwtWithoutExpiry, tokens.refreshToken())
+        assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `falls back to tomorrow for JWT refresh tokens with expiry beyond the instant range`() {
+        val jwtWithOverflowingExpiry = unsignedJwtWithPayload("""{"exp":${Instant.MAX.epochSecond + 1}}""")
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtWithOverflowingExpiry).put(OAuth.EXPIRES_IN, 3600)
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals(jwtWithOverflowingExpiry, tokens.refreshToken())
+        assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `falls back to tomorrow for JWT refresh tokens with expiry before the instant range`() {
+        val jwtWithUnderflowingExpiry = unsignedJwtWithPayload("""{"exp":${Instant.MIN.epochSecond - 1}}""")
+        val response =
+            bearerResponse().put(OAuth.REFRESH_TOKEN, jwtWithUnderflowingExpiry).put(OAuth.EXPIRES_IN, 3600)
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `falls back to tomorrow for JWT refresh tokens with expiry beyond the long range`() {
+        val jwtWithHugeExpiry = unsignedJwtWithPayload("""{"exp":100000000000000000000}""")
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtWithHugeExpiry).put(OAuth.EXPIRES_IN, 3600)
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `falls back to tomorrow for JWT refresh tokens with non-numeric expiry`() {
+        val jwtWithTextualExpiry = unsignedJwtWithPayload("""{"exp":"tomorrow"}""")
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtWithTextualExpiry).put(OAuth.EXPIRES_IN, 3600)
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `reads past refresh token expiry without rejecting the token`() {
+        val expiry = Instant.parse("2001-01-15T12:34:56Z")
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtExpiringAt(expiry))
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals(expiry, tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `truncates fractional refresh token expiry to whole seconds`() {
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, unsignedJwtWithPayload("""{"exp":2178966896.9}"""))
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals(Instant.ofEpochSecond(2178966896L), tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `falls back to tomorrow for opaque refresh tokens containing dots`() {
+        val response =
+            bearerResponse().put(OAuth.REFRESH_TOKEN, "an.opaque.refresh-token").put(OAuth.EXPIRES_IN, 3600)
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals("an.opaque.refresh-token", tokens.refreshToken())
         assertCloseToNowPlusSeconds(Duration.ofDays(1).toSeconds(), tokens.refreshTokenExpiresAt())
     }
 
@@ -155,6 +229,20 @@ class ReceivedTokensTest {
      */
     private fun jwtExpiringAt(expiry: Instant): String {
         return JWT.create().withExpiresAt(expiry).sign(Algorithm.none())
+    }
+
+    /**
+     * Encodes an unsigned JWT carrying the given raw payload. Unlike [JWT.create], this permits claim values which
+     * the builder refuses to produce, such as an expiry beyond the range of [Instant].
+     *
+     * @param payloadJson the payload as JSON
+     * @return the encoded JWT
+     */
+    private fun unsignedJwtWithPayload(payloadJson: String): String {
+        val encoder = Base64.getUrlEncoder().withoutPadding()
+        val header = encoder.encodeToString("""{"alg":"none","typ":"JWT"}""".toByteArray(StandardCharsets.UTF_8))
+        val payload = encoder.encodeToString(payloadJson.toByteArray(StandardCharsets.UTF_8))
+        return "$header.$payload."
     }
 
     /**
