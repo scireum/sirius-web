@@ -38,3 +38,80 @@ input.sci-text-input[readonly],
 textarea.sci-text-input[readonly] {
   background-color: $sirius-gray-lighter;
 }
+
+// INFIELD TOP ALIGNED (IFTA) LABELS
+// --------------------------------
+// Places the label inside the input, above the value, instead of above the whole field. Expects
+// this markup, where the label MUST follow the input, as the styles below rely on sibling selectors:
+//
+//   <div class="sci-text-input-ifta">
+//       <input id="lastname" class="sci-text-input"/>
+//       <label for="lastname" class="sci-text-input-ifta-label">Last name</label>
+//   </div>
+//
+// A placeholder is optional. It shows an example value while the input is empty and not focused.
+.sci-text-input-ifta {
+  position: relative;
+  display: flex;
+
+  .sci-text-input {
+    flex-grow: 1;
+    // Leaves room for the label above the value. Everything else is inherited from .sci-text-input.
+    padding-top: calc(var(--sci-margin-1) + var(--sci-font-size-smallest));
+    padding-bottom: var(--sci-margin-1);
+    line-height: 1;
+    outline: none;
+
+    // A single-line input needs line-height: 1 so the label fits above it, but that crams
+    // wrapped textarea rows together, so restore the readable line-height and allow vertical resize.
+    &:where(textarea) {
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    &:focus {
+      border-color: $sirius-primary;
+    }
+
+    &::placeholder {
+      color: $sirius-gray-lighter;
+    }
+
+    // Hides the placeholder while typing, as the label alone is enough context at that point.
+    &:focus::placeholder {
+      color: transparent;
+    }
+  }
+
+  .sci-text-input-ifta-label {
+    position: absolute;
+    top: var(--sci-margin-1);
+    // Aligns the label with the value, which is inset by the horizontal padding of .sci-text-input.
+    left: var(--sci-margin-1_5);
+    font-size: var(--sci-font-size-smallest);
+    line-height: 1;
+    color: $sirius-gray;
+    // Lets clicks fall through to the input underneath, which sits behind the label.
+    pointer-events: none;
+  }
+
+  .sci-text-input:required + .sci-text-input-ifta-label {
+    font-weight: bold;
+
+    &::after {
+      content: '∗';
+      padding-left: var(--sci-margin-0_5);
+    }
+  }
+
+  // Marks the active field only. Colouring a filled field as well turns every label of a
+  // populated form blue at once, which tells the reader nothing.
+  .sci-text-input:focus + .sci-text-input-ifta-label {
+    color: $sirius-primary;
+  }
+}
+
+.sci-text-input[disabled] + .sci-text-input-ifta-label,
+.sci-text-input[readonly] + .sci-text-input-ifta-label {
+  color: $sirius-gray-light;
+}
