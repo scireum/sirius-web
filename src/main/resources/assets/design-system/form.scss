@@ -91,7 +91,8 @@ textarea.sci-text-input[readonly] {
     top: var(--sci-margin-1);
     // Aligns the label with the value, which is inset by the horizontal padding of .sci-text-input.
     left: var(--sci-margin-1_5);
-    right: var(--sci-margin-1_5);
+    // Shrinks the label to its text, so the required marker sits right behind it.
+    max-width: calc(100% - 2 * var(--sci-margin-1_5));
     font-size: var(--sci-font-size-smallest);
     line-height: 1;
     color: $sirius-gray-darker;
@@ -131,10 +132,14 @@ textarea.sci-text-input[readonly] {
 
   .sci-text-input:required + .sci-text-input-ifta-label {
     font-weight: bold;
+    // Reserves room for the marker outside the ellipsis, so a long label keeps it visible.
+    padding-right: 1em;
 
     &::after {
       content: '∗';
-      padding-left: var(--sci-margin-0_5);
+      position: absolute;
+      top: 0;
+      right: 0;
     }
   }
 
