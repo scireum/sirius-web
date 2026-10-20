@@ -108,6 +108,13 @@ div {
   }
 }
 
+// We expect relational pseudo-classes, whose argument starts with a combinator, to work
+.field {
+  &:has(> textarea) {
+    padding-top: 0;
+  }
+}
+
 // "& [hidden]" (with whitespace) is a descendant, unlike the glued compound "&[hidden]" above
 .wrap {
   color: black;

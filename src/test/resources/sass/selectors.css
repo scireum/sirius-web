@@ -94,6 +94,10 @@ div::-webkit-scrollbar {
     color: transparent;
 }
 
+.field:has(>textarea) {
+    padding-top: 0;
+}
+
 .wrap {
     color: black;
 }
