@@ -88,13 +88,15 @@ textarea.sci-text-input[readonly] {
 
   .sci-text-input-ifta-label {
     position: absolute;
-    top: var(--sci-margin-1);
+    // The overflow handling below clips everything outside the line box, so the line is taller than
+    // the font to keep ascenders and descenders. Shifting it up by the extra half keeps the text in place.
+    top: calc(var(--sci-margin-1) - 0.2em);
     // Aligns the label with the value, which is inset by the horizontal padding of .sci-text-input.
     left: var(--sci-margin-1_5);
     // Shrinks the label to its text, so the required marker sits right behind it.
     max-width: calc(100% - 2 * var(--sci-margin-1_5));
     font-size: var(--sci-font-size-smallest);
-    line-height: 1;
+    line-height: 1.4;
     color: $sirius-gray-darker;
     // The padding above the value leaves room for one line only, so a long label is cut off
     // instead of wrapping over the value.
