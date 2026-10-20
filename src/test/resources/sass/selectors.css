@@ -90,6 +90,10 @@ div::-webkit-scrollbar {
     color: green;
 }
 
+.state:focus::placeholder {
+    color: transparent;
+}
+
 .wrap {
     color: black;
 }
