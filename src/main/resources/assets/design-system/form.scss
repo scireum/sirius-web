@@ -104,6 +104,22 @@ textarea.sci-text-input[readonly] {
     pointer-events: none;
   }
 
+  // A textarea scrolls its text through the area above the first row, so the label becomes an
+  // opaque strip that spans the full inner width and hides the text scrolled beneath it.
+  textarea.sci-text-input + .sci-text-input-ifta-label {
+    top: var(--sci-border-width-1);
+    left: var(--sci-border-width-1);
+    right: var(--sci-border-width-1);
+    padding: calc(var(--sci-margin-1) - var(--sci-border-width-1)) calc(var(--sci-margin-1_5) - var(--sci-border-width-1)) var(--sci-border-width-1);
+    border-radius: calc(var(--sci-border-radius) - var(--sci-border-width-1)) calc(var(--sci-border-radius) - var(--sci-border-width-1)) 0 0;
+    background-color: $sirius-white;
+  }
+
+  textarea.sci-text-input[disabled] + .sci-text-input-ifta-label,
+  textarea.sci-text-input[readonly] + .sci-text-input-ifta-label {
+    background-color: $sirius-gray-lighter;
+  }
+
   .sci-text-input:required + .sci-text-input-ifta-label {
     font-weight: bold;
 
