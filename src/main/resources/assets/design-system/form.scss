@@ -91,9 +91,15 @@ textarea.sci-text-input[readonly] {
     top: var(--sci-margin-1);
     // Aligns the label with the value, which is inset by the horizontal padding of .sci-text-input.
     left: var(--sci-margin-1_5);
+    right: var(--sci-margin-1_5);
     font-size: var(--sci-font-size-smallest);
     line-height: 1;
     color: $sirius-gray-darker;
+    // The padding above the value leaves room for one line only, so a long label is cut off
+    // instead of wrapping over the value.
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     // Lets clicks fall through to the input underneath, which sits behind the label.
     pointer-events: none;
   }
