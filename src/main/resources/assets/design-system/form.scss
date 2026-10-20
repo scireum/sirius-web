@@ -73,8 +73,11 @@ textarea.sci-text-input[readonly] {
       border-color: $sirius-primary;
     }
 
+    // Placeholder text needs 4.5:1 contrast as well. Lighter than the label, so an example value
+    // does not pass for a real one. Firefox dims placeholders by default, hence the opacity.
     &::placeholder {
-      color: $sirius-gray-lighter;
+      color: mix($sirius-gray-dark, $sirius-gray-darker);
+      opacity: 1;
     }
 
     // Hides the placeholder while typing, as the label alone is enough context at that point.
@@ -90,7 +93,7 @@ textarea.sci-text-input[readonly] {
     left: var(--sci-margin-1_5);
     font-size: var(--sci-font-size-smallest);
     line-height: 1;
-    color: $sirius-gray;
+    color: $sirius-gray-darker;
     // Lets clicks fall through to the input underneath, which sits behind the label.
     pointer-events: none;
   }
@@ -109,9 +112,9 @@ textarea.sci-text-input[readonly] {
   .sci-text-input:focus + .sci-text-input-ifta-label {
     color: $sirius-primary;
   }
-}
 
-.sci-text-input[disabled] + .sci-text-input-ifta-label,
-.sci-text-input[readonly] + .sci-text-input-ifta-label {
-  color: $sirius-gray-light;
+  // Only disabled inputs are exempt from contrast rules, so readonly ones keep the regular label.
+  .sci-text-input[disabled] + .sci-text-input-ifta-label {
+    color: $sirius-gray-light;
+  }
 }
