@@ -108,8 +108,9 @@ textarea.sci-text-input[readonly] {
   }
 
   // Marks the active field only. Colouring a filled field as well turns every label of a
-  // populated form blue at once, which tells the reader nothing.
-  .sci-text-input:focus + .sci-text-input-ifta-label {
+  // populated form blue at once, which tells the reader nothing. Readonly inputs are skipped, as
+  // blue on their gray background misses the contrast for small text. Their border still turns blue.
+  .sci-text-input:focus:not([readonly]) + .sci-text-input-ifta-label {
     color: $sirius-primary;
   }
 
