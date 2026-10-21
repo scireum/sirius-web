@@ -90,6 +90,14 @@ div::-webkit-scrollbar {
     color: green;
 }
 
+.state:focus::placeholder {
+    color: transparent;
+}
+
+.field:has(>textarea) {
+    padding-top: 0;
+}
+
 .wrap {
     color: black;
 }

@@ -91,7 +91,7 @@ div {
   }
 }
 
-// We expect chained and parametrized pseudo-classes attached to '&' to work
+// We expect chained and parametrized pseudo-classes attached to '&' to work, also when followed by a pseudo-element
 .state {
   color: black;
 
@@ -101,6 +101,17 @@ div {
 
   &:not(.disabled):hover {
     color: green;
+  }
+
+  &:focus::placeholder {
+    color: transparent;
+  }
+}
+
+// We expect relational pseudo-classes, whose argument starts with a combinator, to work
+.field {
+  &:has(> textarea) {
+    padding-top: 0;
   }
 }
 

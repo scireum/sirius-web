@@ -38,3 +38,122 @@ input.sci-text-input[readonly],
 textarea.sci-text-input[readonly] {
   background-color: $sirius-gray-lighter;
 }
+
+// INFIELD TOP ALIGNED (IFTA) LABELS
+// --------------------------------
+// Places the label inside the input, above the value, instead of above the whole field. Expects
+// this markup, where the label MUST follow the input, as the styles below rely on sibling selectors:
+//
+//   <div class="sci-text-input-ifta">
+//       <input id="lastname" class="sci-text-input"/>
+//       <label for="lastname" class="sci-text-input-ifta-label">Last name</label>
+//   </div>
+//
+// A placeholder is optional. It shows an example value while the input is empty and not focused.
+.sci-text-input-ifta {
+  position: relative;
+  display: flex;
+
+  .sci-text-input {
+    flex-grow: 1;
+    // Leaves room for the label above the value. Everything else is inherited from .sci-text-input.
+    padding-top: calc(var(--sci-margin-1) + var(--sci-font-size-smallest));
+    padding-bottom: var(--sci-margin-1);
+    line-height: 1;
+    outline: none;
+
+    // A single-line input needs line-height: 1 so the label fits above it, but that crams
+    // wrapped textarea rows together, so restore the readable line-height and allow vertical resize.
+    &:where(textarea) {
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    &:focus {
+      border-color: $sirius-primary;
+    }
+
+    // Placeholder text needs 4.5:1 contrast as well. Lighter than the label, so an example value
+    // does not pass for a real one. Firefox dims placeholders by default, hence the opacity.
+    &::placeholder {
+      color: mix($sirius-gray-dark, $sirius-gray-darker);
+      opacity: 1;
+    }
+
+    // Hides the placeholder while typing, as the label alone is enough context at that point.
+    &:focus::placeholder {
+      color: transparent;
+    }
+  }
+
+  .sci-text-input-ifta-label {
+    position: absolute;
+    // The overflow handling below clips everything outside the line box, so the line is taller than
+    // the font to keep ascenders and descenders. Shifting it up by the extra half keeps the text in place.
+    top: calc(var(--sci-margin-1) - 0.2em);
+    // Aligns the label with the value, which is inset by the horizontal padding of .sci-text-input.
+    left: var(--sci-margin-1_5);
+    // Shrinks the label to its text, so the required marker sits right behind it.
+    max-width: calc(100% - 2 * var(--sci-margin-1_5));
+    font-size: var(--sci-font-size-smallest);
+    line-height: 1.4;
+    color: $sirius-gray-darker;
+    // The padding above the value leaves room for one line only, so a long label is cut off
+    // instead of wrapping over the value.
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    // Lets clicks fall through to the input underneath, which sits behind the label.
+    pointer-events: none;
+  }
+
+  // A textarea scrolls its text through its own padding, which moves the text beneath the label.
+  // So the wrapper draws the field with the label in its top part, and the textarea with its
+  // scrollbar starts below the label.
+  &:has(> textarea) {
+    padding-top: calc(var(--sci-margin-1) + var(--sci-font-size-smallest));
+    border: var(--sci-border-width-1) solid $sirius-gray;
+    border-radius: var(--sci-border-radius);
+    background-color: $sirius-white;
+
+    textarea.sci-text-input {
+      padding-top: 0;
+      border: none;
+      background-color: transparent;
+    }
+  }
+
+  &:has(> textarea:focus) {
+    border-color: $sirius-primary;
+  }
+
+  &:has(> textarea[disabled]),
+  &:has(> textarea[readonly]) {
+    background-color: $sirius-gray-lighter;
+  }
+
+  .sci-text-input:required + .sci-text-input-ifta-label {
+    font-weight: bold;
+    // Reserves room for the marker outside the ellipsis, so a long label keeps it visible.
+    padding-right: 1em;
+
+    &::after {
+      content: '∗';
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+  }
+
+  // Marks the active field only. Colouring a filled field as well turns every label of a
+  // populated form blue at once, which tells the reader nothing. Readonly inputs are skipped, as
+  // blue on their gray background misses the contrast for small text. Their border still turns blue.
+  .sci-text-input:focus:not([readonly]) + .sci-text-input-ifta-label {
+    color: $sirius-primary;
+  }
+
+  // Only disabled inputs are exempt from contrast rules, so readonly ones keep the regular label.
+  .sci-text-input[disabled] + .sci-text-input-ifta-label {
+    color: $sirius-gray-light;
+  }
+}
