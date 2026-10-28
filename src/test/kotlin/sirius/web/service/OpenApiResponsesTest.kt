@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
+import sirius.pasta.tagliatelle.Tagliatelle
 import sirius.web.services.OpenApiGenerator
 import sirius.web.services.PublicApiInfo
 import sirius.web.services.PublicServiceInfo
@@ -57,11 +58,19 @@ class OpenApiResponsesTest {
         val service = service("/test/openapi/error-responses")
 
         assertEquals(1, service.responses.count { it.responseCode == "403" })
-        assertEquals("The greeting is not permitted", service.responses.first { it.responseCode == "403" }.description)
         assertEquals(
-            "The greeting is not permitted",
+            "The greeting is not permitted:\n- `greeting_forbidden`: the name must not be greeted",
             responses("/test/openapi/error-responses").get("403").get("description").asString("")
         )
+    }
+
+    @Test
+    fun `the API explorer renders the descriptions of the responses as Markdown`() {
+        val html = tagliatelle.resolve("/templates/system/api/service-responses.html.pasta")
+            .orElseThrow()
+            .renderToString(service("/test/openapi/error-responses"))
+
+        assertTrue(html.contains("<li><code>greeting_forbidden</code>: the name must not be greeted</li>"))
     }
 
     @Test
@@ -110,5 +119,9 @@ class OpenApiResponsesTest {
         @Part
         @JvmStatic
         private lateinit var publicServices: PublicServices
+
+        @Part
+        @JvmStatic
+        private lateinit var tagliatelle: Tagliatelle
     }
 }

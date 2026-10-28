@@ -171,6 +171,14 @@
             <version>2.2.55</version>
         </dependency>
 
+        <!-- CommonMark is used to render Markdown, e.g. the response descriptions of public services -->
+        <!-- Changelog: https://github.com/commonmark/commonmark-java/releases -->
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.30.0</version>
+        </dependency>
+
         <!-- Changelog: https://github.com/auth0/java-jwt/releases -->
         <dependency>
             <groupId>com.auth0</groupId>

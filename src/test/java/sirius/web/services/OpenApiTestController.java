@@ -28,7 +28,7 @@ public class OpenApiTestController extends BasicController {
     @PublicService(apiName = "openapi-test", priority = 1)
     @ApiResponsesFrom(DefaultErrorResponsesJson.class)
     @ApiResponse(responseCode = "403",
-            description = "The greeting is not permitted",
+            description = "The greeting is not permitted:\n- `greeting_forbidden`: the name must not be greeted",
             content = @Content(mediaType = "application/json"))
     public GreetResult greetWithErrorResponses(WebContext webContext, GreetInput input) {
         return new GreetResult("Hello " + input.getName());
