@@ -181,9 +181,8 @@ public class BasicController implements Controller {
         } else {
             HttpResponseStatus status = HttpResponseStatus.valueOf(error.getHint(Controller.HTTP_STATUS)
                                                                         .asInt(HttpResponseStatus.OK.code()));
-            String allowedMethods = error.getHint(Controller.HTTP_HEADER_ALLOW).asString();
 
-            Response response = injectAllowHeader(webContext.respondWith(), status, allowedMethods);
+            Response response = injectHeaders(webContext.respondWith(), status, error);
             response.template(status, "/templates/tycho/error.html.pasta", error.getMessage());
         }
     }
@@ -229,15 +228,13 @@ public class BasicController implements Controller {
                                                      .asInt(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()));
         }
 
-        String allowedMethods = error.getHint(Controller.HTTP_HEADER_ALLOW).asString();
-
         if (format == Format.RAW) {
             // Failure for services expecting raw responses just yield the proper status code...
-            injectAllowHeader(webContext.respondWith(), status, allowedMethods).status(status);
+            injectHeaders(webContext.respondWith(), status, error).status(status);
             return;
         }
 
-        StructuredOutput out = createStructuredOutput(webContext, format, status, allowedMethods);
+        StructuredOutput out = createStructuredOutput(webContext, format, status, error);
         out.beginResult();
         out.property("success", false);
         out.property("error", true);
@@ -251,8 +248,8 @@ public class BasicController implements Controller {
     private StructuredOutput createStructuredOutput(WebContext webContext,
                                                     Format format,
                                                     HttpResponseStatus status,
-                                                    String allowedMethods) {
-        Response response = injectAllowHeader(webContext.respondWith(), status, allowedMethods);
+                                                    HandledException error) {
+        Response response = injectHeaders(webContext.respondWith(), status, error);
         if (format == Format.JSON) {
             return response.json(status);
         } else {
@@ -260,10 +257,12 @@ public class BasicController implements Controller {
         }
     }
 
-    private Response injectAllowHeader(Response response, HttpResponseStatus status, String allowedMethods) {
+    private Response injectHeaders(Response response, HttpResponseStatus status, HandledException error) {
+        String allowedMethods = error.getHint(Controller.HTTP_HEADER_ALLOW).asString();
         if (status.equals(HttpResponseStatus.METHOD_NOT_ALLOWED) && Strings.isFilled(allowedMethods)) {
             response.addHeaderIfNotExists(HttpHeaderNames.ALLOW, allowedMethods);
         }
+
         return response;
     }
 }
