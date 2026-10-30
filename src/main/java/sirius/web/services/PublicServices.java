@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import sirius.kernel.Sirius;
 import sirius.kernel.commons.Strings;
+import sirius.kernel.commons.Value;
 import sirius.kernel.di.GlobalContext;
 import sirius.kernel.di.std.Part;
 import sirius.kernel.di.std.Register;
@@ -33,7 +34,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Lists all known {@link PublicApiInfo public APIs}.
@@ -98,12 +100,7 @@ public class PublicServices {
                                                               parameters,
                                                               Arrays.stream(route.getAnnotationsByType(RequestBody.class))
                                                                     .toList(),
-                                                              Stream.concat(collectSharedApiResponses(route).stream(),
-                                                                            Arrays.stream(route.getAnnotationsByType(
-                                                                                    ApiResponse.class)))
-                                                                    .sorted(Comparator.comparingInt(apiResponse -> Integer.parseInt(
-                                                                            apiResponse.responseCode())))
-                                                                    .toList(),
+                                                              collectApiResponses(route),
                                                               compiledRoute.getInputType(),
                                                               determineOutputType(compiledRoute));
         PublicApiInfo apiInfo = modifiableApis.stream()
@@ -155,6 +152,24 @@ public class PublicServices {
             }
         });
         return sharedParameters;
+    }
+
+    /**
+     * Collects the responses documented for the given route.
+     * <p>
+     * A response declared on the route itself replaces a {@linkplain ApiResponsesFrom shared} response with the same
+     * status code, just like {@linkplain ParametersFrom shared parameters} can be overridden. This permits to share a
+     * generic set of (error) responses across many services while still refining single ones per service.
+     */
+    private List<ApiResponse> collectApiResponses(Method route) {
+        List<ApiResponse> responses = new ArrayList<>(List.of(route.getAnnotationsByType(ApiResponse.class)));
+        Set<String> overriddenCodes = responses.stream().map(ApiResponse::responseCode).collect(Collectors.toSet());
+        collectSharedApiResponses(route).stream()
+                                        .filter(response -> !overriddenCodes.contains(response.responseCode()))
+                                        .forEach(responses::add);
+        // Ranges like "4XX" and "default" are no numbers and are therefore kept at the end in their declared order.
+        responses.sort(Comparator.comparingInt(response -> Value.of(response.responseCode()).asInt(Integer.MAX_VALUE)));
+        return responses;
     }
 
     private List<ApiResponse> collectSharedApiResponses(Method route) {

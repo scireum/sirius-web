@@ -60,7 +60,7 @@
                                     @response.responseCode()
                                 </t:fullTag>
                             </i:if>
-                            <span><i:raw>@expandMessage(smartTranslate(response.description()))</i:raw></span>
+                            <div class="mt-1"><i:raw>@expandMessage(renderMarkdown(smartTranslate(response.description())))</i:raw></div>
                             <i:if test="@isFilled(responseContent.mediaType())">
                                 <div class="mt-2"><strong>Content-Type:</strong>
                                     @responseContent.mediaType()
@@ -95,7 +95,7 @@
                                         @response.responseCode()
                                     </t:fullTag>
                                 </i:if>
-                                <span><i:raw>@expandMessage(smartTranslate(response.description()))</i:raw></span>
+                                <div class="mt-1"><i:raw>@expandMessage(renderMarkdown(smartTranslate(response.description())))</i:raw></div>
                             </td>
                             <td></td>
                         </i:else>
