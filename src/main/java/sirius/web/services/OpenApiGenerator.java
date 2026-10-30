@@ -315,12 +315,16 @@ public class OpenApiGenerator {
 
     private ObjectNode buildResponses(PublicServiceInfo service) {
         ObjectNode responses = Json.createObject();
-        if (!service.getResponses().isEmpty()) {
-            service.getResponses()
-                   .forEach(response -> responses.set(response.responseCode(), mapAnnotatedResponse(response)));
-            return responses;
+        // Documented error responses complement the derived successful response instead of replacing it.
+        if (!service.hasDocumentedSuccessResponse()) {
+            responses.set("200", buildDerivedSuccessResponse(service));
         }
+        service.getResponses()
+               .forEach(response -> responses.set(response.responseCode(), mapAnnotatedResponse(response)));
+        return responses;
+    }
 
+    private ObjectNode buildDerivedSuccessResponse(PublicServiceInfo service) {
         ObjectNode okResponse = Json.createObject();
         okResponse.put(FIELD_DESCRIPTION, "Successful response");
         if (service.getOutputType() != null) {
@@ -330,8 +334,7 @@ public class OpenApiGenerator {
             content.set(mediaTypeFor(service), mediaType);
             okResponse.set(FIELD_CONTENT, content);
         }
-        responses.set("200", okResponse);
-        return responses;
+        return okResponse;
     }
 
     private ObjectNode mapAnnotatedResponse(ApiResponse response) {

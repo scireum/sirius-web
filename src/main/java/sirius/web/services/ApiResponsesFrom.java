@@ -16,6 +16,10 @@ import java.lang.annotation.Target;
 
 /**
  * Copies a shared set of {@linkplain io.swagger.v3.oas.annotations.responses.ApiResponse responses} to a {@linkplain PublicService public service}.
+ * <p>
+ * A response declared on the service itself replaces a shared response with the same status code. If only error
+ * responses (<tt>4xx</tt> and <tt>5xx</tt>) are documented, the successful response of a mapped service is still
+ * derived from its return type.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
