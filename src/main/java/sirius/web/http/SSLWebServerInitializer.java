@@ -115,6 +115,14 @@ class SSLWebServerInitializer extends WebServerInitializer {
         @Override
         public String chooseEngineServerAlias(String keyType, Principal[] issuers, SSLEngine engine) {
             ExtendedSSLSession session = (ExtendedSSLSession) engine.getHandshakeSession();
+            if (session == null) {
+                // The JDK asks for an alias without a handshake session while it restores a session from a TLS
+                // session ticket. It only checks whether the chosen certificate matches the one stored in the
+                // ticket, and performs a full handshake (which yields a proper SNI choice) if it doesn't. Hence,
+                // tickets of SNI hosts with a certificate of their own are never resumed, but still work.
+                return fallbackAlias;
+            }
+
             // Pick first SNIHostName in the list of SNI names.
             String hostname = null;
             for (SNIServerName name : session.getRequestedServerNames()) {
