@@ -263,6 +263,12 @@ public class BasicController implements Controller {
             response.addHeaderIfNotExists(HttpHeaderNames.ALLOW, allowedMethods);
         }
 
+        // RFC 7694 requires a 415 caused by an unsupported content encoding to list the accepted encodings...
+        String acceptedEncodings = error.getHint(Controller.HTTP_HEADER_ACCEPT_ENCODING).asString();
+        if (status.equals(HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE) && Strings.isFilled(acceptedEncodings)) {
+            response.addHeaderIfNotExists(HttpHeaderNames.ACCEPT_ENCODING, acceptedEncodings);
+        }
+
         return response;
     }
 }

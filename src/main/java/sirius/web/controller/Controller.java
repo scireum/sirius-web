@@ -61,6 +61,14 @@ public interface Controller {
     ExceptionHint HTTP_HEADER_ALLOW = new ExceptionHint("httpHeaderAllow");
 
     /**
+     * Used to specify the desired value for the {@code Accept-Encoding} HTTP header when handling the exception.
+     * <p>
+     * This is sent along with a {@code 415 Unsupported Media Type} to signal which content encodings are accepted for
+     * the request body (RFC 7694).
+     */
+    ExceptionHint HTTP_HEADER_ACCEPT_ENCODING = new ExceptionHint("httpHeaderAcceptEncoding");
+
+    /**
      * Specifies an explicit error code to output when handling the exception.
      */
     ExceptionHint ERROR_CODE = new ExceptionHint("errorCode");
