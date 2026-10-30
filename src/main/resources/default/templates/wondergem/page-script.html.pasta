@@ -148,131 +148,190 @@
         return params;
     }
 
-    function imageUpload(url, target, defaultPreview, defaultImage, allowedExtensions, singleFile, params) {
-        var container = target;
-        new qq.FileUploader({
-            element: target,
-            action: url,
-            params: params || {},
-            multiple: !singleFile,
-            debug: false,
-            onComplete: function (cmp_id, fileName, responseJSON) {
+    function imageUpload(url, _target, defaultPreview, defaultImage, allowedExtensions, singleFile, params) {
+        _target.innerHTML = '<div class="well text-center text-muted">' +
+            '<div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail image-link-js"><img class="image-preview-js" src="' + defaultPreview + '" /></a></span></div>' +
+            '@i18n("template.html.uploadArea")</div>' +
+            '<button type="button" class="btn btn-primary btn-block upload-button-js">@i18n("template.html.uploadBtn")</button>' +
+            '<div class="upload-previews-js"></div>';
+
+        var acceptedFiles = null;
+        if (allowedExtensions && allowedExtensions.length > 0) {
+            acceptedFiles = allowedExtensions.map(function (extension) {
+                return '.' + extension;
+            }).join(',');
+        }
+
+        function markAsFailed(file) {
+            file.previewElement.querySelector('.upload-error-js').innerHTML = '@i18n("template.html.uploadFailed")';
+        }
+
+        new Dropzone(_target, {
+            url: function (files) {
+                var query = new URLSearchParams(Object.assign({}, params, {filename: files[0].name}));
+                return url + (url.indexOf('?') >= 0 ? '&' : '?') + query.toString();
+            },
+            sendFileAsBody: true,
+            parallelUploads: 3,
+            maxFiles: singleFile ? 1 : null,
+            maxFilesize: null,
+            acceptedFiles: acceptedFiles,
+            dictInvalidFileType: '@i18n("template.html.errInvalidExtension")',
+            dictMaxFilesExceeded: '@i18n("template.html.maxFilesExceeded")',
+            clickable: _target.querySelector('.upload-button-js'),
+            previewsContainer: _target.querySelector('.upload-previews-js'),
+            previewTemplate: '<div>' +
+                '<span data-dz-name></span> (<span data-dz-size></span>)' +
+                '<div class="progress"><div class="progress-bar" data-dz-uploadprogress></div></div>' +
+                '<div class="text-danger upload-error-js"></div>' +
+                '</div>',
+            init: function () {
+                if (singleFile) {
+                    this.on('addedfile', function (file) {
+                        this.files.filter(function (otherFile) {
+                            return otherFile !== file
+                                && (otherFile.status === Dropzone.SUCCESS || otherFile.status === Dropzone.ERROR);
+                        }).forEach(this.removeFile, this);
+                    });
+                }
+            },
+            accept: function (file, done) {
+                if (file.size === 0) {
+                    done('@i18n("template.html.errEmpty")');
+                } else {
+                    done();
+                }
+            },
+            error: function (file, message, xhr) {
+                if (file.status === Dropzone.CANCELED) {
+                    return;
+                }
+
+                markAsFailed(file);
                 clearMessages();
-                if (responseJSON.error) {
-                    addError(responseJSON.message);
-                } else if (responseJSON.message) {
-                    addInfo(responseJSON.message);
+                if (message.message) {
+                    addError(message.message);
+                } else if (!xhr) {
+                    addError(message);
+                } else {
+                    addError('@i18n("template.html.uploadFailed")');
                 }
-                if (responseJSON.previewUrl) {
-                    $('.img', container).attr('src', responseJSON.previewUrl);
-                    $('.lnk', container).attr('href', responseJSON.imageUrl);
+            },
+            success: function (file, response) {
+                clearMessages();
+                if (response.error) {
+                    markAsFailed(file);
+                    addError(response.message);
+                } else if (response.message) {
+                    addInfo(response.message);
                 }
-                if (responseJSON.redirect) {
+                if (response.previewUrl) {
+                    $('.image-preview-js', _target).attr('src', response.previewUrl);
+                    $('.image-link-js', _target).attr('href', response.imageUrl);
+                }
+                if (response.redirect) {
                     setTimeout(function () {
-                        window.location = responseJSON.redirect;
+                        window.location = response.redirect;
                     }, 1250);
                 }
-            },
-            showMessage: function (message) {
-                // We generally send a flag "error" which is true or false as
-                // part of the response. Sadly, fileUploader.js checks for this
-                // flag (expecting a string) and invokes showMessage is present.
-                // Therefore we have to filter this here :-/
-                if (message !== true) {
-                    clearMessages();
-                    addError(message);
-                }
-            },
-            messages: {
-                typeError: '@i18n("template.html.errInvalidExtension")',
-                sizeError: '@i18n("template.html.errTooLarge")',
-                minSizeError: '@i18n("template.html.errTooSmall")',
-                emptyError: '@i18n("template.html.errEmpty")'
-            },
-            allowedExtensions: allowedExtensions,
-            template: '<div class="qq-uploader">' +
-                '<div class="qq-upload-drop-area qq-image-area"><div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail lnk"><img class="img" src="' + defaultPreview + '" /></a></span></div><span>@i18n("template.html.uploadArea")</span></div>' +
-                '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
-                '<ul class="qq-upload-list"></ul>' +
-                '</div>',
-            fileTemplate: '<li>' +
-                '<span class="qq-upload-file"></span>' +
-                '<span class="qq-upload-spinner"></span>' +
-                '<span class="qq-upload-size"></span>' +
-                '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
-                '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
-                '</li>'
+            }
         });
-        var maxWidth = $(container).width();
-        $('.img', container).css('max-width', maxWidth - 30 + 'px');
+        var maxWidth = $(_target).width();
+        $('.image-preview-js', _target).css('max-width', maxWidth - 30 + 'px');
     }
 
-    function fileUpload(url, target, params, allowedExtensions, maxParallelConnections, customCallback) {
-        var container = target;
+    function fileUpload(url, _target, params, allowedExtensions, maxParallelConnections, customCallback) {
+        // The file dialog calls this repeatedly for the same element.
+        if (_target.dropzone) {
+            _target.dropzone.destroy();
+        }
 
-        new qq.FileUploader({
-            element: target,
-            action: url,
-            params: params,
-            debug: false,
-            maxConnections: maxParallelConnections || 3,
-            onComplete: function (cmp_id, fileName, responseJSON) {
-                if (customCallback !== undefined && customCallback !== null) {
-                    customCallback(responseJSON);
+        _target.innerHTML = '<div class="well text-center text-muted">@i18n("template.html.uploadArea")</div>' +
+            '<button type="button" class="btn btn-primary btn-block upload-button-js">@i18n("template.html.uploadBtn")</button>' +
+            '<div class="upload-previews-js"></div>';
+
+        var acceptedFiles = null;
+        if (allowedExtensions && allowedExtensions.length > 0) {
+            acceptedFiles = allowedExtensions.map(function (extension) {
+                return '.' + extension;
+            }).join(',');
+        }
+
+        function markAsFailed(file) {
+            file.previewElement.querySelector('.upload-error-js').innerHTML = '@i18n("template.html.uploadFailed")';
+        }
+
+        new Dropzone(_target, {
+            url: function (files) {
+                var query = new URLSearchParams(Object.assign({}, params, {filename: files[0].name}));
+                return url + (url.indexOf('?') >= 0 ? '&' : '?') + query.toString();
+            },
+            sendFileAsBody: true,
+            parallelUploads: maxParallelConnections || 3,
+            maxFilesize: null,
+            acceptedFiles: acceptedFiles,
+            dictInvalidFileType: '@i18n("template.html.errInvalidExtension")',
+            clickable: _target.querySelector('.upload-button-js'),
+            previewsContainer: _target.querySelector('.upload-previews-js'),
+            previewTemplate: '<div>' +
+                '<span data-dz-name></span> (<span data-dz-size></span>)' +
+                '<div class="progress"><div class="progress-bar" data-dz-uploadprogress></div></div>' +
+                '<div class="text-danger upload-error-js"></div>' +
+                '</div>',
+            accept: function (file, done) {
+                if (file.size === 0) {
+                    done('@i18n("template.html.errEmpty")');
+                } else {
+                    done();
+                }
+            },
+            error: function (file, message, xhr) {
+                if (file.status === Dropzone.CANCELED) {
+                    return;
+                }
+
+                markAsFailed(file);
+                clearMessages();
+                if (message.message) {
+                    addError(message.message);
+                } else if (!xhr) {
+                    addError(message);
+                } else {
+                    addError('@i18n("template.html.uploadFailed")');
+                }
+            },
+            success: function (file, response) {
+                if (response.error) {
+                    markAsFailed(file);
+                }
+
+                if (customCallback) {
+                    customCallback(response);
                     return;
                 }
 
                 clearMessages();
-                if (responseJSON.error) {
-                    addError(responseJSON.message);
-                } else if (responseJSON.message) {
-                    if (responseJSON.action) {
-                        addInfo(responseJSON.message, responseJSON.action, responseJSON.actionLabel);
+                if (response.error) {
+                    addError(response.message);
+                } else if (response.message) {
+                    if (response.action) {
+                        addInfo(response.message, response.action, response.actionLabel);
                     } else {
-                        addInfo(responseJSON.message);
+                        addInfo(response.message);
                     }
                 }
-                if (responseJSON.refresh) {
+                if (response.refresh) {
                     setTimeout(function () {
-                        var editForm = $('#editForm');
-                        if (editForm.length) {
-                            $('#uploadedFile').val(responseJSON.fileId);
-                            editForm.submit();
+                        var _editForm = $('#editForm');
+                        if (_editForm.length) {
+                            $('#uploadedFile').val(response.fileId);
+                            _editForm.submit();
                         } else {
                             window.location.reload();
                         }
                     }, 1250);
                 }
-            },
-            showMessage: function (message) {
-                // We generally send a flag "error" which is true or false as
-                // part of the response. Sadly, fileUploader.js checks for this
-                // flag (expecting a string) and invokes showMessage is present.
-                // Therefore we have to filter this here :-/
-                if (message !== true) {
-                    clearMessages();
-                    addError(message);
-                }
-            },
-            messages: {
-                typeError: '@i18n("template.html.errInvalidExtension")',
-                sizeError: '@i18n("template.html.errTooLarge")',
-                minSizeError: '@i18n("template.html.errTooSmall")',
-                emptyError: '@i18n("template.html.errEmpty")'
-            },
-            allowedExtensions: allowedExtensions,
-            template: '<div class="qq-uploader">' +
-                '<div class="qq-upload-drop-area"><span>@i18n("template.html.uploadArea")</span></div>' +
-                '<div class="qq-upload-button btn btn-primary" style="display: block">@i18n("template.html.uploadBtn")</div>' +
-                '<ul class="qq-upload-list"></ul>' +
-                '</div>',
-            fileTemplate: '<li>' +
-                '<span class="qq-upload-file"></span>' +
-                '<span class="qq-upload-spinner"></span>' +
-                '<span class="qq-upload-size"></span>' +
-                '<a class="qq-upload-cancel" href="#">@i18n("NLS.cancel")</a>' +
-                '<span class="qq-upload-failed-text">@i18n("template.html.uploadFailed")</span>' +
-                '</li>'
+            }
         });
     }
 
