@@ -8,10 +8,9 @@
 
 package sirius.web.templates.pdf.handlers;
 
-import org.openpdf.text.Image;
+import org.openpdf.text.Utilities;
 import org.xhtmlrenderer.extend.FSImage;
 import org.xhtmlrenderer.extend.UserAgentCallback;
-import org.xhtmlrenderer.pdf.ITextFSImage;
 import sirius.kernel.di.std.Register;
 
 import javax.annotation.Nullable;
@@ -32,7 +31,8 @@ public class HttpPdfReplaceHandler extends PdfReplaceHandler {
     public FSImage resolveUri(String uri, UserAgentCallback userAgentCallback, int cssWidth, int cssHeight)
             throws Exception {
         if (userAgentCallback == null) {
-            return resizeImage(new ITextFSImage(Image.getInstance(uri)), cssWidth, cssHeight);
+            // built like OpenPDF does, as java.net.URI rejects unencoded characters such as spaces which URLs accept
+            return resizeImage(resolveResource(null, Utilities.toURL(uri)), cssWidth, cssHeight);
         }
         return resizeImage(userAgentCallback.getImageResource(uri).getImage(), cssWidth, cssHeight);
     }

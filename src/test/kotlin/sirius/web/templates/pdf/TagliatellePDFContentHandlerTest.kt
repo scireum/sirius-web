@@ -21,6 +21,7 @@ import sirius.kernel.di.std.Part
 import sirius.web.templates.Templates
 import java.io.ByteArrayOutputStream
 import java.net.InetSocketAddress
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -133,11 +134,32 @@ class TagliatellePDFContentHandlerTest {
 
     @Test
     fun `draws svg images loaded via http as vector graphics`() {
-        val pdf = serving("/logo.svg", "image/svg+xml", "/assets/test.svg") { url ->
+        val (pdf, requests) = serving("/logo.svg", "image/svg+xml", "/assets/test.svg") { url ->
             render("""<img src="$url" style="width: 32px; height: 32px;"/>""")
         }
 
         assertDrawnAsVector(pdf)
+        assertEquals(1, requests, "the svg must be loaded on the first attempt")
+    }
+
+    @Test
+    fun `draws svg images loaded via http without svg extension as vector graphics`() {
+        // without the extension, only the last attempt via flying-saucer's user agent recognises the svg
+        val (pdf, _) = serving("/logo", "image/svg+xml", "/assets/test.svg") { url ->
+            render("""<img src="$url" style="width: 32px; height: 32px;"/>""")
+        }
+
+        assertDrawnAsVector(pdf)
+    }
+
+    @Test
+    fun `loads nothing an svg image references from outside`() {
+        // the external DTD, entities and image are relative, so they would hit the server if they were resolved
+        val (_, requests) = serving("/images/hostile.svg", "image/svg+xml", "/assets/test-hostile.svg") { url ->
+            render("""<img src="$url" style="width: 32px; height: 32px;"/>""")
+        }
+
+        assertEquals(1, requests, "only the svg itself must be requested")
     }
 
     /**
@@ -164,20 +186,24 @@ class TagliatellePDFContentHandlerTest {
     /**
      * Serves the given classpath resource via a throwaway HTTP server while running the action.
      *
+     * Returns the result of the action along with the number of requests the server received for any path.
+     *
      * The served path must not contain `/assets/`: [sirius.web.templates.pdf.handlers.ResourcePdfReplaceHandler]
      * rewrites such URLs to the resource protocol, so they would never be loaded via HTTP.
      */
-    private fun <T> serving(path: String, contentType: String, resource: String, action: (String) -> T): T {
+    private fun <T> serving(path: String, contentType: String, resource: String, action: (String) -> T): Pair<T, Int> {
         val content = javaClass.getResourceAsStream(resource)!!.use { it.readBytes() }
         val server = HttpServer.create(InetSocketAddress(LOOPBACK, 0), 0)
-        server.createContext(path) { exchange ->
+        val requests = AtomicInteger()
+        server.createContext("/") { exchange ->
+            requests.incrementAndGet()
             exchange.responseHeaders.add("Content-Type", contentType)
             exchange.sendResponseHeaders(200, content.size.toLong())
             exchange.responseBody.use { it.write(content) }
         }
         server.start()
         try {
-            return action("http://$LOOPBACK:${server.address.port}$path")
+            return action("http://$LOOPBACK:${server.address.port}$path") to requests.get()
         } finally {
             server.stop(0)
         }

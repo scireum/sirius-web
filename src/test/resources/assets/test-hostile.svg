@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE svg SYSTEM "external.dtd" [
+    <!ENTITY % parameter SYSTEM "parameter.ent">
+    %parameter;
+    <!ENTITY general SYSTEM "general.ent">
+]>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32">
+    <text>&general;</text>
+    <image xlink:href="external.png" width="32" height="32"/>
+</svg>
