@@ -66,9 +66,17 @@ class SSLWebServerInitializer extends WebServerInitializer {
      */
     static class SniKeyManager extends X509ExtendedKeyManager {
         private final X509ExtendedKeyManager keyManager;
+        private final String fallbackAlias;
 
-        SniKeyManager(X509ExtendedKeyManager keyManager) {
+        /**
+         * Creates a new key manager which selects certificates based on the SNI host name.
+         *
+         * @param keyManager    the key manager which provides the actual certificates and keys
+         * @param fallbackAlias the alias to use if no certificate matches the requested host name
+         */
+        SniKeyManager(X509ExtendedKeyManager keyManager, String fallbackAlias) {
             this.keyManager = keyManager;
+            this.fallbackAlias = fallbackAlias;
         }
 
         @Override
@@ -107,6 +115,14 @@ class SSLWebServerInitializer extends WebServerInitializer {
         @Override
         public String chooseEngineServerAlias(String keyType, Principal[] issuers, SSLEngine engine) {
             ExtendedSSLSession session = (ExtendedSSLSession) engine.getHandshakeSession();
+            if (session == null) {
+                // The JDK asks for an alias without a handshake session while it restores a session from a TLS
+                // session ticket. It only checks whether the chosen certificate matches the one stored in the
+                // ticket, and performs a full handshake (which yields a proper SNI choice) if it doesn't. Hence,
+                // tickets of SNI hosts with a certificate of their own are never resumed, but still work.
+                return fallbackAlias;
+            }
+
             // Pick first SNIHostName in the list of SNI names.
             String hostname = null;
             for (SNIServerName name : session.getRequestedServerNames()) {
@@ -133,7 +149,7 @@ class SSLWebServerInitializer extends WebServerInitializer {
                 if (LOG.isFINE()) {
                     LOG.FINE("Using the default alias '%s' as hostname (SSL chooseEngineServerAlias)...", hostname);
                 }
-                return defaultAlias;
+                return fallbackAlias;
             }
         }
 
@@ -183,7 +199,7 @@ class SSLWebServerInitializer extends WebServerInitializer {
             throw new Exception("KeyManagerFactory did not create an X509ExtendedKeyManager");
         }
         System.setProperty("jdk.tls.ephemeralDHKeySize", String.valueOf(ephemeralDHKeySize));
-        SniKeyManager sniKeyManager = new SniKeyManager(x509KeyManager);
+        SniKeyManager sniKeyManager = new SniKeyManager(x509KeyManager, defaultAlias);
         context = SSLContext.getInstance("TLS");
         context.init(new KeyManager[]{sniKeyManager}, null, null);
     }
