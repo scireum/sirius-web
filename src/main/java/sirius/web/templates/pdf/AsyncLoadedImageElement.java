@@ -53,6 +53,8 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
     private static final String RIGHT = "right";
 
     private final Thread resolvingThread;
+    private final String uri;
+    private final boolean logErrors;
     private final int cssWidth;
     private final int cssHeight;
     private FSImage image;
@@ -72,6 +74,8 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
                                    String uri,
                                    int cssWidth,
                                    int cssHeight) {
+        this.uri = uri;
+        this.logErrors = handler.logErrors();
         this.cssHeight = cssHeight;
         this.cssWidth = cssWidth;
         this.location = new Point(0, 0);
@@ -188,7 +192,30 @@ public final class AsyncLoadedImageElement implements ITextReplacedElement {
             Map<String, CSSPrimitiveValue> cssMap =
                     context.getCss().getCascadedPropertiesMap(box.getContainingBlock().getElement());
             centerPosition = computePosition(contentBounds, cssMap.get(VERTICAL_ALIGN), cssMap.get(TEXT_ALIGN));
-            outputDevice.drawImage(image, centerPosition.getFirst(), centerPosition.getSecond());
+            drawImage(outputDevice, centerPosition);
+        }
+    }
+
+    /**
+     * Draws the resolved image, leaving it out if it cannot be drawn.
+     * <p>
+     * Some images can only be fully processed when drawn, e.g. an SVG which references an external file. Such an image
+     * must not abort the whole document, just like an image that cannot be resolved at all. As for those, the error is
+     * only logged if the {@link PdfReplaceHandler#logErrors() handler} asks for it.
+     *
+     * @param outputDevice the device to draw on
+     * @param position     the position to draw the image at
+     */
+    private void drawImage(ITextOutputDevice outputDevice, Tuple<Integer, Integer> position) {
+        try {
+            outputDevice.drawImage(image, position.getFirst(), position.getSecond());
+        } catch (RuntimeException exception) {
+            if (logErrors) {
+                Exceptions.handle()
+                          .error(exception)
+                          .withSystemErrorMessage("Could not draw image %s: %s (%s)", uri)
+                          .handle();
+            }
         }
     }
 

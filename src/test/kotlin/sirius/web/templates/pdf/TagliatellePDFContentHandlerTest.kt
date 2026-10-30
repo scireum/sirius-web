@@ -91,6 +91,47 @@ class TagliatellePDFContentHandlerTest {
     }
 
     @Test
+    fun `draws svg images loaded via the resource protocol as vector graphics`() {
+        val pdf = render("""<img src="resource://assets/test.svg" style="width: 32px; height: 32px;"/>""")
+
+        assertDrawnAsVector(pdf)
+    }
+
+    @Test
+    fun `sizes svg images by their absolute width and height before their view box`() {
+        // 0.5in x 36pt is square, unlike the view box (3:1) and the default size (2:1)
+        val pdf = render("""<img src="resource://assets/test-units.svg" style="width: 96px; height: 96px;"/>""")
+
+        assertDrawnAsVector(pdf)
+        assertEquals(listOf(72f to 72f), pdf.formSizes(1), "96 x 96 px")
+    }
+
+    @Test
+    fun `sizes svg images without width and height by their view box`() {
+        // the view box (3:1) differs from the default size (2:1) and from 1 x 1
+        val pdf = render("""<img src="resource://assets/test-viewbox.svg" style="width: 96px; height: 96px;"/>""")
+
+        assertDrawnAsVector(pdf)
+        assertEquals(listOf(72f to 24f), pdf.formSizes(1), "96 x 32 px")
+    }
+
+    @Test
+    fun `leaves out svg images which cannot be drawn instead of failing the document`() {
+        val pdf = render(
+            """
+            <p>Before</p>
+            <img src="resource://assets/test-external-reference.svg" style="width: 32px; height: 32px;"/>
+            <p>After</p>
+            """
+        )
+
+        assertEquals(listOf("Before", "After"), pdf.lines(1))
+        // the referenced test.png exists next to the svg, so it must have been refused rather than not found
+        assertEquals(emptyList(), pdf.images(1), "the external reference must not be loaded")
+        assertEquals(emptyList(), pdf.formSizes(1), "the svg must be left out entirely")
+    }
+
+    @Test
     fun `draws svg images loaded via http as vector graphics`() {
         val pdf = serving("/logo.svg", "image/svg+xml", "/assets/test.svg") { url ->
             render("""<img src="$url" style="width: 32px; height: 32px;"/>""")
@@ -189,6 +230,16 @@ class TagliatellePDFContentHandlerTest {
     private fun PdfReader.paintedPaths(page: Int) =
         xObjects(page).filter { it.getAsName(PdfName.SUBTYPE) == PdfName.FORM }
             .sumOf { PATH_PAINTING_OPERATOR.findAll(String(PdfReader.getStreamBytes(it), Charsets.ISO_8859_1)).count() }
+
+    /**
+     * Lists the bounding boxes of the form XObjects used on the given page as their width and height in points.
+     */
+    private fun PdfReader.formSizes(page: Int): List<Pair<Float, Float>> =
+        xObjects(page).filter { it.getAsName(PdfName.SUBTYPE) == PdfName.FORM }.map {
+            val box = it.getAsArray(PdfName.BBOX)
+            box.getAsNumber(2).floatValue() - box.getAsNumber(0).floatValue() to
+                    box.getAsNumber(3).floatValue() - box.getAsNumber(1).floatValue()
+        }
 
     /**
      * Asserts that the first page shows vector shapes and contains no raster image at all, not even one hidden in a

@@ -8,20 +8,31 @@
 
 package sirius.web.templates.pdf.handlers;
 
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.batik.util.XMLResourceDescriptor;
 import org.openpdf.text.BadElementException;
 import org.openpdf.text.Image;
+import org.w3c.dom.Element;
+import org.w3c.dom.svg.SVGDocument;
 import org.xhtmlrenderer.extend.FSImage;
+import org.xhtmlrenderer.extend.Size;
 import org.xhtmlrenderer.extend.UserAgentCallback;
 import org.xhtmlrenderer.pdf.ITextFSImage;
+import org.xhtmlrenderer.pdf.SvgImage;
 import sirius.kernel.commons.Tuple;
 import sirius.kernel.di.std.AutoRegister;
 import sirius.kernel.di.std.Priorized;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a image replace handler that is used by {@link sirius.web.templates.pdf.ImageReplacedElementFactory} to
@@ -29,6 +40,19 @@ import java.util.Optional;
  */
 @AutoRegister
 public abstract class PdfReplaceHandler implements Priorized {
+
+    private static final String SVG_FILE_EXTENSION = ".svg";
+
+    /**
+     * Matches an absolute SVG length: a non-negative number with an optional absolute unit.
+     */
+    private static final Pattern SVG_LENGTH =
+            Pattern.compile("\\s*(\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)\\s*(px|pt|pc|mm|cm|in)?\\s*");
+
+    /**
+     * Contains the size of SVG images which specify neither width and height nor a view box.
+     */
+    private static final Size DEFAULT_SVG_SIZE = new Size(300, 150);
 
     @Override
     public int getPriority() {
@@ -81,6 +105,9 @@ public abstract class PdfReplaceHandler implements Priorized {
 
     /**
      * Resolves the image with the given URL.
+     * <p>
+     * SVG files (detected by their file extension) are resolved as {@link SvgImage}, which are drawn as vector
+     * graphics. All other files are handed to OpenPDF, which only supports raster formats.
      *
      * @param userAgentCallback the user agent to use to resolve image resources
      * @param url               the URL to resolve
@@ -90,7 +117,89 @@ public abstract class PdfReplaceHandler implements Priorized {
      */
     protected FSImage resolveResource(UserAgentCallback userAgentCallback, URL url)
             throws BadElementException, IOException {
+        if (url.getPath().toLowerCase(Locale.ROOT).endsWith(SVG_FILE_EXTENSION)) {
+            return resolveSvgResource(url);
+        }
         return new ITextFSImage(Image.getInstance(url));
+    }
+
+    /**
+     * Loads the SVG file with the given URL.
+     * <p>
+     * The document parsed here is only used to determine the size. When drawn, {@link SvgImage} parses the content
+     * again without any document URL, which makes Batik refuse to load external resources the SVG references. This
+     * protection is the libraries' and must be kept in mind when changing how SVG images are drawn.
+     *
+     * @param url the URL of the SVG file
+     * @return the loaded SVG image
+     * @throws IOException in case of an IO error or if the file isn't a valid SVG document
+     */
+    private FSImage resolveSvgResource(URL url) throws IOException {
+        byte[] content;
+        try (InputStream input = url.openStream()) {
+            content = input.readAllBytes();
+        }
+
+        SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
+        SVGDocument document = factory.createSVGDocument(null, new ByteArrayInputStream(content));
+        return new SvgImage(content, determineSvgSize(document.getDocumentElement()), url.toString());
+    }
+
+    /**
+     * Determines the intrinsic size of an SVG image in pixels, similar to what flying-saucer does for SVG files it loads
+     * itself.
+     * <p>
+     * Absolute {@code width} and {@code height} attributes win. Otherwise, the size of the {@code viewBox} is used.
+     * If neither is present, the default size of replaced elements (300 x 150) applies.
+     *
+     * @param root the root element of the SVG document
+     * @return the intrinsic size, which is at least 1 x 1 so that the image can always be scaled
+     */
+    private static Size determineSvgSize(Element root) {
+        Double width = parseSvgLength(root.getAttribute("width"));
+        Double height = parseSvgLength(root.getAttribute("height"));
+        if (width != null && height != null) {
+            return toSize(width, height);
+        }
+
+        String[] viewBox = root.getAttribute("viewBox").trim().split("[\\s,]+");
+        if (viewBox.length == 4) {
+            Double viewBoxWidth = parseSvgLength(viewBox[2]);
+            Double viewBoxHeight = parseSvgLength(viewBox[3]);
+            if (viewBoxWidth != null && viewBoxHeight != null) {
+                return toSize(viewBoxWidth, viewBoxHeight);
+            }
+        }
+
+        return DEFAULT_SVG_SIZE;
+    }
+
+    /**
+     * Parses an absolute SVG length into pixels, assuming 96 dpi like CSS does.
+     *
+     * @param length the length to parse, with an optional absolute unit
+     * @return the length in pixels, or <tt>null</tt> if the length is missing, relative or invalid
+     */
+    @Nullable
+    private static Double parseSvgLength(String length) {
+        Matcher matcher = SVG_LENGTH.matcher(length);
+        if (!matcher.matches()) {
+            return null;
+        }
+
+        double value = Double.parseDouble(matcher.group(1));
+        return switch (matcher.group(2) == null ? "px" : matcher.group(2)) {
+            case "pt" -> value * 96 / 72;
+            case "pc" -> value * 16;
+            case "mm" -> value * 96 / 25.4;
+            case "cm" -> value * 96 / 2.54;
+            case "in" -> value * 96;
+            default -> value;
+        };
+    }
+
+    private static Size toSize(double width, double height) {
+        return new Size(Math.max(1, (int) Math.round(width)), Math.max(1, (int) Math.round(height)));
     }
 
     /**
