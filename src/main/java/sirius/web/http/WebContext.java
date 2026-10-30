@@ -7,8 +7,8 @@
  */
 package sirius.web.http;
 
-import tools.jackson.databind.node.ObjectNode;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
@@ -53,6 +53,7 @@ import sirius.kernel.xml.XMLStructuredInput;
 import sirius.pasta.noodle.sandbox.NoodleSandbox;
 import sirius.web.controller.Controller;
 import sirius.web.security.UserContext;
+import tools.jackson.databind.node.ObjectNode;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -106,6 +107,7 @@ public class WebContext implements SubContext {
     private static final String SESSION_PIN_KEY = "_pin";
     private static final Log SESSION_CHECK = Log.get("session-check");
     private static final long SESSION_PIN_COOKIE_TTL = TimeUnit.DAYS.toSeconds(10L * 365);
+    private static final int DECOMPRESSION_BUFFER_SIZE = 64 * 1024;
 
     /**
      * How the secure property of a cookie should be set
@@ -410,6 +412,12 @@ public class WebContext implements SubContext {
      */
     @ConfigValue("http.maxStructuredInputSize")
     private static long maxStructuredInputSize;
+
+    /**
+     * Size limit for request bodies sent compressed, once they are decompressed
+     */
+    @ConfigValue("http.maxDecompressedRequestSize")
+    private static long maxDecompressedRequestSize;
 
     /**
      * Determines if a dummy P3P header should be created to disable P3P handling.
@@ -2064,6 +2072,160 @@ public class WebContext implements SubContext {
         }
 
         return result;
+    }
+
+    /**
+     * Decodes the body of the request if it was sent with a <tt>Content-Encoding</tt> (like <tt>gzip</tt>).
+     * <p>
+     * The body is received and buffered as sent by the client. Calling this method replaces it with the decoded data,
+     * so that all methods accessing the body (like {@link #getContent()} or {@link #getJSONContent()}) provide the
+     * decoded data. The <tt>Content-Encoding</tt> header is removed and the <tt>Content-Length</tt> header is updated
+     * accordingly.
+     * <p>
+     * This is invoked by the {@link sirius.web.controller.ControllerDispatcher} for service calls, once the route
+     * has been determined and its permissions have been checked. Therefore, a client cannot make the server decode
+     * a body before it is known that the body will be processed at all.
+     * <p>
+     * Unsupported encodings are rejected as specified by RFC 7694 (HTTP Client-Initiated Content-Encoding), see
+     * {@link ContentEncoding#negotiate(List, Set)}.
+     *
+     * @param acceptedEncodings the encodings accepted by the route, see
+     *                          {@link sirius.web.services.PublicService#acceptEncodings()}
+     * @throws HandledException if the body uses an encoding which isn't accepted (<tt>415</tt>), isn't encoded
+     *                          properly (<tt>400</tt>), exceeds <tt>http.maxDecompressedRequestSize</tt> once
+     *                          decoded (<tt>413</tt>) or if there isn't enough temporary space to store the decoded
+     *                          body (<tt>507</tt>, see <tt>http.minUploadFreespace</tt>)
+     */
+    public void decodeContent(Set<ContentEncoding> acceptedEncodings) {
+        if (!request.headers().contains(HttpHeaderNames.CONTENT_ENCODING)) {
+            return;
+        }
+
+        Optional<ContentEncoding> encoding =
+                ContentEncoding.negotiate(request.headers().getAll(HttpHeaderNames.CONTENT_ENCODING),
+                                          acceptedEncodings);
+
+        if (encoding.isEmpty()) {
+            return;
+        }
+
+        if (postDecoder != null) {
+            // Form bodies are parsed while being received, therefore these cannot be decoded at all...
+            throw Exceptions.createHandled()
+                            .withDirectMessage("Form bodies cannot be sent with a content encoding.")
+                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code())
+                            .hint(Controller.HTTP_HEADER_ACCEPT_ENCODING, "identity")
+                            .handle();
+        }
+
+        if (content != null) {
+            Attribute decoded = decodeBody(encoding.get());
+
+            content.delete();
+            content = decoded;
+            contentAsFile = null;
+            contentSize = null;
+        }
+
+        // The body is completely buffered by now, therefore it is described by its length, even if it was sent
+        // in chunks...
+        request.headers().remove(HttpHeaderNames.CONTENT_ENCODING);
+        request.headers().remove(HttpHeaderNames.TRANSFER_ENCODING);
+        request.headers().set(HttpHeaderNames.CONTENT_LENGTH, getContentSize());
+    }
+
+    private Attribute decodeBody(ContentEncoding encoding) {
+        Attribute decoded = WebServer.getHttpDataFactory().createAttribute(request, "body");
+
+        try (InputStream encodedInput = getContent(); InputStream decodedInput = decode(encoding, encodedInput)) {
+            transferDecodedContent(encoding, decodedInput, decoded);
+
+            // The charset is only applied now, as netty drops it when moving a large body from memory to disk...
+            decoded.setCharset(content.getCharset());
+            return decoded;
+        } catch (HandledException exception) {
+            decoded.delete();
+            throw exception;
+        } catch (IOException exception) {
+            // Invalid data has already been reported as HandledException, therefore this is a server side problem,
+            // like failing to write the decoded body to disk...
+            decoded.delete();
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .error(exception)
+                            .withSystemErrorMessage("Failed to decode the request body: %s (%s)")
+                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.INTERNAL_SERVER_ERROR.code())
+                            .handle();
+        }
+    }
+
+    private InputStream decode(ContentEncoding encoding, InputStream encodedInput) {
+        try {
+            return encoding.decode(encodedInput);
+        } catch (IOException exception) {
+            throw createInvalidEncodingError(encoding, exception);
+        }
+    }
+
+    private int readDecoded(ContentEncoding encoding, InputStream decodedInput, byte[] buffer) {
+        try {
+            return decodedInput.read(buffer);
+        } catch (IOException exception) {
+            throw createInvalidEncodingError(encoding, exception);
+        }
+    }
+
+    private void checkFreeSpace(File file) {
+        long minFreespace = WebServer.getMinUploadFreespace();
+        if (minFreespace > 0 && file.getFreeSpace() < minFreespace) {
+            throw Exceptions.handle()
+                            .to(WebServer.LOG)
+                            .withSystemErrorMessage(
+                                    "The web server is running out of temporary space to store the request body")
+                            .hint(Controller.HTTP_STATUS, HttpResponseStatus.INSUFFICIENT_STORAGE.code())
+                            .handle();
+        }
+    }
+
+    private HandledException createInvalidEncodingError(ContentEncoding encoding, IOException exception) {
+        return Exceptions.createHandled()
+                         .error(exception)
+                         .withDirectMessage(Strings.apply(
+                                 "The request body is not valid data for the content encoding '%s'.",
+                                 encoding.getName()))
+                         .hint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())
+                         .handle();
+    }
+
+    private void transferDecodedContent(ContentEncoding encoding, InputStream decodedInput, Attribute decoded)
+            throws IOException {
+        // Without a dedicated limit, decoded bodies are limited like any other upload...
+        long maxSize = maxDecompressedRequestSize > 0 ? maxDecompressedRequestSize : WebServer.getMaxUploadSize();
+        long decodedSize = 0;
+        byte[] buffer = new byte[DECOMPRESSION_BUFFER_SIZE];
+        int bytesRead;
+
+        while ((bytesRead = readDecoded(encoding, decodedInput, buffer)) >= 0) {
+            decodedSize += bytesRead;
+
+            if (maxSize > 0 && decodedSize > maxSize) {
+                throw Exceptions.createHandled()
+                                .withDirectMessage(Strings.apply(
+                                        "The decompressed request body exceeds the maximal size of %s bytes.",
+                                        maxSize))
+                                .hint(Controller.HTTP_STATUS, HttpResponseStatus.REQUEST_ENTITY_TOO_LARGE.code())
+                                .handle();
+            }
+
+            decoded.addContent(Unpooled.copiedBuffer(buffer, 0, bytesRead), false);
+
+            // The free space is checked for each chunk, as it shrinks while the body is being written...
+            if (!decoded.isInMemory()) {
+                checkFreeSpace(decoded.getFile());
+            }
+        }
+
+        decoded.addContent(Unpooled.EMPTY_BUFFER, true);
     }
 
     /**
