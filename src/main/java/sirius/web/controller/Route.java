@@ -20,6 +20,7 @@ import sirius.kernel.commons.Value;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.nls.NLS;
 import sirius.kernel.xml.XMLStructuredOutput;
+import sirius.web.http.ContentEncoding;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.WebContext;
 import sirius.web.security.Permissions;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -75,6 +77,7 @@ public class Route {
     private boolean mappedPayload;
     private Class<?> inputType;
     private boolean enforceMaintenanceMode;
+    private Set<ContentEncoding> acceptedEncodings = Collections.emptySet();
     private Set<String> permissions = null;
     private String subScope;
     private boolean deprecated;
@@ -301,9 +304,26 @@ public class Route {
             PublicService publicServiceAnnotation = method.getAnnotation(PublicService.class);
             result.enforceMaintenanceMode = publicServiceAnnotation.enforceMaintenanceMode();
             result.format = publicServiceAnnotation.format();
+            result.acceptedEncodings = determineAcceptedEncodings(publicServiceAnnotation.acceptEncodings());
         } else if (method.isAnnotationPresent(InternalService.class)) {
-            result.format = method.getAnnotation(InternalService.class).format();
+            InternalService internalServiceAnnotation = method.getAnnotation(InternalService.class);
+            result.format = internalServiceAnnotation.format();
+            result.acceptedEncodings = determineAcceptedEncodings(internalServiceAnnotation.acceptEncodings());
         }
+
+        if (!result.acceptedEncodings.isEmpty() && result.preDispatchable) {
+            throw new IllegalArgumentException(Strings.apply(
+                    "Pre-dispatchable route '%s' cannot accept encoded requests, as its body is not buffered",
+                    result.label));
+        }
+    }
+
+    private static Set<ContentEncoding> determineAcceptedEncodings(ContentEncoding[] encodings) {
+        if (encodings.length == 0) {
+            return Collections.emptySet();
+        }
+
+        return EnumSet.copyOf(Arrays.asList(encodings));
     }
 
     private static String applyRewrites(Controller controller, String uri) {
@@ -596,6 +616,30 @@ public class Route {
      */
     public boolean isEnforceMaintenanceMode() {
         return enforceMaintenanceMode;
+    }
+
+    /**
+     * Determines if the body of this route is decoded according to {@link #getAcceptedEncodings()} before invoking
+     * it.
+     * <p>
+     * This applies to service calls which aren't pre-dispatched, as only these buffer the body. Bodies of all other
+     * routes are passed on as sent, including their <tt>Content-Encoding</tt>.
+     *
+     * @return <tt>true</tt> if the body is decoded, <tt>false</tt> if it is passed on as sent
+     */
+    public boolean isDecodingContent() {
+        return isServiceCall() && !preDispatchable;
+    }
+
+    /**
+     * Returns the content encodings in which the request body may be sent.
+     *
+     * @return the accepted encodings, which are decoded before invoking the route
+     * @see sirius.web.services.PublicService#acceptEncodings()
+     * @see sirius.web.services.InternalService#acceptEncodings()
+     */
+    public Set<ContentEncoding> getAcceptedEncodings() {
+        return Collections.unmodifiableSet(acceptedEncodings);
     }
 
     /**

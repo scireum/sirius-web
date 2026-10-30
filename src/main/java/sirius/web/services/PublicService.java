@@ -8,6 +8,7 @@
 
 package sirius.web.services;
 
+import sirius.web.http.ContentEncoding;
 import sirius.web.security.MaintenanceInfo;
 
 import java.lang.annotation.ElementType;
@@ -106,4 +107,18 @@ public @interface PublicService {
      * @return a URI which points to the documentation of this service (e.g. to a page within the Tycho knowledge base)
      */
     String documentationUri() default "";
+
+    /**
+     * Specifies the content encodings in which clients may send the request body (<tt>Content-Encoding</tt> header).
+     * <p>
+     * Such bodies are decoded once the permissions have been checked, before the service is invoked. The size of the
+     * decoded body is limited by <tt>http.maxDecompressedRequestSize</tt>. Requests using any other encoding are
+     * rejected with <tt>415 Unsupported Media Type</tt> and an <tt>Accept-Encoding</tt> header listing the accepted
+     * encodings (or <tt>identity</tt> if none are accepted), as specified by RFC 7694. As accepting encoded bodies
+     * enlarges the attack surface, no encoding is accepted by default. Note that this cannot be combined with
+     * {@link sirius.web.controller.Routed#preDispatchable()}.
+     *
+     * @return the content encodings accepted for the request body
+     */
+    ContentEncoding[] acceptEncodings() default {};
 }
