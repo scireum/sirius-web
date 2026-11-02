@@ -176,7 +176,7 @@
         <dependency>
             <groupId>org.commonmark</groupId>
             <artifactId>commonmark</artifactId>
-            <version>0.30.0</version>
+            <version>0.31.0</version>
         </dependency>
 
         <!-- Changelog: https://github.com/auth0/java-jwt/releases -->
