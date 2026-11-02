@@ -2197,6 +2197,21 @@ public class WebContext implements SubContext {
                          .handle();
     }
 
+    /**
+     * Reads the decoded body from the given stream into the given attribute while enforcing the size limits.
+     * <p>
+     * The decoded size is checked for each chunk read, so that a highly compressed body (zip bomb) is aborted as
+     * soon as it exceeds <tt>http.maxDecompressedRequestSize</tt> (or <tt>http.maxUploadSize</tt> if no dedicated
+     * limit is set), instead of being decoded completely.
+     *
+     * @param encoding     the encoding of the body, used to report invalid data
+     * @param decodedInput the stream providing the decoded data
+     * @param decoded      the attribute to store the decoded body in. It is completed once all data has been read.
+     * @throws HandledException if the body isn't encoded properly (<tt>400</tt>), exceeds the maximal size once
+     *                          decoded (<tt>413</tt>) or if there isn't enough temporary space to store it
+     *                          (<tt>507</tt>, see <tt>http.minUploadFreespace</tt>)
+     * @throws IOException      if the decoded data cannot be stored in the attribute
+     */
     private void transferDecodedContent(ContentEncoding encoding, InputStream decodedInput, Attribute decoded)
             throws IOException {
         // Without a dedicated limit, decoded bodies are limited like any other upload...
