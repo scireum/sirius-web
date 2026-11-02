@@ -106,13 +106,42 @@ public class PublicServiceInfo {
         this.responses.addAll(responses);
 
         // Auto-derive the request/response documentation from the input/output POJOs of a mapped service, but only
-        // if no explicit @RequestBody / @ApiResponse annotations have been provided.
+        // if no explicit @RequestBody / successful @ApiResponse annotations have been provided. Documented error
+        // responses complement the derived response body rather than replacing it.
         if (this.requestBodies.isEmpty()) {
             this.inputSchema.addAll(SchemaFieldInfo.forType(inputType));
         }
-        if (this.responses.isEmpty()) {
+        if (!hasDocumentedSuccessResponse()) {
             this.outputSchema.addAll(SchemaFieldInfo.forType(outputType));
         }
+    }
+
+    /**
+     * Determines if the given response describes an error, i.e. a client (<tt>4xx</tt>) or server (<tt>5xx</tt>)
+     * error.
+     * <p>
+     * Besides a specific status code, this also covers the ranges <tt>4XX</tt> and <tt>5XX</tt> permitted by the
+     * OpenAPI specification. <tt>default</tt> is not considered an error, as it describes all other responses.
+     *
+     * @param response the response to check
+     * @return <tt>true</tt> if the response describes an error, <tt>false</tt> otherwise
+     */
+    public static boolean isErrorResponse(ApiResponse response) {
+        String responseCode = response.responseCode().trim();
+        return responseCode.startsWith("4") || responseCode.startsWith("5");
+    }
+
+    /**
+     * Determines if at least one of the {@linkplain #getResponses() documented responses} describes the outcome of a
+     * successful call, i.e. is not an {@linkplain #isErrorResponse(ApiResponse) error response}.
+     * <p>
+     * If only error responses are documented, the successful response is derived from the
+     * {@linkplain #getOutputType() output type} of a mapped service.
+     *
+     * @return <tt>true</tt> if a successful response is documented explicitly, <tt>false</tt> otherwise
+     */
+    public boolean hasDocumentedSuccessResponse() {
+        return responses.stream().anyMatch(response -> !isErrorResponse(response));
     }
 
     /**
