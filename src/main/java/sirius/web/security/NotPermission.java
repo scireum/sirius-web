@@ -19,7 +19,8 @@ import java.lang.annotation.Target;
  * Expects the absence of the given permission in oder to execute the annotated element.
  * <p>
  * Can be placed on annotation aware elements like implementations of {@link sirius.web.services.StructuredService}
- * or controller methods (implementations of {@link sirius.web.controller.Controller}).
+ * or controller methods (implementations of {@link sirius.web.controller.Controller}). Placed on a controller class, it
+ * applies to all routes of the controller, in addition to the annotations of the respective method.
  * <p>
  * Uses {@link UserContext#getCurrentUser()} to obtain the current user and calls
  * {@link sirius.web.security.UserInfo#hasPermission(String)} with the given value prepended with an exclamation mark

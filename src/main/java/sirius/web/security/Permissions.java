@@ -18,6 +18,7 @@ import sirius.kernel.settings.Extension;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -178,6 +179,28 @@ public class Permissions {
         if (object.isAnnotationPresent(LoginRequired.class)) {
             result.add(UserInfo.PERMISSION_LOGGED_IN);
         }
+        return result;
+    }
+
+    /**
+     * Parses all available permission annotations for the given method along with the ones of the given type.
+     * <p>
+     * This way, a permission placed on a controller class applies to all of its routes, in addition to the permissions
+     * of the respective method. Note that only the given type itself is inspected and not its superclasses, as the
+     * permission annotations are not inherited.
+     *
+     * @param type   the type which provides the method, e.g. the class of the controller providing a route
+     * @param method the method to check for permissions
+     * @return a set of permissions required to execute the method
+     */
+    public static Set<String> computePermissionsFromAnnotations(Class<?> type, Method method) {
+        Set<String> typePermissions = computePermissionsFromAnnotations(type);
+        if (typePermissions.isEmpty()) {
+            return computePermissionsFromAnnotations(method);
+        }
+
+        Set<String> result = new TreeSet<>(typePermissions);
+        result.addAll(computePermissionsFromAnnotations(method));
         return result;
     }
 
