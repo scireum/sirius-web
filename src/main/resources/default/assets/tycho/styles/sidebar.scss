@@ -50,10 +50,26 @@
 .sticky-sidebar {
   height: fit-content;
   z-index: 0;
+
+  // Long sidebars (e.g. the API explorer) must scroll on their own, as they would otherwise only reveal their
+  // last entries once the main content is scrolled to the very end. The offsets are provided by sidebar.js and
+  // account for the sticky menu bar at the top and the fixed footer at the bottom. Only the card body scrolls,
+  // so that the card keeps its shadow and its footer remains visible.
+  > .card {
+    max-height: calc(100vh - var(--sticky-sidebar-top, 0px) - var(--sticky-sidebar-bottom, 0px));
+  }
+
+  > .card > .card-body {
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 992px) {
   .sticky-sidebar {
     position: static;
+
+    > .card {
+      max-height: none;
+    }
   }
 }

@@ -3,8 +3,21 @@ sirius.ready(function () {
     let _sidebarDiv = document.querySelector('.sidebar-js');
 
     if (_sidebarDiv && _sidebarDiv.classList.contains("sticky-sidebar")) {
-        let _navbar = document.querySelector('#wrapper-menu')
-        _sidebarDiv.style.top = _navbar.clientHeight + 'px';
+        let _navbar = document.querySelector('#wrapper-menu');
+        let _footer = document.querySelector('#wrapper-footer');
+        const updateStickyOffsets = function () {
+            const top = _navbar ? _navbar.offsetHeight : 0;
+            const bottom = _footer ? _footer.offsetHeight : 0;
+            _sidebarDiv.style.top = top + 'px';
+            _sidebarDiv.style.setProperty('--sticky-sidebar-top', top + 'px');
+            _sidebarDiv.style.setProperty('--sticky-sidebar-bottom', bottom + 'px');
+        };
+        updateStickyOffsets();
+
+        // The menu bar and the footer may change their height without the window being resized, e.g. once web
+        // fonts or late extensions are loaded, so we observe them directly.
+        const resizeObserver = new ResizeObserver(updateStickyOffsets);
+        [_navbar, _footer].filter(element => element).forEach(element => resizeObserver.observe(element));
     }
 
     if (_menuButton && _sidebarDiv) {
