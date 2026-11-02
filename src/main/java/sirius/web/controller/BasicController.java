@@ -60,7 +60,7 @@ public class BasicController implements Controller {
     }
 
     private void defaultRoute(WebContext webContext, Method method) {
-        Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(method);
+        Set<String> requiredPermissions = Permissions.computePermissionsFromAnnotations(getClass(), method);
         try {
             if (!requiredPermissions.isEmpty()) {
                 UserInfo user = UserContext.getCurrentUser();

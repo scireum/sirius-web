@@ -94,7 +94,7 @@ public class Route {
         result.method = method;
         result.uri = applyRewrites(controller, routed.value());
         result.preDispatchable = routed.preDispatchable();
-        result.permissions = Permissions.computePermissionsFromAnnotations(method);
+        result.permissions = Permissions.computePermissionsFromAnnotations(controller.getClass(), method);
         result.deprecated = method.isAnnotationPresent(Deprecated.class);
         result.skipCsrfValidation = controller.isSkipCsrfValidation() || routed.skipCsrfValidation();
 
