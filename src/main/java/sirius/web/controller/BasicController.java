@@ -244,6 +244,9 @@ public class BasicController implements Controller {
         if (error.getHint(Controller.ERROR_CODE).isFilled()) {
             out.property("code", error.getHint(Controller.ERROR_CODE).asString());
         }
+        if (error.getHint(Controller.ERROR_FIELD).isFilled()) {
+            out.property("field", error.getHint(Controller.ERROR_FIELD).asString());
+        }
         out.property("message", error.getMessage());
         out.endResult();
     }

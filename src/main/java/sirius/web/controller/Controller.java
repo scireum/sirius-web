@@ -66,6 +66,13 @@ public interface Controller {
     ExceptionHint ERROR_CODE = new ExceptionHint("errorCode");
 
     /**
+     * Specifies the field of the request which caused the error, so that a client can show the message next to it.
+     * <p>
+     * The value is a path into the request body (e.g. <tt>positions[0].quantity</tt>) or the name of a parameter.
+     */
+    ExceptionHint ERROR_FIELD = new ExceptionHint("errorField");
+
+    /**
      * Specifies explicitly, that the call failed due to a missing permission (or no user being present at all).
      * <p>
      * This will be handled just like an unfulfilled {@link sirius.web.security.Permission} constraint.
