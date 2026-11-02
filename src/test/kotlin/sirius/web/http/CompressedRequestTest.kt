@@ -129,6 +129,15 @@ class CompressedRequestTest {
     }
 
     @Test
+    fun `gzip form body is rejected regardless of the case of its media type`() {
+        val response =
+            send("/test/service-content", "APPLICATION/X-WWW-FORM-URLENCODED", "gzip", gzip("a=b".toByteArray()))
+
+        assertEquals(HttpURLConnection.HTTP_UNSUPPORTED_TYPE, response.status)
+        assertEquals("identity", response.acceptEncoding)
+    }
+
+    @Test
     fun `form body with an encoding not accepted by the service is rejected with identity`() {
         // The service accepts gzip, but a form body cannot be sent with any encoding at all...
         val response =

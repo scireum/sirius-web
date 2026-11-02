@@ -17,6 +17,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpConstants;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpResponse;
@@ -45,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -469,7 +471,10 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
 
     private void setupContentReceiver(HttpRequest request) throws IOException {
         String contentType = request.headers().get(HttpHeaderNames.CONTENT_TYPE);
-        if (isDecodeableContent(contentType)) {
+        if (isDecodableContent(contentType)) {
+            // Media types are case-insensitive (RFC 9110), but netty only detects multipart bodies by a lowercase one.
+            // Therefore, the media type is normalized, whereas its parameters (like the boundary) are kept as is...
+            request.headers().set(HttpHeaderNames.CONTENT_TYPE, normalizeMediaType(contentType));
             if (WebServer.LOG.isFINE()) {
                 WebServer.LOG.FINE("POST/PUT-FORM: " + request.uri());
             }
@@ -491,9 +496,25 @@ class WebServerHandler extends ChannelDuplexHandler implements ActiveHTTPConnect
         }
     }
 
-    private boolean isDecodeableContent(String contentType) {
-        return Strings.isFilled(contentType) && (contentType.startsWith("multipart/form-data")
-                                                 || contentType.startsWith("application/x-www-form-urlencoded"));
+    private boolean isDecodableContent(String contentType) {
+        return Strings.isFilled(contentType) && (hasMediaType(contentType, HttpHeaderValues.MULTIPART_FORM_DATA)
+                                                 || hasMediaType(contentType,
+                                                                 HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED));
+    }
+
+    private boolean hasMediaType(String contentType, CharSequence mediaType) {
+        return contentType.regionMatches(true, 0, mediaType.toString(), 0, mediaType.length());
+    }
+
+    private String normalizeMediaType(String contentType) {
+        int parametersIndex = contentType.indexOf(';');
+
+        if (parametersIndex < 0) {
+            return contentType.toLowerCase(Locale.ROOT);
+        }
+
+        return contentType.substring(0, parametersIndex).toLowerCase(Locale.ROOT) + contentType.substring(
+                parametersIndex);
     }
 
     private void handle100Continue(ChannelHandlerContext channelHandlerContext, HttpRequest request) {

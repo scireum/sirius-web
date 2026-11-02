@@ -768,6 +768,32 @@ class WebServerTest {
         assertEquals("", result)
     }
 
+    @Test
+    fun `Invoke test-post with an uppercase url-encoded content type`() {
+        assertEquals("Hello", postForm("APPLICATION/X-WWW-FORM-URLENCODED", "value=Hello"))
+    }
+
+    @Test
+    fun `Invoke test-post with a mixed-case multipart content type`() {
+        val body = "--TestBoundary\r\n" +
+                "Content-Disposition: form-data; name=\"value\"\r\n" +
+                "\r\n" +
+                "Hello\r\n" +
+                "--TestBoundary--\r\n"
+
+        assertEquals("Hello", postForm("Multipart/Form-Data; boundary=TestBoundary", body))
+    }
+
+    private fun postForm(contentType: String, body: String): String {
+        val url = URI("http://localhost:9999/test/post").toURL().openConnection() as HttpURLConnection
+
+        url.setRequestMethod("POST")
+        url.setRequestProperty("Content-Type", contentType)
+        url.setDoOutput(true)
+        url.outputStream.use { it.write(body.toByteArray(StandardCharsets.UTF_8)) }
+        return String(Streams.toByteArray(url.inputStream), StandardCharsets.UTF_8)
+    }
+
     /**
      * Ensure that predispatching does not trigger on GET requests
      */
