@@ -18,6 +18,7 @@ import sirius.kernel.commons.Streams
 import sirius.web.controller.GreetInput
 import sirius.web.controller.GreetResult
 import sirius.web.controller.TestController
+import sirius.web.services.ApiPayloadCodec
 import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.charset.StandardCharsets
@@ -86,6 +87,48 @@ class MappedServiceTest {
         assertFalse(json.get("success").asBoolean())
         assertTrue(json.get("error").asBoolean())
         assertTrue(json.get("message").asString("").contains("World"))
+    }
+
+    @Test
+    fun `an unknown field is rejected as invalid request naming the field but no Java type`() {
+        val (status, data, _) = call("/test/mapped/greet", """{"name": "World", "nickname": "Bob"}""")
+
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, status)
+        val json = Json.parseObject(data)
+        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, json.get("code").asString())
+        assertEquals("nickname", json.get("field").asString())
+        assertTrue(json.get("message").asString("").contains("nickname"))
+        assertFalse(json.get("message").asString("").contains(GreetInput::class.java.name))
+    }
+
+    @Test
+    fun `a value of the wrong type is rejected as invalid request naming the field`() {
+        val (status, data, _) = call("/test/mapped/greet", """{"name": {"first": "World"}}""")
+
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, status)
+        val json = Json.parseObject(data)
+        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, json.get("code").asString())
+        assertEquals("name", json.get("field").asString())
+        assertFalse(json.get("message").asString("").contains(GreetInput::class.java.name))
+    }
+
+    @Test
+    fun `malformed JSON is rejected as invalid request without parser details`() {
+        val (status, data, _) = call("/test/mapped/greet", """{"name": """)
+
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, status)
+        val json = Json.parseObject(data)
+        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, json.get("code").asString())
+        assertFalse(json.has("field"))
+        assertFalse(json.get("message").asString("").contains("Exception"))
+    }
+
+    @Test
+    fun `a missing body is rejected as invalid request`() {
+        val (status, data, _) = call("/test/mapped/greet", method = "POST")
+
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, status)
+        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, Json.parseObject(data).get("code").asString())
     }
 
     @Test

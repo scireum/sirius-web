@@ -28,6 +28,12 @@ import javax.annotation.Nullable;
 public interface ApiPayloadCodec {
 
     /**
+     * Contains the {@link sirius.web.controller.Controller#ERROR_CODE error code} reported if the request body cannot
+     * be read or does not match the input type of the route.
+     */
+    String ERROR_CODE_INVALID_REQUEST = "invalid_request";
+
+    /**
      * Returns the format which is handled by this codec.
      *
      * @return the format which is handled by this codec
@@ -36,6 +42,9 @@ public interface ApiPayloadCodec {
 
     /**
      * Reads the request body and deserializes it into the given input type.
+     * <p>
+     * A body which cannot be read or does not match the input type is reported as client error, i.e. with
+     * HTTP status 400 and the error code {@link #ERROR_CODE_INVALID_REQUEST}.
      *
      * @param webContext the request providing the body to read
      * @param inputType  the type into which the body is deserialized
