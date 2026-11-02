@@ -90,6 +90,16 @@ public enum ContentEncoding {
     }
 
     /**
+     * Determines if a request body was sent using any content coding other than <tt>identity</tt>.
+     *
+     * @param contentEncodingHeaders the values of all <tt>Content-Encoding</tt> headers of the request
+     * @return <tt>true</tt> if the body is encoded (by a known or unknown coding), <tt>false</tt> otherwise
+     */
+    public static boolean isEncoded(List<String> contentEncodingHeaders) {
+        return !parseContentCodings(contentEncodingHeaders).isEmpty();
+    }
+
+    /**
      * Determines the encoding in which a request body was sent, as specified by RFC 7694.
      * <p>
      * The body may be sent without encoding (no <tt>Content-Encoding</tt> header or <tt>identity</tt>) or in one of

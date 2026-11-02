@@ -2101,21 +2101,22 @@ public class WebContext implements SubContext {
             return;
         }
 
-        Optional<ContentEncoding> encoding =
-                ContentEncoding.negotiate(request.headers().getAll(HttpHeaderNames.CONTENT_ENCODING),
-                                          acceptedEncodings);
+        List<String> contentEncodingHeaders = request.headers().getAll(HttpHeaderNames.CONTENT_ENCODING);
 
-        if (encoding.isEmpty()) {
-            return;
-        }
-
-        if (postDecoder != null) {
-            // Form bodies are parsed while being received, therefore these cannot be decoded at all...
+        if (postDecoder != null && ContentEncoding.isEncoded(contentEncodingHeaders)) {
+            // Form bodies are parsed while being received, therefore these cannot be decoded at all. This is checked
+            // before the negotiation, so that no encoding is advertised which the form cannot be sent with...
             throw Exceptions.createHandled()
                             .withDirectMessage("Form bodies cannot be sent with a content encoding.")
                             .hint(Controller.HTTP_STATUS, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code())
                             .hint(Controller.HTTP_HEADER_ACCEPT_ENCODING, "identity")
                             .handle();
+        }
+
+        Optional<ContentEncoding> encoding = ContentEncoding.negotiate(contentEncodingHeaders, acceptedEncodings);
+
+        if (encoding.isEmpty()) {
+            return;
         }
 
         if (content != null) {

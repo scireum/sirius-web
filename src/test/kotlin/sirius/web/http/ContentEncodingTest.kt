@@ -16,6 +16,8 @@ import sirius.kernel.health.HandledException
 import sirius.web.controller.Controller
 import java.util.*
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Tests the negotiation of request body encodings as specified by RFC 7694.
@@ -33,6 +35,13 @@ class ContentEncodingTest {
         assertEquals(Optional.empty(), ContentEncoding.negotiate(listOf(), setOf()))
         assertEquals(Optional.empty(), ContentEncoding.negotiate(listOf("identity"), setOf()))
         assertEquals(Optional.empty(), ContentEncoding.negotiate(listOf("Identity, "), setOf()))
+    }
+
+    @Test
+    fun `bodies are encoded by any coding other than identity`() {
+        assertFalse(ContentEncoding.isEncoded(listOf()))
+        assertFalse(ContentEncoding.isEncoded(listOf("Identity, ")))
+        assertTrue(ContentEncoding.isEncoded(listOf("identity", "deflate")))
     }
 
     @Test
