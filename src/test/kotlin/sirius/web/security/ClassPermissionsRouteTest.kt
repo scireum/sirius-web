@@ -24,12 +24,6 @@ import kotlin.test.assertEquals
 @ExtendWith(SiriusExtension::class)
 class ClassPermissionsRouteTest {
 
-    private fun installUser(vararg permissions: String) {
-        UserContext.get().setCurrentUser(
-            UserInfo.Builder.createUser("test").withPermissions(permissions.toSet()).build()
-        )
-    }
-
     @Test
     fun `route is rejected, when the permission of the controller class is missing`() {
         installUser()
@@ -84,6 +78,12 @@ class ClassPermissionsRouteTest {
         assertEquals(
             setOf(ClassPermissionTestController.METHOD_PERMISSION),
             Permissions.computePermissionsFromAnnotations(method)
+        )
+    }
+
+    private fun installUser(vararg permissions: String) {
+        UserContext.get().setCurrentUser(
+            UserInfo.Builder.createUser("test").withPermissions(permissions.toSet()).build()
         )
     }
 }
