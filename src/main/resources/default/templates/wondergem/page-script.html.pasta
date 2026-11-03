@@ -227,6 +227,10 @@
     }
 
     function imageUpload(url, _target, defaultPreview, defaultImage, allowedExtensions, singleFile, params) {
+        // Dropzone refuses to attach twice to the same element.
+        if (_target.dropzone) {
+            _target.dropzone.destroy();
+        }
         disableDropOutside();
 
         _target.innerHTML = '<div class="well text-center text-muted">' +
