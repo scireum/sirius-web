@@ -186,6 +186,8 @@
             dictInvalidFileType: '@i18n("template.html.errInvalidExtension")',
             clickable: _target.querySelector('.upload-button-js'),
             previewsContainer: _target.querySelector('.upload-previews-js'),
+            // The preview template shows no thumbnail, so reading every image for one is wasted.
+            createImageThumbnails: false,
             previewTemplate: '<div>' +
                 '<span data-dz-name></span> (<span data-dz-size></span>)' +
                 '<div class="progress"><div class="progress-bar" data-dz-uploadprogress></div></div>' +
