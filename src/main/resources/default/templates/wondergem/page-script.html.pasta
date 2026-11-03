@@ -200,6 +200,10 @@
                     done();
                 }
             },
+            sending: function (file, xhr) {
+                // The old uploader sent this header, so controllers may still read it.
+                xhr.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
+            },
             error: function (file, message, xhr) {
                 if (file.status === Dropzone.CANCELED) {
                     return;
