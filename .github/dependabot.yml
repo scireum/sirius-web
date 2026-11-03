@@ -38,6 +38,11 @@ updates:
     sirius:
       patterns:
         - "com.scireum:sirius-*"
+    # excel-streaming-reader is built against a specific POI major, so both must be bumped together
+    apache-poi:
+      patterns:
+        - "org.apache.poi:*"
+        - "com.github.pjfanning:excel-streaming-reader"
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
