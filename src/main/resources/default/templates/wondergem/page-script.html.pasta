@@ -148,7 +148,27 @@
         return params;
     }
 
+    var dropOutsideDisabled = false;
+
+    function disableDropOutside() {
+        // A file dropped next to an upload area would otherwise be opened by the browser.
+        if (dropOutsideDisabled) {
+            return;
+        }
+
+        document.addEventListener('dragover', function (e) {
+            // Only file drags, so text and links can still be dragged into inputs.
+            if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0) {
+                e.dataTransfer.dropEffect = 'none';
+                e.preventDefault();
+            }
+        });
+        dropOutsideDisabled = true;
+    }
+
     function imageUpload(url, _target, defaultPreview, defaultImage, allowedExtensions, singleFile, params) {
+        disableDropOutside();
+
         _target.innerHTML = '<div class="well text-center text-muted">' +
             '<div><span style="display: inline-block"><a href="' + defaultImage + '" class="thumbnail image-link-js"><img class="image-preview-js" src="' + defaultPreview + '" /></a></span></div>' +
             '@i18n("template.html.uploadArea")</div>' +
@@ -245,6 +265,7 @@
         if (_target.dropzone) {
             _target.dropzone.destroy();
         }
+        disableDropOutside();
 
         _target.innerHTML = '<div class="well text-center text-muted">@i18n("template.html.uploadArea")</div>' +
             '<button type="button" class="btn btn-primary btn-block upload-button-js">@i18n("template.html.uploadBtn")</button>' +
