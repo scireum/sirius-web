@@ -15,6 +15,7 @@
 
     <properties>
         <sirius.kernel>54.4.2</sirius.kernel>
+        <apache.poi>5.5.1</apache.poi>
     </properties>
 
     <repositories>
@@ -142,12 +143,12 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.5.1</version>
+            <version>${apache.poi}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.5.1</version>
+            <version>${apache.poi}</version>
         </dependency>
 
         <!-- Changelog: https://github.com/pjfanning/excel-streaming-reader/releases -->
