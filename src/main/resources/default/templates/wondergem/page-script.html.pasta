@@ -190,9 +190,23 @@
             createImageThumbnails: false,
             previewTemplate: '<div>' +
                 '<span data-dz-name></span> (<span data-dz-size></span>)' +
+                ' <a href="#" class="upload-cancel-js">@i18n("NLS.cancel")</a>' +
                 '<div class="progress"><div class="progress-bar" data-dz-uploadprogress></div></div>' +
                 '<div class="text-danger upload-error-js"></div>' +
                 '</div>',
+            init: function () {
+                this.on('addedfile', function (file) {
+                    var dropzone = this;
+                    // Not data-dz-remove, as Dropzone would ask for confirmation before cancelling.
+                    file.previewElement.querySelector('.upload-cancel-js').addEventListener('click', function (e) {
+                        e.preventDefault();
+                        dropzone.removeFile(file);
+                    });
+                });
+                this.on('complete', function (file) {
+                    $(file.previewElement).find('.upload-cancel-js').remove();
+                });
+            },
             accept: function (file, done) {
                 if (file.size === 0) {
                     done('@i18n("template.html.errEmpty")');
@@ -239,19 +253,9 @@
             '<button type="button" class="btn btn-primary btn-block upload-button-js">@i18n("template.html.uploadBtn")</button>' +
             '<div class="upload-previews-js"></div>';
 
-        new Dropzone(_target, Object.assign(createUploadOptions(url, _target, params, allowedExtensions), {
+        var dropzone = new Dropzone(_target, Object.assign(createUploadOptions(url, _target, params, allowedExtensions), {
             maxFiles: singleFile ? 1 : null,
             dictMaxFilesExceeded: '@i18n("template.html.maxFilesExceeded")',
-            init: function () {
-                if (singleFile) {
-                    this.on('addedfile', function (file) {
-                        this.files.filter(function (otherFile) {
-                            return otherFile !== file
-                                && (otherFile.status === Dropzone.SUCCESS || otherFile.status === Dropzone.ERROR);
-                        }).forEach(this.removeFile, this);
-                    });
-                }
-            },
             success: function (file, response) {
                 clearMessages();
                 if (response.error) {
@@ -271,6 +275,14 @@
                 }
             }
         }));
+        if (singleFile) {
+            dropzone.on('addedfile', function (file) {
+                this.files.filter(function (otherFile) {
+                    return otherFile !== file
+                        && (otherFile.status === Dropzone.SUCCESS || otherFile.status === Dropzone.ERROR);
+                }).forEach(this.removeFile, this);
+            });
+        }
         var maxWidth = $(_target).width();
         $('.image-preview-js', _target).css('max-width', maxWidth - 30 + 'px');
     }
