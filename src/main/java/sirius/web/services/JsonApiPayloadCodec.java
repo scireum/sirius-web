@@ -46,11 +46,19 @@ public class JsonApiPayloadCodec implements ApiPayloadCodec {
 
     @Override
     public Object readBody(WebContext webContext, Class<?> inputType) {
+        if (!webContext.hasContent()) {
+            throw invalidBody(null);
+        }
+
         ObjectNode body;
         try {
             body = webContext.getJSONContent();
         } catch (HandledException exception) {
             throw invalidBody(exception);
+        }
+        if (body == null) {
+            // The JSON literal null parses to no object at all, which would hand null to the route
+            throw invalidBody(null);
         }
 
         try {
@@ -67,16 +75,19 @@ public class JsonApiPayloadCodec implements ApiPayloadCodec {
     /**
      * Reports a body which cannot be read at all.
      * <p>
-     * Errors raised without a cause (e.g. a missing or too large body) keep their message, while the message of
-     * parser errors is replaced, as it reveals internals of the parser and the server.
+     * Errors raised without a cause (e.g. a too large body) keep their message, while the message of parser errors
+     * is replaced, as it reveals internals of the parser and the server. A missing body or the JSON literal
+     * <tt>null</tt> (no exception at all) is reported as invalid JSON object.
      */
-    private HandledException invalidBody(Exception exception) {
+    private HandledException invalidBody(@Nullable Exception exception) {
         if (exception instanceof HandledException handledException && handledException.getCause() == null) {
             return handledException.withHint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())
                                    .withHint(Controller.ERROR_CODE, ERROR_CODE_INVALID_REQUEST);
         }
 
-        WebServer.LOG.FINE("Cannot read the request body: %s", exception.getMessage());
+        if (exception != null) {
+            WebServer.LOG.FINE("Cannot read the request body: %s", exception.getMessage());
+        }
         return Exceptions.createHandled()
                          .withNLSKey("JsonApiPayloadCodec.invalidBody")
                          .hint(Controller.HTTP_STATUS, HttpResponseStatus.BAD_REQUEST.code())

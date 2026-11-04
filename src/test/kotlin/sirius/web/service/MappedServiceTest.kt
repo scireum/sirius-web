@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Json
 import sirius.kernel.commons.Streams
+import sirius.kernel.nls.NLS
 import sirius.web.controller.GreetInput
 import sirius.web.controller.GreetResult
 import sirius.web.controller.TestController
@@ -128,7 +129,19 @@ class MappedServiceTest {
         val (status, data, _) = call("/test/mapped/greet", method = "POST")
 
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, status)
-        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, Json.parseObject(data).get("code").asString())
+        val json = Json.parseObject(data)
+        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, json.get("code").asString())
+        assertEquals(NLS.get("JsonApiPayloadCodec.invalidBody"), json.get("message").asString())
+    }
+
+    @Test
+    fun `a body consisting of the JSON literal null is rejected as invalid request`() {
+        val (status, data, _) = call("/test/mapped/greet", "null")
+
+        assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, status)
+        val json = Json.parseObject(data)
+        assertEquals(ApiPayloadCodec.ERROR_CODE_INVALID_REQUEST, json.get("code").asString())
+        assertEquals(NLS.get("JsonApiPayloadCodec.invalidBody"), json.get("message").asString())
     }
 
     @Test
