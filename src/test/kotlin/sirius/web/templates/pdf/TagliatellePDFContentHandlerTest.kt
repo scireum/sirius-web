@@ -117,6 +117,14 @@ class TagliatellePDFContentHandlerTest {
     }
 
     @Test
+    fun `sizes images by their width and height attributes just like by css`() {
+        val pdf = render("""<img src="resource://assets/test-viewbox.svg" width="96" height="96"/>""")
+
+        assertDrawnAsVector(pdf)
+        assertEquals(listOf(72f to 24f), pdf.formSizes(1), "96 x 32 px")
+    }
+
+    @Test
     fun `leaves out svg images which cannot be drawn instead of failing the document`() {
         val pdf = render(
             """
