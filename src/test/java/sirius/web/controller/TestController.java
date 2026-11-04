@@ -21,6 +21,7 @@ import sirius.kernel.di.std.Register;
 import sirius.kernel.health.Exceptions;
 import sirius.kernel.health.HandledException;
 import sirius.web.http.CSRFHelper;
+import sirius.web.http.ContentEncoding;
 import sirius.web.http.InputStreamHandler;
 import sirius.web.http.Limited;
 import sirius.web.http.WebContext;
@@ -264,6 +265,25 @@ public class TestController extends BasicController {
                   .resource(resources.resolve("assets/test_large.css").get().getUrl().openConnection());
     }
 
+    @InternalService(acceptEncodings = ContentEncoding.GZIP)
+    @Routed(value = "/test/service-content", skipCsrfValidation = true)
+    public void serviceContent(WebContext webContext, JSONStructuredOutput output) {
+        output.property("size", webContext.getContentSize());
+        output.property("contentEncoding", webContext.getHeader(HttpHeaderNames.CONTENT_ENCODING));
+        output.property("transferEncoding", webContext.getHeader(HttpHeaderNames.TRANSFER_ENCODING));
+    }
+
+    @InternalService
+    @Routed(value = "/test/uncompressed-service-content", skipCsrfValidation = true)
+    public void uncompressedServiceContent(WebContext webContext, JSONStructuredOutput output) {
+        serviceContent(webContext, output);
+    }
+
+    @Routed(value = "/test/raw-content", skipCsrfValidation = true)
+    public void rawContent(WebContext webContext) {
+        webContext.respondWith().direct(HttpResponseStatus.OK, String.valueOf(webContext.getContentSize()));
+    }
+
     @InternalService
     @Routed(value = "/upload-test", preDispatchable = true, skipCsrfValidation = true)
     public void uploadTest(WebContext webContext, JSONStructuredOutput output, InputStreamHandler upload)
@@ -384,7 +404,7 @@ public class TestController extends BasicController {
         });
     }
 
-    @InternalService
+    @InternalService(acceptEncodings = ContentEncoding.GZIP)
     @Routed(value = "/test/mapped/greet", skipCsrfValidation = true)
     public GreetResult mappedGreet(WebContext webContext, GreetInput input) {
         return new GreetResult("Hello " + input.getName());

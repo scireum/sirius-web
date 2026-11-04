@@ -506,6 +506,12 @@ public class ControllerDispatcher implements WebDispatcher {
     }
 
     private void executeRoute(WebContext webContext, Route route, List<Object> params) throws Exception {
+        if (route.isDecodingContent()) {
+            // Encoded bodies are only decoded now, so that a client cannot make us decompress a body which isn't
+            // processed at all...
+            webContext.decodeContent(route.getAcceptedEncodings());
+        }
+
         if (route.getApiResponseFormat() != null && route.getApiResponseFormat() != Format.RAW) {
             executeApiCall(webContext, route, params);
         } else {
