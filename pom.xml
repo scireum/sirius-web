@@ -15,7 +15,7 @@
 
     <properties>
         <sirius.kernel>54.5.0</sirius.kernel>
-        <apache.poi>5.5.1</apache.poi>
+        <apache.poi>6.0.0</apache.poi>
     </properties>
 
     <repositories>
