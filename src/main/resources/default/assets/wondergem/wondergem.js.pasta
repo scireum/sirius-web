@@ -6,7 +6,7 @@
 
 <i:include name="/assets/wondergem/bootstrap/js/bootstrap.min.js"/>
 
-<i:include name="/assets/wondergem/fileupload/fileuploader.js"/>
+<i:include name="/assets/tycho/libs/dropzonejs/dropzone.js"/>
 
 <i:include name="/assets/wondergem/mustache/mustache.min.js"/>
 

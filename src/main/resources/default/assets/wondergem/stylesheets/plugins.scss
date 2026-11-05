@@ -44,6 +44,13 @@
   height: 100%;
 }
 
+//
+// Dropzone
+// --------------------------------------------------
+.dz-drag-hover > .well {
+  border-color: $primary-color;
+}
+
 
 //
 // Ace Editor
