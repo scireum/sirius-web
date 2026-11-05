@@ -14,7 +14,7 @@
     <description>Provides a modern and scalable web server as SIRIUS module</description>
 
     <properties>
-        <sirius.kernel>54.4.2</sirius.kernel>
+        <sirius.kernel>54.5.0</sirius.kernel>
         <apache.poi>5.5.1</apache.poi>
     </properties>
 
