@@ -175,6 +175,20 @@ class ExcelExportTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["xls", "xlsx", "streaming-xlsx"])
+    fun `typed values survive a round trip through the import`(format: String) {
+
+        val export = exportFor(format)
+        export.addArrayRow("text", 42, 3.5, LocalDate.of(2026, 1, 2))
+
+        val rows = mutableListOf<List<Any?>>()
+        LineBasedProcessor.create("export.${extensionOf(format)}", ByteArrayInputStream(writeToBytes(export)))
+            .run({ _, row -> rows.add(row.asList()) }, { false })
+
+        assertEquals(listOf(listOf<Any?>("text", 42L, 3.5, LocalDateTime.of(2026, 1, 2, 0, 0, 0))), rows)
+    }
+
     private fun exportFor(format: String): ExcelExport = when (format) {
         "xls" -> ExcelExport.asXLS()
         "xlsx" -> ExcelExport.asStandardXLSX()
@@ -185,9 +199,14 @@ class ExcelExportTest {
     /**
      * Writes the given export and opens the result with POI, so that a test can inspect what Excel would show.
      */
-    private fun reopen(export: ExcelExport): Workbook {
+    private fun reopen(export: ExcelExport): Workbook =
+        WorkbookFactory.create(ByteArrayInputStream(writeToBytes(export)))
+
+    private fun writeToBytes(export: ExcelExport): ByteArray {
         val bytes = ByteArrayOutputStream()
         export.writeToStream(bytes)
-        return WorkbookFactory.create(ByteArrayInputStream(bytes.toByteArray()))
+        return bytes.toByteArray()
     }
+
+    private fun extensionOf(format: String) = if (format == "xls") "xls" else "xlsx"
 }
