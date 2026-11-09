@@ -8,6 +8,7 @@
 
 package sirius.web.data
 
+import org.apache.poi.ss.usermodel.Picture
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.junit.jupiter.api.Test
@@ -17,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import sirius.kernel.SiriusExtension
 import sirius.kernel.commons.Amount
 import sirius.kernel.commons.Files
+import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -25,13 +27,15 @@ import java.io.FileOutputStream
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
+import javax.imageio.ImageIO
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 /**
  * Verifies the Excel files written by [ExcelExport].
  *
  * Besides round-tripping rows through the import, the export is reopened with POI itself where the
- * import cannot tell: the cell formats a user sees in Excel.
+ * import cannot tell: the cell formats and embedded pictures a user sees in Excel.
  */
 @ExtendWith(SiriusExtension::class)
 class ExcelExportTest {
@@ -159,7 +163,9 @@ class ExcelExportTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["xls", "xlsx", "streaming-xlsx"])
-    fun `formats doubles, big decimals and amounts with two fraction digits but leaves ints and longs unformatted`(format: String) {
+    fun `formats doubles, big decimals and amounts with two fraction digits but leaves ints and longs unformatted`(
+        format: String
+    ) {
 
         val export = exportFor(format)
         export.addArrayRow(3.5, BigDecimal("1234.567"), Amount.of(9.99), 42, 7L)
@@ -189,6 +195,34 @@ class ExcelExportTest {
         assertEquals(listOf(listOf<Any?>("text", 42L, 3.5, LocalDateTime.of(2026, 1, 2, 0, 0, 0))), rows)
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["xls", "xlsx", "streaming-xlsx"])
+    fun `embeds an image cell as a picture scaled into its cell`(format: String) {
+
+        val png = pngOf(200, 100)
+        val export = exportFor(format)
+        // the header row moves the image off row zero, so that a lost row anchor cannot pass for the default,
+        // and its long title above the image would widen the column if autosizing ignored the picture
+        export.addArrayRow("header", "a column title far wider than fifty pixels")
+        export.addArrayRow("label", ExcelExport.ImageCell(png, 50, "image.png"))
+
+        reopen(export).use { workbook ->
+            val sheet = workbook.getSheetAt(0)
+            val picture = sheet.drawingPatriarch.filterIsInstance<Picture>().single()
+            assertEquals(Workbook.PICTURE_TYPE_PNG, picture.pictureData.pictureType)
+            assertContentEquals(png, picture.pictureData.data)
+            assertEquals(1, picture.clientAnchor.col1.toInt())
+            assertEquals(1, picture.clientAnchor.row1)
+            // the column is fixed to 50px in POI's width units (256 per 7px, plus an offset for the remainder)
+            assertEquals(1828, sheet.getColumnWidth(1))
+            // scaled to a quarter, the 200px wide image ends where its 50px column ends: unscaled, it would
+            // reach far into the columns behind
+            assertEquals(2, picture.clientAnchor.col2.toInt())
+            // a quarter of 100px is 25px or 18.75pt, which ImageCell truncates to whole points
+            assertEquals(18f, sheet.getRow(1).heightInPoints)
+        }
+    }
+
     private fun exportFor(format: String): ExcelExport = when (format) {
         "xls" -> ExcelExport.asXLS()
         "xlsx" -> ExcelExport.asStandardXLSX()
@@ -209,4 +243,10 @@ class ExcelExportTest {
     }
 
     private fun extensionOf(format: String) = if (format == "xls") "xls" else "xlsx"
+
+    private fun pngOf(width: Int, height: Int): ByteArray {
+        val bytes = ByteArrayOutputStream()
+        ImageIO.write(BufferedImage(width, height, BufferedImage.TYPE_INT_RGB), "png", bytes)
+        return bytes.toByteArray()
+    }
 }
