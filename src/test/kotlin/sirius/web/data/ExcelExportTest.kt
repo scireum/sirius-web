@@ -8,15 +8,31 @@
 
 package sirius.web.data
 
+import org.apache.poi.ss.usermodel.Workbook
+import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import sirius.kernel.SiriusExtension
+import sirius.kernel.commons.Amount
 import sirius.kernel.commons.Files
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlin.test.assertEquals
 
+/**
+ * Verifies the Excel files written by [ExcelExport].
+ *
+ * Besides round-tripping rows through the import, the export is reopened with POI itself where the
+ * import cannot tell: the cell formats a user sees in Excel.
+ */
 @ExtendWith(SiriusExtension::class)
 class ExcelExportTest {
 
@@ -33,10 +49,11 @@ class ExcelExportTest {
         var expectLineNum = 1
         val expectedRow = listOf(listOf("A-1", "B-1", "C-1"))
         LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
-            .run({ lineNum, row ->
-                assertEquals(expectLineNum++, lineNum)
-                assertEquals(expectedRow[lineNum - 1], row.asList())
-            },
+            .run(
+                { lineNum, row ->
+                    assertEquals(expectLineNum++, lineNum)
+                    assertEquals(expectedRow[lineNum - 1], row.asList())
+                },
                 { _ -> false })
 
         Files.delete(testFile)
@@ -55,10 +72,11 @@ class ExcelExportTest {
         var expectLineNum = 1
         val expectedRow = listOf(listOf("A-1", "B-1", "C-1"), listOf("A-2", "B-2", "C-2"))
         LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
-            .run({ lineNum, row ->
-                assertEquals(expectLineNum++, lineNum)
-                assertEquals(expectedRow[lineNum - 1], row.asList())
-            },
+            .run(
+                { lineNum, row ->
+                    assertEquals(expectLineNum++, lineNum)
+                    assertEquals(expectedRow[lineNum - 1], row.asList())
+                },
                 { _ -> false })
 
         Files.delete(testFile)
@@ -77,10 +95,11 @@ class ExcelExportTest {
         var expectLineNum = 1
         val expectedRow = listOf(listOf("A-1", "B-1", "C-1"), listOf("A-2", "B-2", "C-2"))
         LineBasedProcessor.create(testFile.getName(), FileInputStream(testFile))
-            .run({ lineNum, row ->
-                assertEquals(expectLineNum++, lineNum)
-                assertEquals(expectedRow[lineNum - 1], row.asList())
-            },
+            .run(
+                { lineNum, row ->
+                    assertEquals(expectLineNum++, lineNum)
+                    assertEquals(expectedRow[lineNum - 1], row.asList())
+                },
                 { _ -> false })
 
         Files.delete(testFile)
@@ -111,13 +130,64 @@ class ExcelExportTest {
 
         var currentData = 0
         XLSXProcessor.create(testFile.getName(), FileInputStream(testFile), true)
-            .run({ _, row ->
-                assertEquals(data[currentData], row.asList())
-                currentData++
-            },
+            .run(
+                { _, row ->
+                    assertEquals(data[currentData], row.asList())
+                    currentData++
+                },
                 { _ -> false })
 
         Files.delete(testFile)
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = ["xls", "xlsx", "streaming-xlsx"])
+    fun `formats dates and timestamps as day-first dates`(format: String) {
+
+        val export = exportFor(format)
+        export.addArrayRow(LocalDate.of(2026, 1, 2), LocalDateTime.of(2026, 1, 2, 3, 4, 5))
+
+        reopen(export).use { workbook ->
+            val row = workbook.getSheetAt(0).getRow(0)
+            assertEquals("dd.mm.yyyy", row.getCell(0).cellStyle.dataFormatString)
+            assertEquals(LocalDateTime.of(2026, 1, 2, 0, 0, 0), row.getCell(0).localDateTimeCellValue)
+            // the time of day is only hidden by the format, the cell still holds it
+            assertEquals("dd.mm.yyyy", row.getCell(1).cellStyle.dataFormatString)
+            assertEquals(LocalDateTime.of(2026, 1, 2, 3, 4, 5), row.getCell(1).localDateTimeCellValue)
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["xls", "xlsx", "streaming-xlsx"])
+    fun `formats doubles, big decimals and amounts with two fraction digits but leaves ints and longs unformatted`(format: String) {
+
+        val export = exportFor(format)
+        export.addArrayRow(3.5, BigDecimal("1234.567"), Amount.of(9.99), 42, 7L)
+
+        reopen(export).use { workbook ->
+            val row = workbook.getSheetAt(0).getRow(0)
+            assertEquals(
+                listOf("#,##0.00", "#,##0.00", "#,##0.00", "General", "General"),
+                row.map { it.cellStyle.dataFormatString }
+            )
+            // the format only rounds the display, the cells keep every digit
+            assertEquals(listOf(3.5, 1234.567, 9.99, 42.0, 7.0), row.map { it.numericCellValue })
+        }
+    }
+
+    private fun exportFor(format: String): ExcelExport = when (format) {
+        "xls" -> ExcelExport.asXLS()
+        "xlsx" -> ExcelExport.asStandardXLSX()
+        "streaming-xlsx" -> ExcelExport.asStreamingXLSX()
+        else -> throw IllegalArgumentException(format)
+    }
+
+    /**
+     * Writes the given export and opens the result with POI, so that a test can inspect what Excel would show.
+     */
+    private fun reopen(export: ExcelExport): Workbook {
+        val bytes = ByteArrayOutputStream()
+        export.writeToStream(bytes)
+        return WorkbookFactory.create(ByteArrayInputStream(bytes.toByteArray()))
+    }
 }
