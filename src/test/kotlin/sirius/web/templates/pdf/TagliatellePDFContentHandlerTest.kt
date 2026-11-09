@@ -15,6 +15,7 @@ import org.openpdf.text.pdf.PRStream
 import org.openpdf.text.pdf.PdfDictionary
 import org.openpdf.text.pdf.PdfName
 import org.openpdf.text.pdf.PdfReader
+import org.openpdf.text.pdf.SimpleBookmark
 import org.openpdf.text.pdf.parser.PdfTextExtractor
 import sirius.kernel.SiriusExtension
 import sirius.kernel.di.std.Part
@@ -170,6 +171,49 @@ class TagliatellePDFContentHandlerTest {
         assertEquals(1, requests, "only the svg itself must be requested")
     }
 
+    @Test
+    fun `turns bookmarks placed in the body into the document outline`() {
+        val pdf = render(
+            """
+            <bookmarks><bookmark name="Chapter 1" href="#chapter-1"/></bookmarks>
+            <p id="chapter-1">Chapter 1</p>
+            """
+        )
+
+        val bookmarks = SimpleBookmark.getBookmarkList(pdf)
+        assertEquals(listOf("Chapter 1"), bookmarks?.map { it["Title"] })
+        assertTrue(bookmarks?.single()?.get("Page").toString().startsWith("1 "), "the bookmark must link to page 1")
+    }
+
+    @Test
+    fun `drops scripts, which may not even be valid xml`() {
+        val pdf = render("<p>Before</p><script>if (a < b && c) { x = ']]>'; }</script><p>After</p>")
+
+        assertEquals(listOf("Before", "After"), pdf.lines(1))
+    }
+
+    @Test
+    fun `drops style elements placed in the body, whose css would otherwise show as text`() {
+        val pdf = render("<style>p { color: #ff0000; }</style><p>Text</p>")
+
+        assertEquals(listOf("Text"), pdf.lines(1))
+    }
+
+    @Test
+    fun `applies style elements placed within inline svg elements`() {
+        val pdf = render(
+            """
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                <style>rect { fill: #ff0000; }</style>
+                <rect x="4" y="4" width="24" height="24"/>
+            </svg>
+            """
+        )
+
+        assertDrawnAsVector(pdf)
+        assertTrue(pdf.formContents(1).any { RED_FILL.containsMatchIn(it) }, "the style within the svg must apply")
+    }
+
     /**
      * Renders the given body markup as A4 PDF with 20mm page margins, using Open Sans at 10pt.
      */
@@ -252,6 +296,13 @@ class TagliatellePDFContentHandlerTest {
     }
 
     /**
+     * Lists the content streams of the form XObjects used on the given page, wherever they are nested.
+     */
+    private fun PdfReader.formContents(page: Int) =
+        xObjects(page).filter { it.getAsName(PdfName.SUBTYPE) == PdfName.FORM }
+            .map { String(PdfReader.getStreamBytes(it), Charsets.ISO_8859_1) }
+
+    /**
      * Lists the raster images used on the given page as their pixel dimensions, wherever they are nested.
      */
     private fun PdfReader.images(page: Int): List<Pair<Int, Int>> =
@@ -262,8 +313,7 @@ class TagliatellePDFContentHandlerTest {
      * Counts the paths filled or stroked within the form XObjects of the given page, i.e. the drawn vector shapes.
      */
     private fun PdfReader.paintedPaths(page: Int) =
-        xObjects(page).filter { it.getAsName(PdfName.SUBTYPE) == PdfName.FORM }
-            .sumOf { PATH_PAINTING_OPERATOR.findAll(String(PdfReader.getStreamBytes(it), Charsets.ISO_8859_1)).count() }
+        formContents(page).sumOf { PATH_PAINTING_OPERATOR.findAll(it).count() }
 
     /**
      * Lists the bounding boxes of the form XObjects used on the given page as their width and height in points.
@@ -286,6 +336,11 @@ class TagliatellePDFContentHandlerTest {
 
     companion object {
         private const val LOOPBACK = "127.0.0.1"
+
+        /**
+         * Matches the content stream operator which sets pure red as fill colour, e.g. for text or shapes.
+         */
+        private val RED_FILL = Regex("""(?<![\d.])1(\.0+)? 0(\.0+)? 0(\.0+)? rg""")
 
         /**
          * Matches the content stream operators which fill and/or stroke the current path.
