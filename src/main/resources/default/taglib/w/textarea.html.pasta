@@ -2,6 +2,8 @@
 <i:arg name="span" type="int" default="6" />
 <i:arg name="smallSpan" type="int" default="12" description="Defines the span for mobile devices" />
 <i:arg name="rows" type="int" default="3" />
+<i:arg name="resize" type="String" default="vertical"
+       description="Defines in which direction the user may resize the field: vertical, horizontal, both or none." />
 <i:arg name="name" type="String" />
 <i:arg name="value" type="String" />
 <i:arg name="labelKey" type="String" default="" />
@@ -28,7 +30,7 @@
               name="@name"
               rows="@rows"
               class="form-control input-block-level @class"
-              style="@style"
+              style="resize: @resize; @style"
               @readonly="readonly">@UserContext.get().getFieldValue(name, value)</textarea>
 
     <i:if test="isFilled(help)">
