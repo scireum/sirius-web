@@ -57,6 +57,11 @@ public class OAuth {
     public static final String GRANT_TYPE = "grant_type";
 
     /**
+     * Determines the ID token an OpenID Connect provider issues along with the access token.
+     */
+    public static final String ID_TOKEN = "id_token";
+
+    /**
      * Determines the password used for Resource Owner Password flow.
      */
     public static final String PASSWORD = "password";
