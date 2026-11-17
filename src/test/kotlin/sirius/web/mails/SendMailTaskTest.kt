@@ -33,6 +33,7 @@ import kotlin.concurrent.thread
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertSame
 
 /**
  * Pins the DKIM signature which [SendMailTask] adds to outgoing mails.
@@ -50,7 +51,7 @@ class SendMailTaskTest {
 
     @Test
     fun `signs mails of a DKIM domain as configured`() {
-        val signedMessage = sign(createMessage())
+        val signedMessage = sign(createMessage(), SENDER)
         assertIs<DkimMessage>(signedMessage, "The mail was not signed, see the log for the reason")
 
         val rawMessage = serialize(signedMessage)
@@ -68,6 +69,13 @@ class SendMailTaskTest {
         assertFalse(tags.containsKey("z"), "The signed headers must not be copied into the signature")
         assertFalse(tags["bh"].isNullOrEmpty(), "The signature must contain a body hash")
         assertFalse(tags["b"].isNullOrEmpty(), "The signature must contain the signature data")
+    }
+
+    @Test
+    fun `leaves mails of other domains unsigned`() {
+        val message = createMessage()
+
+        assertSame(message, sign(message, "sender@other.example"))
     }
 
     @BeforeEach
@@ -113,10 +121,10 @@ class SendMailTaskTest {
     }
 
     /**
-     * Runs the given message through the (private) signing step of [SendMailTask].
+     * Runs the given message through the (private) signing step of [SendMailTask], as a mail of the given sender.
      */
-    private fun sign(message: MimeMessage): MimeMessage {
-        val task = SendMailTask(mails.createEmail().fromEmail(SENDER), SMTPConfiguration.create())
+    private fun sign(message: MimeMessage, sender: String): MimeMessage {
+        val task = SendMailTask(mails.createEmail().fromEmail(sender), SMTPConfiguration.create())
         val signMessage = SendMailTask::class.java.getDeclaredMethod("signMessage", MimeMessage::class.java)
         signMessage.isAccessible = true
         return signMessage.invoke(task, message) as MimeMessage
