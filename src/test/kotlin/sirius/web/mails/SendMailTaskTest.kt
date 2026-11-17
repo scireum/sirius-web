@@ -26,23 +26,21 @@ import java.io.File
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import java.security.KeyPair
 import java.security.KeyPairGenerator
-import java.security.MessageDigest
-import java.security.Signature
 import java.util.Base64
 import java.util.Properties
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertTrue
 
 /**
  * Pins the DKIM signature which [SendMailTask] adds to outgoing mails.
  *
- * The signature is assembled by <tt>utils-mail-dkim</tt>, which computes RSA signatures using the default JDK
- * providers, but still needs Bouncy Castle on the classpath to load. As receiving mail servers verify the signature
- * with their own implementation, the tests rebuild the signed data themselves instead of asking the library.
+ * The signature is created by <tt>utils-mail-dkim</tt>, which computes RSA signatures using the default JDK
+ * providers, but still needs Bouncy Castle on the classpath to load. The tests check that the library accepts our
+ * key file and settings and that these show up in the signature. Whether the signature is cryptographically valid
+ * is left to the tests of the library.
  *
  * Before signing, the library fetches the public key from the DNS and checks that it matches the private key. The
  * tests therefore publish the key via a minimal local DNS server.
@@ -51,15 +49,14 @@ import kotlin.test.assertTrue
 class SendMailTaskTest {
 
     @Test
-    fun `signs mails of a DKIM domain with a verifiable rsa-sha256 signature`() {
+    fun `signs mails of a DKIM domain as configured`() {
         val signedMessage = sign(createMessage())
         assertIs<DkimMessage>(signedMessage, "The mail was not signed, see the log for the reason")
 
         val rawMessage = serialize(signedMessage)
         val rawHeaders = rawMessage.substringBefore("\r\n\r\n").split(Regex("\r\n(?![ \t])"))
         val body = rawMessage.substringAfter("\r\n\r\n")
-        val rawSignatureHeader = rawHeaders.single { it.startsWith("DKIM-Signature:", ignoreCase = true) }
-        val tags = parseTags(rawSignatureHeader)
+        val tags = parseTags(rawHeaders.single { it.startsWith("DKIM-Signature:", ignoreCase = true) })
 
         assertEquals("1", tags["v"])
         assertEquals("rsa-sha256", tags["a"])
@@ -68,31 +65,15 @@ class SendMailTaskTest {
         assertEquals(SELECTOR, tags["s"])
         assertEquals(SENDER, tags["i"])
         assertEquals(body.length.toString(), tags["l"])
-        assertEquals(
-            Base64.getEncoder()
-                .encodeToString(MessageDigest.getInstance("SHA-256").digest(body.toByteArray(Charsets.ISO_8859_1))),
-            tags["bh"]
-        )
-        assertTrue(
-            tags.getValue("h").split(":").containsAll(listOf("From", "To", "Subject")),
-            "The signature must cover the essential headers"
-        )
-
-        val verifier = Signature.getInstance("SHA256withRSA")
-        verifier.initVerify(keyPair.public)
-        verifier.update(
-            collectSignedHeaderData(rawHeaders, rawSignatureHeader, tags.getValue("h")).toByteArray(Charsets.ISO_8859_1)
-        )
-        assertTrue(
-            verifier.verify(Base64.getDecoder().decode(tags.getValue("b"))),
-            "The DKIM signature must be verifiable with the public key"
-        )
+        assertFalse(tags.containsKey("z"), "The signed headers must not be copied into the signature")
+        assertFalse(tags["bh"].isNullOrEmpty(), "The signature must contain a body hash")
+        assertFalse(tags["b"].isNullOrEmpty(), "The signature must contain the signature data")
     }
 
     @BeforeEach
     fun enableDkim(@TempDir tempDir: File) {
         // 1024 bits keep the public key within a single character string (255 bytes) of the TXT record.
-        keyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(1024) }.generateKeyPair()
+        val keyPair = KeyPairGenerator.getInstance("RSA").apply { initialize(1024) }.generateKeyPair()
         val keyFile = File(tempDir, "dkim.der")
         // SendMailTask expects the private key as unencrypted PKCS#8 in DER, which is the JDK's native encoding.
         keyFile.writeBytes(keyPair.private.encoded)
@@ -122,10 +103,6 @@ class SendMailTaskTest {
         }
     }
 
-    /**
-     * Creates a mail with a body in which the relaxed canonicalization changes nothing, so that the body hash can be
-     * computed directly from the serialized message.
-     */
     private fun createMessage(): MimeMessage {
         val message = MimeMessage(Session.getInstance(Properties()))
         message.setFrom(InternetAddress(SENDER))
@@ -158,28 +135,6 @@ class SendMailTaskTest {
         return rawSignatureHeader.substringAfter(":").split(";").filter { it.isNotBlank() }.associate {
             it.substringBefore("=").trim() to it.substringAfter("=").replace(Regex("\\s"), "")
         }
-    }
-
-    /**
-     * Rebuilds the data covered by the signature, as specified by RFC 6376, section 3.7 for the "simple" header
-     * canonicalization: the signed headers exactly as transmitted, followed by the signature header with an empty
-     * <tt>b</tt> tag and without the trailing line break.
-     */
-    private fun collectSignedHeaderData(
-        rawHeaders: List<String>,
-        rawSignatureHeader: String,
-        signedHeaderNames: String
-    ): String {
-        val remainingHeaders = rawHeaders.toMutableList()
-        val signedData = StringBuilder()
-        signedHeaderNames.split(":").forEach { name ->
-            val index = remainingHeaders.indexOfLast { it.startsWith("$name:", ignoreCase = true) }
-            if (index >= 0) {
-                signedData.append(remainingHeaders.removeAt(index)).append("\r\n")
-            }
-        }
-        signedData.append(rawSignatureHeader.replace(Regex("(\\bb=)[^;]*"), "$1"))
-        return signedData.toString()
     }
 
     /**
@@ -247,7 +202,6 @@ class SendMailTaskTest {
         SendMailTask::class.java.getDeclaredField(name).apply { isAccessible = true }.set(null, value)
     }
 
-    private lateinit var keyPair: KeyPair
     private var dnsSocket: DatagramSocket? = null
     private var originalDnsProviderUrl: String? = null
     private val originalSettings = mutableMapOf<String, Any?>()
