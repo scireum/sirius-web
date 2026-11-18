@@ -209,6 +209,66 @@ class ReceivedTokensTest {
         assertNull(tokens.refreshTokenExpiresAt())
     }
 
+    @Test
+    fun `reads the ID token of an OpenID Connect response`() {
+        val response = bearerResponse().put(OAuth.ID_TOKEN, "the-id-token")
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals("the-id-token", tokens.idToken())
+        assertNull(tokens.refreshToken())
+    }
+
+    @Test
+    fun `reads the ID token along with a refresh token`() {
+        val expiry = Instant.parse("2039-01-15T12:34:56Z")
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, jwtExpiringAt(expiry))
+            .put(OAuth.ID_TOKEN, "the-id-token")
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals("the-id-token", tokens.idToken())
+        assertEquals(expiry, tokens.refreshTokenExpiresAt())
+    }
+
+    @Test
+    fun `reads the ID token along with an opaque refresh token`() {
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, "an-opaque-refresh-token")
+            .put(OAuth.ID_TOKEN, "the-id-token")
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertEquals("the-id-token", tokens.idToken())
+        assertEquals("an-opaque-refresh-token", tokens.refreshToken())
+    }
+
+    @Test
+    fun `reports no ID token for a plain OAuth response`() {
+        val response = bearerResponse().put(OAuth.REFRESH_TOKEN, "an-opaque-refresh-token")
+
+        val tokens = ReceivedTokens.fromJson(response)
+
+        assertNull(tokens.idToken())
+    }
+
+    @Test
+    fun `reports no ID token for an empty or null ID token`() {
+        assertNull(ReceivedTokens.fromJson(bearerResponse().put(OAuth.ID_TOKEN, "")).idToken())
+        assertNull(ReceivedTokens.fromJson(bearerResponse().putNull(OAuth.ID_TOKEN)).idToken())
+    }
+
+    @Test
+    fun `creates tokens without an ID token for a plain OAuth server`() {
+        val expiry = Instant.parse("2039-01-15T12:34:56Z")
+
+        val tokens = ReceivedTokens("the-access-token", "the-refresh-token", OAuth.TOKEN_TYPE_BEARER, null, expiry)
+
+        assertNull(tokens.idToken())
+        assertEquals("the-refresh-token", tokens.refreshToken())
+        assertEquals(OAuth.TOKEN_TYPE_BEARER, tokens.type())
+        assertEquals(expiry, tokens.refreshTokenExpiresAt())
+    }
+
     /**
      * Creates a minimal response of an authorization server, containing an access token of type "Bearer".
      *

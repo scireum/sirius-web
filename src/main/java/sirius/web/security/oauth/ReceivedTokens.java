@@ -23,6 +23,9 @@ import java.time.temporal.ChronoUnit;
  * @param accessToken           the access token received from the authorization server
  * @param refreshToken          the refresh token received from the authorization server, might be null if the server
  *                              response contains no refresh token (e.g. when refreshing an access token)
+ * @param idToken               the ID token received from an OpenID Connect provider, null if the server response
+ *                              contains none (e.g. a plain OAuth server or a request without the scope "openid").
+ *                              The token is passed on as received, verifying it is up to the caller
  * @param type                  the type of the tokens received from the authorization server, e.g. "Bearer" or "MAC"
  * @param accessTokenExpiresAt  the instant at which the access token expires, might be null if the server response
  *                              contains no information
@@ -31,11 +34,28 @@ import java.time.temporal.ChronoUnit;
  * @apiNote The expiries are instants, not local dates. Rendering one for a user or storing it in a date column
  * requires an explicit time zone, which is a decision only the caller can make.
  */
-public record ReceivedTokens(String accessToken, String refreshToken, String type, Instant accessTokenExpiresAt,
-                             Instant refreshTokenExpiresAt) {
+public record ReceivedTokens(String accessToken, String refreshToken, String idToken, String type,
+                             Instant accessTokenExpiresAt, Instant refreshTokenExpiresAt) {
 
     private static final long TWO_DAYS_IN_SECONDS = 2 * 24 * 60 * 60L;
     private static final int MINIMUM_REFRESH_EXPIRES_DAYS = 1;
+
+    /**
+     * Creates the tokens of a plain OAuth response, which carries no ID token.
+     *
+     * @param accessToken           the access token received from the authorization server
+     * @param refreshToken          the refresh token received from the authorization server, might be null
+     * @param type                  the type of the tokens received from the authorization server
+     * @param accessTokenExpiresAt  the instant at which the access token expires, might be null
+     * @param refreshTokenExpiresAt the instant at which the refresh token expires, might be null
+     */
+    public ReceivedTokens(String accessToken,
+                          String refreshToken,
+                          String type,
+                          Instant accessTokenExpiresAt,
+                          Instant refreshTokenExpiresAt) {
+        this(accessToken, refreshToken, null, type, accessTokenExpiresAt, refreshTokenExpiresAt);
+    }
 
     /**
      * Creates a new instance from a JSON response.
@@ -46,13 +66,14 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
     public static ReceivedTokens fromJson(ObjectNode response) {
         String accessToken = response.required(OAuth.ACCESS_TOKEN).asString("");
         String refreshToken = response.path(OAuth.REFRESH_TOKEN).asString("");
+        String idToken = readOptionalToken(response, OAuth.ID_TOKEN);
         String type = response.required(OAuth.TOKEN_TYPE).asString("");
         long accessTokenExpiresIn = response.path(OAuth.EXPIRES_IN).asLong(0L);
         Instant accessTokenExpiresAt =
                 accessTokenExpiresIn > 0 ? Instant.now().plusSeconds(accessTokenExpiresIn) : null;
 
         if (Strings.isEmpty(refreshToken)) {
-            return new ReceivedTokens(accessToken, null, type, accessTokenExpiresAt, null);
+            return new ReceivedTokens(accessToken, null, idToken, type, accessTokenExpiresAt, null);
         }
 
         if (OAuth.TOKEN_TYPE_BEARER.equalsIgnoreCase(type)) {
@@ -60,7 +81,7 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
                 // Try to read the exact refresh token expiration date from the JWT token itself
                 Instant expiry = JWT.decode(refreshToken).getExpiresAtAsInstant();
                 if (expiry != null) {
-                    return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, expiry);
+                    return new ReceivedTokens(accessToken, refreshToken, idToken, type, accessTokenExpiresAt, expiry);
                 }
                 // The JWT carries no expiration date, fall back to the estimates below
             } catch (JWTDecodeException _) {
@@ -71,11 +92,21 @@ public record ReceivedTokens(String accessToken, String refreshToken, String typ
         // Check if the 'expires in' field, actually meant for the access token, is better than our refresh token
         // default expires value tomorrow.
         if (accessTokenExpiresIn > TWO_DAYS_IN_SECONDS) {
-            return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, accessTokenExpiresAt);
+            return new ReceivedTokens(accessToken,
+                                      refreshToken,
+                                      idToken,
+                                      type,
+                                      accessTokenExpiresAt,
+                                      accessTokenExpiresAt);
         }
 
         // Use default value tomorrow, we expect a refresh token to be valid at least for one more day
         Instant expiresDate = Instant.now().plus(MINIMUM_REFRESH_EXPIRES_DAYS, ChronoUnit.DAYS);
-        return new ReceivedTokens(accessToken, refreshToken, type, accessTokenExpiresAt, expiresDate);
+        return new ReceivedTokens(accessToken, refreshToken, idToken, type, accessTokenExpiresAt, expiresDate);
+    }
+
+    private static String readOptionalToken(ObjectNode response, String field) {
+        String token = response.path(field).asString("");
+        return Strings.isFilled(token) ? token : null;
     }
 }
